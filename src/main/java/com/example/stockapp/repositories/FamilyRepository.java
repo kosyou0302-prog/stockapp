@@ -6,6 +6,12 @@
  */
 package com.example.stockapp.repositories;
 
-public class FamilyRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.example.stockapp.entities.Family;
+
+@Repository
+public interface FamilyRepository extends JpaRepository<Family, Long> {
     
 }

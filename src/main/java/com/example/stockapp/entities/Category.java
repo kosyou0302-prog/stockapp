@@ -16,7 +16,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "categorys")
+@Table(name = "category")
 @Getter
 @Setter
 
@@ -26,4 +26,8 @@ public class Category {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     @Column
     private Long id;
+
+    // カテゴリー名
+    @Column(length=20)
+    private String category;
 }

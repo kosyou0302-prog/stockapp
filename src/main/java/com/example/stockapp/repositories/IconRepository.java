@@ -5,6 +5,12 @@
  */
 package com.example.stockapp.repositories;
 
-public class IconRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.example.stockapp.entities.Icon;
+
+@Repository
+public interface IconRepository extends JpaRepository<Icon, Long> {
     
 }

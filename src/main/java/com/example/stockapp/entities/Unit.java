@@ -26,4 +26,8 @@ public class Unit {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     @Column
     private Long id;
+
+    // 単位名
+    @Column(length=20)
+    private String unit;
 }
