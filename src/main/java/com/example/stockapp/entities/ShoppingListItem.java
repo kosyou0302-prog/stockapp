@@ -9,9 +9,12 @@ package com.example.stockapp.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,4 +30,22 @@ public class ShoppingListItem {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     @Column
     private Long id;
+
+    // 買う予定数
+    @Column
+    private Integer threshold;
+
+    // 家族名
+    @ManyToOne(optional= false, fetch= FetchType.LAZY)
+    @JoinColumn(name="family_id")
+    private Family family;
+
+    // 商品ID
+    @ManyToOne(optional= false, fetch= FetchType.LAZY)
+    @JoinColumn(name="product_id")
+    private Product product;
+
+    // チェック状態
+    @Column
+    private Boolean isChecked;
 }

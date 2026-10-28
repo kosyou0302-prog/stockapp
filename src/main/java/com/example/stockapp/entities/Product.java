@@ -58,13 +58,13 @@ public class Product {
     private Integer alertDays;
 
     // 家族名
-    // @ManyToOne(optional= false, fetch= FetchType.LAZY)
-    // @JoinColumn(name="family_id")
-    // private Family family;
+    @ManyToOne(optional= false, fetch= FetchType.LAZY)
+    @JoinColumn(name="family_id")
+    private Family family;
 
     // カテゴリ
     @ManyToOne(optional= false, fetch= FetchType.LAZY)
-    @JoinColumn(name="categorys_id")
+    @JoinColumn(name="category_id")
     private Category category;
 
     // 単位名

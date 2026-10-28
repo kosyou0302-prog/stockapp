@@ -5,6 +5,12 @@
  */
 package com.example.stockapp.repositories;
 
-public class UnitRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.example.stockapp.entities.Unit;
+
+@Repository
+public interface UnitRepository extends JpaRepository<Unit, Long> {
     
 }
