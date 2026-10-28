@@ -21,12 +21,94 @@
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-  <!-- メインコンテンツ（ここに各画面のTODOを書いていきます） -->
+
+  <!--
+    【共通メニュー】
+    th:fragment="menu" を付けることで、
+    各画面から呼び出せる部品になる。
+
+    navbar       ：Bootstrapのナビゲーション用クラス
+    bg-white     ：背景を白色にする
+    border-top   ：上側に境界線を付ける
+    fixed-bottom ：画面の下部に固定する
+  -->
+  <nav th:fragment="menu"
+      class="navbar navbar-light bg-white border-top fixed-bottom">
+
+    <!--
+      container-fluid ：横幅いっぱいに広げる
+      p-0             ：内側の余白を0にする
+    -->
+    <div class="container-fluid p-0">
+
+      <!--
+        row ：横並びの行を作る
+        w-100 ：横幅を100%にする
+        g-0 ：項目同士の余白をなくす
+      -->
+      <div class="row w-100 g-0 text-center">
+
+        <!-- ホーム画面へのリンク -->
+        <div class="col">
+          <a th:href="@{/home}"
+            class="nav-link d-flex flex-column align-items-center py-2">
+
+            <!-- ホームのアイコン -->
+            <span>🏠</span>
+
+            <!-- メニュー名 -->
+            <small>ホーム</small>
+          </a>
+        </div>
+
+        <!-- 在庫一覧画面へのリンク -->
+        <div class="col">
+          <a th:href="@{/inventory}"
+            class="nav-link d-flex flex-column align-items-center py-2">
+
+            <!-- 在庫のアイコン -->
+            <span>📦</span>
+
+            <!-- メニュー名 -->
+            <small>在庫一覧</small>
+          </a>
+        </div>
+
+        <!-- 購入履歴画面へのリンク -->
+        <div class="col">
+          <a th:href="@{/purchase-history}"
+            class="nav-link d-flex flex-column align-items-center py-2">
+
+            <!-- 購入履歴のアイコン -->
+            <span>🧾</span>
+
+            <!-- メニュー名 -->
+            <small>購入履歴</small>
+          </a>
+        </div>
+
+        <!-- 買い物リスト画面へのリンク -->
+        <div class="col">
+          <a th:href="@{/shopping-list}"
+            class="nav-link d-flex flex-column align-items-center py-2">
+
+            <!-- 買い物のアイコン -->
+            <span>🛒</span>
+
+            <!-- メニュー名 -->
+            <small>買い物リスト</small>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </nav>
+
   <div class="container mt-4 mb-5">
 
-   
+
     <!-- TODO: ここに各画面のテーブルやフォームを作っていく -->
-      
+
   </div>
 
   <!-- Bootstrap 5 JS (CDN経由：ドロップダウンやモーダルなどを動かすために必要) -->
