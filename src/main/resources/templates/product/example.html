@@ -1,0 +1,222 @@
+<!--
+ <body>
+
+<div class="container py-4">
+
+    <div class="card shadow mx-auto" style="max-width: 400px;">
+
+        <!-- ヘッダー -->
+        <div class="card-header bg-primary text-white text-center">
+            <h4 class="mb-0">商品編集</h4>
+        </div>
+
+        <div class="card-body">
+
+            <form th:action="@{/product/edit}"
+                  th:object="${item}"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                <!-- ID保持 -->
+                <input type="hidden" th:field="*{id}">
+
+                <!-- エラー表示 -->
+                <div class="alert alert-danger"
+                     th:if="${#fields.hasAnyErrors()}">
+                    <ul class="mb-0">
+                        <li th:each="err : ${#fields.errors('*')}"
+                            th:text="${err}">
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 商品名 -->
+                <div class="mb-3">
+
+                    <label class="form-label fw-bold">商品名</label>
+
+                    <div class="row align-items-center">
+
+                        <div class="col-8">
+                            <input type="text"
+                                   class="form-control"
+                                   th:field="*{name}">
+                        </div>
+
+                        <div class="col-4 text-center">
+
+                            <img id="preview"
+                                 th:src="${item.iconPath != null ? item.iconPath : '/images/no-image.png'}"
+                                 width="60"
+                                 height="60"
+                                 class="border rounded">
+
+                            <input type="file"
+                                   id="iconFile"
+                                   name="iconFile"
+                                   accept="image/*"
+                                   class="form-control form-control-sm mt-2">
+
+                        </div>
+
+                    </div>
+
+                    <div class="text-danger small"
+                         th:if="${#fields.hasErrors('name')}"
+                         th:errors="*{name}">
+                    </div>
+
+                </div>
+
+                <!-- 分類 -->
+                <div class="mb-3">
+
+                    <label class="form-label fw-bold">分類</label>
+
+                    <select class="form-select"
+                            th:field="*{category}">
+                        <option value="食品">食品</option>
+                        <option value="日用品">日用品</option>
+                        <option value="その他">その他</option>
+                    </select>
+
+                    <div class="text-danger small"
+                         th:if="${#fields.hasErrors('category')}"
+                         th:errors="*{category}">
+                    </div>
+
+                </div>
+
+                <!-- 在庫数 -->
+                <div class="mb-3">
+
+                    <label class="form-label fw-bold">在庫数</label>
+
+                    <div class="row">
+
+                        <div class="col-6">
+                            <input type="number"
+                                   class="form-control"
+                                   th:field="*{stock}">
+                        </div>
+
+                        <div class="col-6">
+                            <select class="form-select"
+                                    th:field="*{unit}">
+                                <option value="個">個</option>
+                                <option value="本">本</option>
+                                <option value="パック">パック</option>
+                                <option value="箱">箱</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- 購入目安 -->
+                <div class="mb-3">
+
+                    <label class="form-label fw-bold">購入目安</label>
+
+                    <div class="row">
+
+                        <div class="col-6">
+                            <input type="number"
+                                   class="form-control"
+                                   th:field="*{threshold}">
+                        </div>
+
+                        <div class="col-6">
+                            <select class="form-select"
+                                    th:field="*{thresholdUnit}">
+                                <option value="個">個</option>
+                                <option value="本">本</option>
+                                <option value="パック">パック</option>
+                                <option value="箱">箱</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- 使用期限 -->
+                <div class="mb-3">
+
+                    <label class="form-label fw-bold">使用期限</label>
+
+                    <input type="date"
+                           class="form-control"
+                           th:field="*{expiryDate}">
+
+                </div>
+
+                <!-- 通知 -->
+                <div class="mb-4">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <label class="form-label fw-bold mb-0">
+                            通知
+                        </label>
+
+                        <div class="form-check form-switch">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   th:field="*{isNotify}">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- ボタン -->
+                <div class="row g-2">
+
+                    <div class="col-6">
+                        /product/delete
+                            削除する
+                        </button>
+                    </div>
+
+                    <div class="col-6">
+                        <button type="submit"
+                                class="btn btn-primary w-100">
+                            保存する
+                        </button>
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- アイコンプレビュー -->
+<script>
+document.getElementById("iconFile")
+.addEventListener("change", function(event){
+
+    const file = event.target.files[0];
+
+    if(file){
+
+        const reader = new FileReader();
+
+        reader.onload = function(e){
+            document.getElementById("preview").src =
+                e.target.result;
+        };
+
+        reader.readAsDataURL(file);
+
+    }
+});
+</script>
+
+</body>

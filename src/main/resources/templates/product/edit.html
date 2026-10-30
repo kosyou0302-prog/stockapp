@@ -1,5 +1,5 @@
 <!--
-  【役割】商品の情報を入力（新規登録・編集）するためのフォーム画面です。
+  【役割】商品の情報を入力（編集）するためのフォーム画面です。
 
   TODO: formタグの送信先（th:action）とメソッド（POST）を正しく設定する
   TODO: ProductForm（DTO）と入力欄を紐づけるため、th:object と th:field を設定する
@@ -14,19 +14,85 @@
   <!-- スマホやタブレットでも綺麗に表示するためのViewport設定 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- 画面のタブに表示されるタイトル（各画面で書き換えてOK） -->
-  <title>生活必需品ストックアプリ</title>
+  <title>５商品編集画面</title>
   <!-- Bootstrap 5 CSS (CDN経由で読み込み：インストール不要) -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- チームオリジナルの共通CSS（Thymeleafの @{} を使うと自動で正しいパスになります） -->
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-  <!-- メインコンテンツ（ここに各画面のTODOを書いていきます） -->
-  <div class="container mt-4 mb-5">
+  <!-- メインコンテンツ -->
+  <div class="container py-4">
 
-    <h2>画面タイトル（例：在庫一覧）</h2>
-    <!-- TODO: ここに各画面のテーブルやフォームを作っていく -->
-      
+    <h2>商品編集</h2>
+    <div class="border p-3 rounded">
+      <div class="d-flex align-items-center mb-3">
+        <img th:src="@{/images/icons.png}"
+             width="48"
+             class="me-2">
+      <div>
+        <small>商品</small><br>
+        <strong>食品</strong>
+      </div>
+    </div>
+
+    <!-- 商品編集フォーム -->
+    <form th:action="@{/product/edit}" th:object="${item}" method="post">
+
+    <!-- エラー表示 -->
+    <div class="alert alert-danger" th:if="${#fields.hasAnyErrors()}">
+    <ul class="mb-0">
+        <li th:each="err : ${#fields.errors('*')}" th:text="${err}">
+        </li>
+    </ul>
+    </div>
+
+      <label>商品名</label><br>
+      <input type="text" th:field="*{name}"><br><br>
+
+      <label>分類</label><br>
+      <select th:field="*{category}"><br><br>
+        <option value="食品">食品</option>
+        <option value="日用品">日用品</option>
+        <option value="その他">その他</option>
+      </select>
+    <br><br>
+
+      <label>在庫数</label><br>
+      <input type="number" th:field="*{stock}">
+      <select th:field="*{unit}">
+        <option value="個">個</option>
+        <option value="本">本</option>
+        <option value="パック">パック</option>
+        <option value="箱">箱</option>
+        <option value="斤">斤</option>
+      </select>
+    <br><br>
+
+      <label>購入目安</label><br>
+        <input type="number" th:field="*{threshold}">
+        <select th:field="*{unit}">
+          <option value="個">個</option>
+          <option value="本">本</option>
+          <option value="パック">パック</option>
+          <option value="箱">箱</option>
+          <option value="斤">斤</option>
+        </select>
+      <br><br>
+
+
+      <label>使用期限</label>
+        <input type="date" th:field="*{expiry_date}">
+      <br><br>
+
+      <label>通知</label>
+        <input type="checkbox" th:field="*{is_notify}">
+      <br><br>
+
+    <button type="submit">この商品を削除する</button>
+    <button type="submit">保存する</button>
+
+    </form>
   </div>
 
   <!-- Bootstrap 5 JS (CDN経由：ドロップダウンやモーダルなどを動かすために必要) -->

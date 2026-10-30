@@ -1,5 +1,5 @@
 <!--
-  【役割】商品の情報を入力（新規登録・編集）するためのフォーム画面です。
+  【役割】４商品の登録情報を入力（新規登録）するためのフォーム画面です。
 
   TODO: formタグの送信先（th:action）とメソッド（POST）を正しく設定する
   TODO: ProductForm（DTO）と入力欄を紐づけるため、th:object と th:field を設定する
@@ -14,24 +14,174 @@
   <!-- スマホやタブレットでも綺麗に表示するためのViewport設定 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- 画面のタブに表示されるタイトル（各画面で書き換えてOK） -->
-  <title>生活必需品ストックアプリ</title>
+  <title>４商品登録画面</title>
   <!-- Bootstrap 5 CSS (CDN経由で読み込み：インストール不要) -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- チームオリジナルの共通CSS（Thymeleafの @{} を使うと自動で正しいパスになります） -->
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
+
 <body>
-  <!-- メインコンテンツ（ここに各画面のTODOを書いていきます） -->
-  <div class="container mt-4 mb-5">
+  <!-- メインコンテンツ -->
+   <div class="container py-4">
+    <div class="card shadow mx-auto" style="max-width: 400px;">
 
-    <h2>画面タイトル（例：在庫一覧）</h2>
-    <!-- TODO: ここに各画面のテーブルやフォームを作っていく -->
-      
+        <!-- ヘッダー -->
+      <div class="card-header bg-primary text-white text-center">
+          <h4 class="mb-0">商品登録</h4>
+      </div>
+
+      <div class="card-body">
+          <form th:action="@{/product/add}" th:object="${item}"
+                  method="post" enctype="multipart/form-data">
+
+              <!-- エラー一覧 -->
+              <div class="alert alert-danger"
+                   th:if="${#fields.hasAnyErrors()}">
+                  <ul class="mb-0">
+                      <li th:each="err : ${#fields.errors('*')}" th:text="${err}">
+                      </li>
+                  </ul>
+              </div>
+
+              <!-- 商品名 -->
+                <div class="mb-3">
+                  <label class="form-label fw-bold">
+                      商品名
+                  </label>
+                  <div class="row align-items-center">
+                      <div class="col-8">
+                          <input type="text" class="form-control"
+                           th:field="*{name}" placeholder="例）牛乳">
+
+                          <div class="text-danger small"
+                               th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
+                          </div>
+                      </div>
+
+                      <div class="col-4 text-center">
+                          <img id="preview"
+                               src="/images/no-image.png"
+                               width="60"
+                               height="60"
+                               class="border rounded">
+
+                          <input type="file"
+                                 id="iconFile"
+                                 name="iconFile"
+                                 accept="image/*"
+                                 class="form-control form-control-sm mt-2">
+                      </div>
+                  </div>
+                </div>
+
+              <!-- 分類 -->
+              <div class="mb-3">
+                  <label class="form-label fw-bold">分類</label>
+                  <select class="form-select" th:field="*{category}">
+                    <option value="">選択してください</option>
+                      <option value="食品">食品</option>
+                      <option value="日用品">日用品</option>
+                      <option value="その他">その他</option>
+                  </select>
+
+                  <div class="text-danger small"
+                       th:if="${#fields.hasErrors('category')}"
+                       th:errors="*{category}">
+                  </div>
+
+              </div>
+
+              <!-- 在庫数 -->
+              <div class="mb-3">
+                  <label class="form-label fw-bold">在庫数</label>
+                  <div class="row">
+                      <div class="col-6">
+                          <input type="number" class="form-control" th:field="*{stock}">
+                      </div>
+                      <div class="col-6">
+                          <select class="form-select" th:field="*{unit}">
+                              <option value="個">個</option>
+                              <option value="本">本</option>
+                              <option value="パック">パック</option>
+                              <option value="箱">箱</option>
+                          </select>
+                      </div>
+                  </div>
+                <div class="text-danger small"
+                       th:if="${#fields.hasErrors('stock')}"
+                       th:errors="*{stock}">
+                </div>
+              </div>
+
+              <!-- 購入目安 -->
+              <div class="mb-3">
+                  <label class="form-label fw-bold">購入目安</label>
+                  <div class="row">
+                      <div class="col-6">
+                          <input type="number" class="form-control" th:field="*{threshold}">
+                      </div>
+                      <div class="col-6">
+                          <select class="form-select" th:field="*{thresholdUnit}">
+                              <option value="個">個</option>
+                              <option value="本">本</option>
+                              <option value="パック">パック</option>
+                              <option value="箱">箱</option>
+                          </select>
+                      </div>
+                  </div>
+
+                  <div class="text-danger small"
+                       th:if="${#fields.hasErrors('threshold')}"
+                       th:errors="*{threshold}">
+                  </div>
+              </div>
+
+              <!-- 使用期限 -->
+              <div class="mb-3">
+                  <label class="form-label fw-bold">使用期限</label>
+                  <input type="date" class="form-control" th:field="*{expiryDate}">
+                  <div class="text-danger small"
+                       th:if="${#fields.hasErrors('expiryDate')}"
+                       th:errors="*{expiryDate}">
+                  </div>
+
+              </div>
+
+              <!-- 通知 -->
+              <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                  <label class="form-label fw-bold mb-0">通知</label>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" th:field="*{isNotify}">
+                  </div>
+                </div>
+              </div>
+
+              <!-- 登録ボタン -->
+              <div class="d-grid">
+                  <button type="submit" class="btn btn-primary btn-lg">登録する</button>
+              </div>
+          </form>
+        </div>
   </div>
+</div>
 
-  <!-- Bootstrap 5 JS (CDN経由：ドロップダウンやモーダルなどを動かすために必要) -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- 非同期処理（JS）が必要な画面（買い物リストなど）だけ、以下のコメントアウトを外してJSを読み込む -->
-  <!-- <script th:src="@{/js/app.js}"></script> -->
+<!-- アイコンプレビュー -->
+<script>
+  document.getElementById('iconFile')
+  .addEventListener('change', function(event){
+      const file = event.target.files[0];
+      if(file){
+          const reader = new FileReader();
+          reader.onload = function(e){
+              document.getElementById('preview').src =
+                  e.target.result;
+          };
+          reader.readAsDataURL(file);
+      }
+  });
+  </script>
+
 </body>
 </html>
