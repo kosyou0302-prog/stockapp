@@ -19,7 +19,7 @@ public class HomeController {
     // ホーム-------------------------------------------------
     @GetMapping("/")
     public ModelAndView home(ModelAndView mav) {
-        mav.setViewName("/home");
+        mav.setViewName("home");
         return mav;
     }
 }
