@@ -1,9 +1,10 @@
 <!--
   【役割】登録されている生活必需品の一覧を表示するメイン画面です。
 
-  TODO: InventoryControllerから渡された商品リストを th:each でループさせ、表（table）を作る
-  TODO: 各行に商品の詳細（名前、在庫数など）を th:text で表示する
-  TODO: 各行に「編集画面へのリンク（th:href）」と「削除ボタン（formタグ）」を配置する
+  TODO: InventoryControllerから渡された商品リストを th:each でループさせ、一覧を作る
+  TODO: 各行に商品の詳細（名前、カテゴリー、在庫数など）を th:text で表示する
+  TODO: 各行に「編集画面へのリンク（th:href）」を配置する
+  TODO: 商品登録画面へのリンクを配置する
 -->
 <!DOCTYPE html>
 <!-- Thymeleafを使う宣言と、言語を日本語(ja)に設定 -->
@@ -21,16 +22,251 @@
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-  <!-- 共通ナビゲーションメニューの読み込み（fragments/menu.html をここに差し込む） -->
-  <div th:replace="~{fragments/menu :: header}"></div>
+
+  <!--
+    ① ヘッダー（色は未だ仮設定）
+    この画面専用のタイトルを中央に表示する
+
+    bg-primary：背景を青色にする
+    text-white：文字を白色にする
+    text-center：中央揃えにする
+    py-3：上下に余白を設定する
+  -->
+  <header class="bg-primary text-white text-center py-3">
+    <h1 class="h4 fw-bold mb-0">在庫一覧</h1>
+  </header>
 
   <!-- メインコンテンツ（ここに各画面のTODOを書いていきます） -->
-  <div class="container mt-4 mb-5">
+  <main class="container mt-4 mb-5">
 
-    <h2>画面タイトル（例：在庫一覧）</h2>
-    <!-- TODO: ここに各画面のテーブルやフォームを作っていく -->
-      
-  </div>
+
+  <!-- TODO: ここに各画面のテーブルやフォームを作っていく -->
+    <!--
+      ② 商品検索欄
+      商品名を入力して検索する
+
+      input-group：入力欄とボタンをまとめる
+      form-control：入力フォームのデザイン
+    -->
+    <section class="mb-3">
+
+      <form th:action="@{/inventory}" method="get">
+
+        <div class="input-group">
+
+          <!-- 商品名の検索キーワード -->
+          <input type="text"
+                name="keyword"
+                class="form-control"
+                placeholder="商品名で検索"
+                th:value="${keyword}">
+
+          <!-- 検索ボタン -->
+          <button type="submit" class="btn btn-outline-primary">
+            検索
+          </button>
+
+        </div>
+
+        <!-- 選択中のカテゴリーを検索条件として引き継ぐ -->
+        <input type="hidden"
+              name="categoryId"
+              th:value="${selectedCategoryId}"
+              th:if="${selectedCategoryId != null}">
+
+      </form>
+
+    </section>
+
+
+    <!--
+      ③ 画面切り替えタブ
+      在庫一覧と期限・在庫切れ画面を切り替える
+
+      nav：ナビゲーション
+      nav-pills：タブ形式のデザイン
+      nav-fill：タブを均等な幅で配置する
+    -->
+    <section class="mb-3">
+
+      <ul class="nav nav-pills nav-fill">
+
+        <!-- 在庫一覧タブ -->
+        <li class="nav-item">
+          <a class="nav-link active"
+            th:href="@{/inventory}">
+            在庫一覧
+          </a>
+        </li>
+
+        <!-- 期限・在庫切れタブ -->
+        <li class="nav-item">
+          <a class="nav-link"
+            th:href="@{/alerts}">
+            期限・在庫切れ
+          </a>
+        </li>
+
+      </ul>
+
+    </section>
+
+
+    <!--
+      ④ カテゴリー絞り込み
+      すべて・食品・日用品・その他から選択する
+
+      d-flex：横並びにする
+      gap-2：ボタン同士の間隔を設定する
+      flex-fill：各ボタンの幅を均等にする
+    -->
+    <section class="mb-3">
+
+      <div class="d-flex gap-2">
+
+        <!-- すべて -->
+        <a th:href="@{/inventory}"
+          class="btn btn-outline-primary btn-sm flex-fill"
+          th:classappend="${selectedCategoryId == null} ? ' active' : ''">
+          すべて
+        </a>
+
+        <!-- 食品 -->
+        <a th:href="@{/inventory(categoryId=1)}"
+          class="btn btn-outline-primary btn-sm flex-fill"
+          th:classappend="${selectedCategoryId == 1} ? ' active' : ''">
+          食品
+        </a>
+
+        <!-- 日用品 -->
+        <a th:href="@{/inventory(categoryId=2)}"
+          class="btn btn-outline-primary btn-sm flex-fill"
+          th:classappend="${selectedCategoryId == 2} ? ' active' : ''">
+          日用品
+        </a>
+
+        <!-- その他 -->
+        <a th:href="@{/inventory(categoryId=3)}"
+          class="btn btn-outline-primary btn-sm flex-fill"
+          th:classappend="${selectedCategoryId == 3} ? ' active' : ''">
+          その他
+        </a>
+
+      </div>
+
+    </section>
+
+
+    <!--
+      ⑤ 商品一覧
+      InventoryControllerから受け取った商品リストを表示する
+
+      list-group：商品を一覧形式で並べる
+      list-group-item：一覧の各商品
+      d-flex：横並びにする
+      justify-content-between：左右に分けて配置する
+    -->
+    <section class="mb-4">
+
+      <div class="list-group">
+
+        <!-- 商品リストを1件ずつ繰り返し表示 -->
+        <a th:each="product : ${products}"
+          th:href="@{/products/{id}/edit(id=${product.id})}"
+          class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-3">
+
+          <!-- 商品アイコン・商品名・カテゴリー -->
+          <div class="d-flex align-items-center gap-3">
+
+            <!-- 商品アイコン -->
+            <span class="fs-2"
+                  th:text="${product.icon.name}">
+              🥛
+            </span>
+
+            <!-- 商品名・カテゴリー -->
+            <div>
+
+              <!-- 商品名 -->
+              <div class="fw-bold"
+                  th:text="${product.name}">
+                牛乳
+              </div>
+
+              <!-- カテゴリー名 -->
+              <div class="text-secondary small"
+                  th:text="${product.category.name}">
+                食品
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!--
+            右側：在庫数と単位
+
+            在庫切れの場合：赤文字
+            期限切れの場合：黄色系の文字
+            通常の場合：通常の文字色
+
+            text-nowrap：文字が途中で改行されないようにする
+
+            th:classappend：条件に応じて文字色のクラスを追加する
+
+            在庫切れと期限切れの両方に該当する場合は、
+            在庫切れ（赤文字）を優先する
+          -->
+          <div class="fw-bold text-nowrap"
+              th:classappend="${product.stock == 0} ? ' text-danger' : (${product.expiryDate != null and product.expiryDate.isBefore(T(java.time.LocalDate).now())} ? ' text-warning' : '')">
+
+            <!-- 在庫数と単位を表示 -->
+            残り<span th:text="${product.stock}">2</span><span th:text="${product.unit.name}">本</span>
+
+          </div>
+
+        </a>
+
+      </div>
+
+
+      <!-- 商品が1件も登録されていない場合 -->
+      <p th:if="${#lists.isEmpty(products)}"
+        class="text-center text-secondary py-4">
+        商品が登録されていません。
+      </p>
+
+    </section>
+
+
+    <!--
+      ⑥ 商品登録ボタン
+      商品登録画面へ移動する
+
+      d-flex：横並びの配置
+      justify-content-end：右寄せ
+      rounded-pill：ボタンの角を丸くする
+    -->
+    <section class="d-flex justify-content-end mb-4">
+
+      <a th:href="@{/products/new}"
+        class="btn btn-primary rounded-pill px-4 py-2">
+
+        <span class="fs-5">＋</span>
+
+      </a>
+
+    </section>
+
+  </main>
+
+  <!--
+    ⑦ 共通ナビゲーションメニューの読み込み
+    fragments/menu.html の menu フラグメントを画面下部に配置する
+  -->
+  <div th:replace="~{fragments/menu :: menu}"></div>
+
 
   <!-- Bootstrap 5 JS (CDN経由：ドロップダウンやモーダルなどを動かすために必要) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
