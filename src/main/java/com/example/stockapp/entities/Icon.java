@@ -26,4 +26,8 @@ public class Icon {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     @Column
     private Long id;
+
+    // アイコン名
+    @Column(length=20)
+    private String icon;
 }

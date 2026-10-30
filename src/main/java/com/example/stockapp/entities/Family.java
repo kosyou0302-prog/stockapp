@@ -26,4 +26,8 @@ public class Family {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     @Column
     private Long id;
+
+    // 家族名
+    @Column(length=20)
+    private String groupName;
 }
