@@ -7,6 +7,19 @@
  */
 package com.example.stockapp.controllers;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import lombok.RequiredArgsConstructor;
+
+@Controller
+@RequiredArgsConstructor // finalがついたフィールドを引数に持つコンストラクタをLombokで自動生成
 public class HomeController {
-    
+    // ホーム-------------------------------------------------
+    @GetMapping("/")
+    public ModelAndView home(ModelAndView mav) {
+        mav.setViewName("/home");
+        return mav;
+    }
 }

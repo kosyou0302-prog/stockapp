@@ -8,6 +8,28 @@
  */
 package com.example.stockapp.controllers;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import lombok.RequiredArgsConstructor;
+
+@Controller
+@RequiredArgsConstructor // finalがついたフィールドを引数に持つコンストラクタをLombokで自動生成
 public class InventoryController {
-    
+    // 在庫一覧---------------------------------------------------------------------------------------
+    @GetMapping("/inventory")
+    public ModelAndView inventory(ModelAndView mav) {
+        mav.setViewName("inventory/list");
+        return mav;
+    }
+
+
+
+    // 期限、在庫不足一覧------------------------------------------------------------------------------
+    @GetMapping("/inventory/alerts")
+    public ModelAndView alerts(ModelAndView mav) {
+        mav.setViewName("inventory/alerts");
+        return mav;
+    }
 }

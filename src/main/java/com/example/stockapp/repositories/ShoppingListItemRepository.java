@@ -13,5 +13,5 @@ import com.example.stockapp.entities.ShoppingListItem;
 
 @Repository
 public interface ShoppingListItemRepository extends JpaRepository<ShoppingListItem, Long> {
-    
+
 }

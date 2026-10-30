@@ -8,6 +8,34 @@
  */
 package com.example.stockapp.controllers;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import lombok.RequiredArgsConstructor;
+
+@Controller
+@RequiredArgsConstructor // finalがついたフィールドを引数に持つコンストラクタをLombokで自動生成
+@RequestMapping("/shopping")
 public class ShoppingListController {
-    
+    // 買い物リスト表示--------------------------------------------------------------------
+    @GetMapping("")
+    public ModelAndView shop(ModelAndView mav) {
+        mav.setViewName("shopping/list");
+        return mav;
+    }
+
+    // 買い物リストに手動追加、削除---------------------------------------------------------------
+    @PostMapping("")
+    public ModelAndView add() {
+        return new ModelAndView("redirect:/home");
+    }
+
+    // チェックボックス（JS）-------------------------------------------------------------------
+    @PostMapping("/{id}")
+    public ModelAndView update(ModelAndView mav) {
+        return mav;
+    }
 }

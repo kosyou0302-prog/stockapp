@@ -6,6 +6,12 @@
  */
 package com.example.stockapp.controllers;
 
+import org.springframework.stereotype.Controller;
+
+import lombok.RequiredArgsConstructor;
+
+@Controller
+@RequiredArgsConstructor // finalがついたフィールドを引数に持つコンストラクタをLombokで自動生成
 public class LoginController {
     // 後日作成予定　ログイン機能
 }

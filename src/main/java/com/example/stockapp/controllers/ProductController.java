@@ -9,6 +9,35 @@
  */
 package com.example.stockapp.controllers;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import lombok.RequiredArgsConstructor;
+
+@Controller
+@RequiredArgsConstructor // finalがついたフィールドを引数に持つコンストラクタをLombokで自動生成
 public class ProductController {
-    
+    // 新規登録---------------------------------------------------------------------------
+    @GetMapping("product/add")
+    public ModelAndView addItem(ModelAndView mav) {
+        mav.setViewName("product/add");
+        return mav;
+    }
+    @PostMapping("product/add")
+    public ModelAndView add() {
+        return new ModelAndView("redirect:/home");
+    }
+
+    // 商品編集,削除---------------------------------------------------------------------------
+    @GetMapping("product/edit/{id}")
+    public ModelAndView editItem(ModelAndView mav) {
+        mav.setViewName("product/edit");
+        return mav;
+    }
+    @PostMapping("product/edit/{id}")
+    public ModelAndView edit() {
+        return new ModelAndView("redirect:/home");
+    }
 }
