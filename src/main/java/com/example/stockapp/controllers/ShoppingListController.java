@@ -10,8 +10,10 @@ package com.example.stockapp.controllers;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import lombok.RequiredArgsConstructor;
@@ -34,8 +36,9 @@ public class ShoppingListController {
     }
 
     // チェックボックス（JS）-------------------------------------------------------------------
+    @ResponseBody
     @PostMapping("/{id}")
-    public ModelAndView update(ModelAndView mav) {
-        return mav;
+    public Integer update(@PathVariable("id") Long id) {
+        return 1; //仮
     }
 }
