@@ -8,10 +8,13 @@
 - **グループ（家族）管理**: 家族やチーム単位でデータを共有。
 
 ## 🛠️ 使用技術（Tech Stack）
-- **Backend**: Java, Spring Boot, Spring Data JPA
-- **Database**: MySQL / H2 Database（環境に応じて）
-- **Template Engine / Frontend**: Thymeleaf (予定)
-- **Build Tool**: Maven / Gradle
+- **Language**: Java 25
+- **Framework**: Spring Boot (4.1.2)
+- **Backend / Web**: Spring Web MVC, Spring Boot Validation
+- **Database / ORM**: Spring Data JPA, MySQL / H2 Database
+- **Template Engine**: Thymeleaf
+- **Build Tool**: Maven
+- **Utilities**: Lombok, Spring Boot DevTools
 - **Version Control**: Git / GitHub
 
 ## 📂 データベース設計（テーブル概要）
@@ -34,82 +37,14 @@
 - [x] **基盤設計・データベース設計**
   - エンティティ設計（Product, Family, Category, Unit, Icon 等）
   - リレーションシップおよび論理削除（`isDeleted`）の定義
-- [x] **リポジトリ層（データアクセス）の構築**
+- [x] **【バックエンド】リポジトリ層の構築**
   - `ProductRepository` の基本構築（論理削除除外の全件取得など）
-- [ ] **アラート・通知機能の実装**
-  - 在庫切れ・残り僅か・期限切れ・期限間近を判定するカスタムクエリの実装
-- [ ] **サービス層・コントローラー層の実装**
-  - ビジネスロジックの構築およびREST API / 画面（Thymeleaf）連携
+- [ ] **【バックエンド】ビジネスロジック・コントローラーの構築（進行中）**
+  - コントローラーの骨組み作成（フロントエンド側とのデータ受け渡し口の定義）
+  - 在庫切れ・残り僅か・期限切れ・期限間近を判定するカスタムクエリのアラート機能実装
+- [ ] **【フロントエンド】HTML/UIの実装（並行進行中）**
+  - Thymeleafを用いた画面レイアウトおよびデザインの構築
+- [ ] **結合・機能調整**
+  - バックエンドとフロントエンドを連携させた画面遷移・データの動作確認
 - [ ] **テスト・品質担保**
   - リポジトリ・サービスの単体テスト（JUnit / Mockito）
-
-  erDiagram
-    families {
-        bigint id PK
-        string groupName "グループ名"
-    }
-
-    users {
-        bigint id PK
-        bigint family_id FK "グループID"
-        string name "名前"
-        string email "メールアドレス"
-        string password "パスワード"
-    }
-
-    categories {
-        bigint id PK
-        string category "分類名"
-    }
-
-    units {
-        bigint id PK
-        string unit "単位名"
-    }
-
-    icons {
-        bigint id PK
-        string icon "アイコン名"
-    }
-
-    products {
-        bigint id PK
-        bigint family_id FK "グループID"
-        bigint category_id FK "分類ID"
-        bigint unit_id FK "単位名ID"
-        bigint icon_id FK "アイコンID"
-        string name "商品名"
-        int stock "在庫数"
-        date expiry_date "使用期限"
-        int threshold "購入目安"
-        boolean is_notify "通知判定"
-        int alert_days "期限選択"
-        boolean is_deleted "論理削除"
-    }
-
-    purchase_histories {
-        bigint id PK
-        bigint family_id FK "グループID"
-        bigint product_id FK "商品ID"
-        string name "商品名"
-        int quantity "購入数"
-        date record_date "記入日"
-    }
-
-    shopping_lists {
-        bigint id PK
-        bigint family_id FK "グループID"
-        bigint item_id FK "商品ID"
-        int qty "買う予定個数"
-    }
-
-    %% リレーションの定義
-    families ||--o{ users : "contains"
-    families ||--o{ products : "manages"
-    families ||--o{ purchase_histories : "has"
-    families ||--o{ shopping_lists : "has"
-    categories ||--o{ products : "categorizes"
-    units ||--o{ products : "uses"
-    icons ||--o{ products : "uses"
-    products ||--o{ purchase_histories : "recorded_in"
-    products ||--o{ shopping_lists : "listed_in"
