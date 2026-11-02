@@ -1,4 +1,3 @@
-
 <!--
   【役割】「在庫が少ない」「消費期限が切れている」など、要注意の商品だけを絞り込んで表示する画面です。
 
@@ -20,7 +19,7 @@
   <!-- チームオリジナルの共通CSS（Thymeleafの @{} を使うと自動で正しいパスになります） -->
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
-<body>
+  th:if="${selectedAlertType == 'stock'}"<body>
 
   <!--
     ① ヘッダー
@@ -54,7 +53,7 @@
         <!-- 在庫一覧タブ -->
         <li class="nav-item">
           <a class="nav-link"
-            th:href="@{/inventory}">
+            th:href="@{/inventory/list}">
             在庫一覧
           </a>
         </li>
@@ -62,7 +61,7 @@
         <!-- 期限・在庫切れタブ -->
         <li class="nav-item">
           <a class="nav-link active"
-            th:href="@{/alerts}">
+            th:href="@{/inventory/alerts}">
             期限・在庫切れ
           </a>
         </li>
@@ -92,21 +91,21 @@
       <div class="d-flex gap-2">
 
         <!-- すべてのアラート対象商品を表示 -->
-        <a th:href="@{/alerts}"
+        <a th:href="@{/inventory/alerts}"
           class="btn btn-outline-primary btn-sm flex-fill"
           th:classappend="${selectedAlertType == null or selectedAlertType == ''} ? ' active' : ''">
           すべて
         </a>
 
         <!-- 在庫切れ・残りわずかの商品を表示 -->
-        <a th:href="@{/alerts(type='stock')}"
+        <a th:href="@{/inventory/alerts(type='stock')}"
           class="btn btn-outline-primary btn-sm flex-fill"
           th:classappend="${selectedAlertType == 'stock'} ? ' active' : ''">
           在庫切れ・残りわずか
         </a>
 
         <!-- 期限切れ・期限まぢかの商品を表示 -->
-        <a th:href="@{/alerts(type='expiry')}"
+        <a th:href="@{/inventory/alerts(type='expiry')}"
           class="btn btn-outline-primary btn-sm flex-fill"
           th:classappend="${selectedAlertType == 'expiry'} ? ' active' : ''">
           期限切れ・期限まぢか
@@ -133,7 +132,7 @@
 
         <!-- 商品リストを1件ずつ繰り返し表示 -->
         <a th:each="product : ${products}"
-          th:href="@{/products/{id}/edit(id=${product.id})}"
+          th:href="@{/product/edit/{id}(id=${product.id})}"
           class="list-group-item list-group-item-action d-flex align-items-center justify-content-between gap-2 py-3">
 
           <!-- 商品アイコン・商品名・カテゴリー -->
@@ -141,7 +140,7 @@
 
             <!-- 商品アイコン -->
             <span class="fs-2"
-                  th:text="${product.icon.name}">
+                  th:text="${product.icon.icon}">
               🥛
             </span>
 
@@ -156,7 +155,7 @@
 
               <!-- カテゴリー -->
               <div class="text-secondary small"
-                  th:text="${product.category.name}">
+                  th:text="${product.category.category}">
                 食品
               </div>
 
@@ -197,7 +196,7 @@
             <!-- 残りわずかの場合：紫色 -->
             <span th:if="${product.stock != null and product.threshold != null and product.stock > 0 and product.stock <= product.threshold}"
                   class="bg-light text-purple">
-              残りわずか（残り<span th:text="${product.stock}">1</span><span th:text="${product.unit.name}">袋</span>）
+              残りわずか（残り<span th:text="${product.stock}">1</span><span th:text="${product.unit.unit}">袋</span>）
             </span>
 
           </div>
@@ -216,7 +215,7 @@
             </span>
 
             <!-- 期限まぢかの場合：青色 -->
-            <span th:if="${product.expiryDate != null and product.alertDays != null and !product.expiryDate.isBefore(T(java.time.LocalDate).now()) and product.expiryDate.isBefore(T(java.time.LocalDate).now().plusDays(product.alertDays))}"
+            <span th:if="${product.expiryDate != null and product.alertDays != null and !product.expiryDate.isBefore(T(java.time.LocalDate).now()) and !product.expiryDate.isAfter(T(java.time.LocalDate).now().plusDays(product.alertDays))}"
                   class="bg-primary-subtle text-primary">
               期限まぢか（残り<span th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDate).now(), product.expiryDate)}">3</span>日）
             </span>
