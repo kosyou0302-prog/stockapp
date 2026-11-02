@@ -18,5 +18,4 @@ import com.example.stockapp.entities.Product;
 public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByIsDeletedFalse(); // 論理削除していない＝falseのものを全権取得 在庫一覧で削除以外を表示するため
 
-    List<Product> findByStock( Integer stock);
 }

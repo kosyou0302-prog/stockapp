@@ -9,6 +9,24 @@
  */
 package com.example.stockapp.services;
 
+import java.time.LocalDate;
+
+import org.springframework.stereotype.Service;
+
+import com.example.stockapp.entities.Product;
+import com.example.stockapp.repositories.ProductRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
 public class ProductService {
-    
+
+    private final ProductRepository productRepository;
+
+    // 期限間近を判定
+    public void checkExpiringSoonProducts(Product product) {
+        LocalDate startDate = product.getExpiryDate();
+        LocalDate endDate = startDate.plusDays(product.getAlertDays());
+    }
 }
