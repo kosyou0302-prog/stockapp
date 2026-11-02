@@ -6,6 +6,14 @@
   TODO: 手動追加用の入力フォームを画面上部に配置する
   TODO: （経験者用）チェックボックス押下時にJavaScriptのFetch APIを呼ぶ設定を追加する
   TODO: 画面下部に「一括購入する」ボタンを配置する
+
+  【今回の実装状況】
+  ・買い物リストの繰り返し表示：HTML作成済み
+  ・手動追加フォーム：HTML作成済み
+  ・チェックボックス：HTML作成済み（非同期通信はJS担当）
+  ・数量変更ボタン：HTML作成済み（Controller側の処理は今後実装）
+  ・チェックした商品の削除：HTML作成済み（Controller側の処理は今後実装）
+  ・一括購入ボタン：HTML作成済み（Controller側の処理は今後実装）
 -->
 <!DOCTYPE html>
 <!-- Thymeleafを使う宣言と、言語を日本語(ja)に設定 -->
@@ -23,20 +31,494 @@
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-  <!-- 共通ナビゲーションメニューの読み込み（fragments/menu.html をここに差し込む） -->
-  <div th:replace="~{fragments/menu :: header}"></div>
+  <!--
+    ① ヘッダー
+    bg-primary：背景を青色にする
+    text-white：文字を白色にする
+    text-center：中央揃えにする
+    py-3：上下に余白を設定する
+  -->
+  <header class="bg-primary text-white text-center py-3">
+    <h1 class="h4 fw-bold mb-0">買い物リスト</h1>
+  </header>
+
 
   <!-- メインコンテンツ（ここに各画面のTODOを書いていきます） -->
-  <div class="container mt-4 mb-5">
+  <main class="container mt-4 mb-5 pb-5">
 
-    <h2>画面タイトル（例：在庫一覧）</h2>
-    <!-- TODO: ここに各画面のテーブルやフォームを作っていく -->
-      
-  </div>
+<!--
+      ② 買い物リストへの手動追加
+
+      登録済みの商品を選択し、購入予定数を指定して追加する。
+
+      form：入力したデータをControllerに送信する
+      th:action：送信先のURLを指定する
+      method="post"：データを登録するためPOSTで送信する
+
+      【Controller担当者へ】
+      POST /shopping
+
+      【必要なModel】
+      products：登録済みの商品一覧
+    -->
+
+    <section class="mb-4">
+
+      <h2 class="h5 fw-bold mb-3">買い物リストに追加</h2>
+
+      <form th:action="@{/shopping}"
+            method="post"
+            class="card">
+
+        <div class="card-body">
+
+                    <!--
+            ②-1 カテゴリー絞り込み
+
+            商品選択欄の前にカテゴリーを選択する。
+
+            選択できるカテゴリー：
+            ・すべて
+            ・食品
+            ・日用品
+            ・その他
+
+            【JS担当者へ】
+            categoryFilterの選択内容に応じて、
+            商品選択欄に表示する商品を絞り込む。
+          -->
+          <div class="mb-3">
+
+            <label for="categoryFilter"
+                  class="form-label fw-bold">
+              カテゴリー
+            </label>
+
+            <!--
+              select：カテゴリー選択用のプルダウン
+              この項目は絞り込み用なので、Controllerには送信しない
+            -->
+            <select id="categoryFilter"
+                    class="form-select form-select-sm">
+
+              <option value="すべて">すべて</option>
+              <option value="食品">食品</option>
+              <option value="日用品">日用品</option>
+              <option value="その他">その他</option>
+
+            </select>
+
+          </div>
+
+          <!--
+            ②-2 商品選択・購入予定数・追加ボタン
+
+            商品選択欄、数量入力欄、追加ボタンを
+            Bootstrapのrowで横一列に配置する。
+          -->
+
+          <div class="row g-2 align-items-end">
+
+            <!--
+              商品選択
+
+              select：プルダウン形式の入力欄
+
+              th:each：商品一覧を1件ずつ繰り返し表示
+              th:value：送信する商品ID
+              th:text：画面に表示する商品名
+              data-category：カテゴリー絞り込み用の情報
+
+              【JS担当者へ】
+              data-categoryの値を使って商品を絞り込む。
+            -->
+
+            <div class="col">
+
+              <label for="productId"
+                    class="form-label fw-bold mb-1">
+                商品
+              </label>
+
+              <select id="productId"
+                      name="productId"
+                      class="form-select form-select-sm"
+                      required>
+
+                <option value="">商品を選択してください</option>
+
+                <option th:each="product : ${products}"
+                        th:value="${product.id}"
+                        th:text="${product.name}"
+                        th:attr="data-category=${product.category}">
+                  牛乳
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <!-- 購入予定数 -->
+
+            <div class="col-auto">
+
+              <label for="quantity"
+                    class="form-label fw-bold mb-1">
+                数量
+              </label>
+
+              <!--
+                type="number"：数値入力欄
+                min="1"：1以上の数値のみ入力できるようにする
+                required：未入力での送信を防ぐ
+
+                ※サーバー側でも入力チェックが必要
+              -->
+
+              <input type="number"
+                    id="quantity"
+                    name="quantity"
+                    class="form-control form-control-sm"
+                    value="1"
+                    min="1"
+                    style="width: 65px;"
+                    required>
+
+            </div>
+
+
+            <!-- 追加ボタン -->
+
+            <div class="col-auto">
+
+              <label class="form-label mb-1 d-block">
+                &nbsp;
+              </label>
+
+              <button type="submit"
+                      class="btn btn-primary btn-sm text-nowrap">
+                ＋追加
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </form>
+
+    </section>
+
+
+
+    <!--
+      ③ 買い物リスト一覧
+
+      ShoppingListControllerから渡された
+      shoppingItems を th:each でループ表示する。
+
+      list-group：商品を一覧形式で並べる
+      list-group-item：一覧の各商品
+      d-flex：横並びにする
+      justify-content-between：左右に分けて配置する
+      align-items-center：上下中央揃えにする
+
+      【必要なModel】
+      shoppingItems：買い物リストに登録された商品一覧
+    -->
+    <section class="mb-4">
+
+      <h2 class="h5 fw-bold mb-3">購入予定の商品</h2>
+
+
+      <!--
+        買い物リストが空の場合
+
+        #lists.isEmpty：リストが空かどうかを判定する
+      -->
+      <p th:if="${shoppingItems == null or #lists.isEmpty(shoppingItems)}"
+        class="text-center text-secondary py-4">
+        買い物リストに商品がありません。
+      </p>
+
+
+      <!-- 買い物リストが存在する場合 -->
+      <div class="list-group"
+          th:if="${shoppingItems != null and !#lists.isEmpty(shoppingItems)}">
+
+
+        <!--
+          商品リストを1件ずつ繰り返し表示
+
+          th:each：
+          shoppingItemsの中からitemを1件ずつ取り出す
+        -->
+        <div th:each="item : ${shoppingItems}"
+            class="list-group-item py-3">
+
+
+          <div class="d-flex align-items-center justify-content-between gap-2">
+
+
+            <!-- 左側：チェックボックス・商品情報 -->
+            <div class="d-flex align-items-center gap-3">
+
+
+              <!--
+                ④ 購入チェックボックス
+
+                form-check-input：Bootstrapのチェックボックス
+
+                th:checked：
+                DBに保存されているisCheckedの状態を反映する
+
+                data-id：
+                JavaScriptから商品IDを取得するための属性
+
+                【JS担当者へ】
+                チェック状態が変更されたとき、
+                Fetch APIを使ってPOST /shopping/{id}へ送信する。
+
+                ※現在のControllerは仮実装のため、
+                  実際のDB更新処理は今後追加する。
+              -->
+              <input type="checkbox"
+                    class="form-check-input shopping-check"
+                    th:attr="data-id=${item.id}"
+                    th:checked="${item.isChecked}"
+                    aria-label="購入する商品を選択">
+
+
+              <!-- 商品アイコン -->
+              <span class="fs-2"
+                    th:text="${item.product.icon.icon}">
+                🥛
+              </span>
+
+
+              <!-- 商品名 -->
+              <div>
+
+                <div class="fw-bold"
+                    th:text="${item.product.name}">
+                  牛乳
+                </div>
+
+                <div class="text-secondary small">
+                  購入予定
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!--
+              ⑤ 購入予定数量の変更
+
+              「－」ボタンで1減らす
+              「＋」ボタンで1増やす
+
+              【Controller担当者へ】
+              POST /shopping/quantity/{id}
+
+              change=-1：数量を1減らす
+              change=1：数量を1増やす
+
+              ※このURLは今後追加する想定。
+            -->
+            <div class="d-flex align-items-center gap-2">
+
+
+              <!-- 数量を減らす -->
+              <form th:action="@{/shopping/quantity/{id}(id=${item.id})}"
+                    method="post">
+
+                <input type="hidden"
+                      name="change"
+                      value="-1">
+
+                <button type="submit"
+                        class="btn btn-outline-secondary btn-sm"
+                        th:disabled="${item.threshold == null or item.threshold <= 1}"
+                        aria-label="数量を減らす">
+                  －
+                </button>
+
+              </form>
+
+
+              <!--
+                購入予定数を表示する
+
+                現在のShoppingListItem.javaでは、
+                購入予定数の変数名がthresholdになっている。
+              -->
+              <span class="fw-bold"
+                    th:text="${item.threshold}">
+                1
+              </span>
+
+
+              <!-- 数量を増やす -->
+              <form th:action="@{/shopping/quantity/{id}(id=${item.id})}"
+                    method="post">
+
+                <input type="hidden"
+                      name="change"
+                      value="1">
+
+                <button type="submit"
+                        class="btn btn-outline-secondary btn-sm"
+                        aria-label="数量を増やす">
+                  ＋
+                </button>
+
+              </form>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!--
+      ⑥ 買い物リストの操作ボタン
+
+      チェックした商品を削除する、
+      または一括購入する。
+
+      d-grid：ボタンを横幅いっぱいに表示する
+      gap-2：ボタン同士の間隔を設定する
+
+      ※チェック状態はDBのisCheckedを使用する想定。
+      ※チェックボックスの非同期更新が必要。
+    -->
+    <section class="mb-4"
+            th:if="${shoppingItems != null and !#lists.isEmpty(shoppingItems)}">
+
+      <div class="d-grid gap-2">
+
+
+        <!--
+          ⑥ 買い物リストの操作ボタン
+
+          チェックした商品を削除する、
+          または一括購入する。
+
+          d-grid：ボタンを横幅いっぱいに表示する
+          gap-2：ボタン同士の間隔を設定する
+
+          ※チェック状態はDBのisCheckedを使用する想定。
+          ※チェックボックスの非同期更新が必要。
+        -->
+
+        <!-- ボタンを横一列に配置 -->
+        <div class="row g-2">
+
+          <!-- 削除ボタン：横幅50% -->
+          <div class="col-6">
+
+            <!--
+              チェックした商品を削除する
+
+              【Controller担当者へ】
+              POST /shopping/delete
+
+              ※現在は未実装。
+            -->
+
+            <form th:action="@{/shopping/delete}"
+                  method="post">
+
+              <button type="submit"
+                      class="btn btn-outline-danger w-100">
+                チェックした商品を削除
+              </button>
+
+            </form>
+
+          </div>
+
+
+          <!-- 購入完了ボタン：横幅50% -->
+          <div class="col-6">
+
+            <!--
+              ⑦ 一括購入ボタン
+
+              チェックした商品を購入完了にする。
+
+              【購入完了時の処理】
+              1. チェック済みの商品を取得
+              2. 購入数量を商品の在庫数に加算
+              3. 購入履歴に記録
+              4. 買い物リストから削除
+
+              【Controller担当者へ】
+              POST /shopping/complete
+
+              ※現在は未実装。
+            -->
+
+            <form th:action="@{/shopping/complete}"
+                  method="post">
+
+              <button type="submit"
+                      class="btn btn-primary w-100">
+                ✓ チェックした商品を購入完了
+              </button>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+  </main>
+
+
+
+  <!--
+    共通ナビゲーションメニューの読み込み
+    （fragments/menu.html をここに差し込む）
+
+    ※元のコードでは :: header だったが、
+      現在のmenu.htmlでは :: menu が定義されているため修正。
+  -->
+  <div th:replace="~{fragments/menu :: menu}"></div>
+
+
 
   <!-- Bootstrap 5 JS (CDN経由：ドロップダウンやモーダルなどを動かすために必要) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- 非同期処理（JS）が必要な画面（買い物リストなど）だけ、以下のコメントアウトを外してJSを読み込む -->
-  <!-- <script th:src="@{/js/app.js}"></script> -->
+
+
+  <!--
+    非同期処理（JS）が必要な画面（買い物リストなど）だけ、
+    以下のコメントアウトを外してJSを読み込む。
+
+    今回はチェックボックスの非同期更新が必要なため、
+    コメントアウトを外している。
+
+    【JS担当者へ】
+    static/js/app.js にFetch APIによる
+    チェック状態更新処理を実装する。
+  -->
+  <script th:src="@{/js/app.js}"></script>
+
 </body>
 </html>
