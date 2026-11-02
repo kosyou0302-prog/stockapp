@@ -77,4 +77,7 @@ public class Product {
     @JoinColumn(name="icon_id")
     private Icon icon;
 
+    // 論理削除
+    @Column(nullable = false)
+    private Boolean isDeleted = false;
 }

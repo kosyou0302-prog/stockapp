@@ -16,7 +16,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "unit")
+@Table(name = "units")
 @Getter
 @Setter
 

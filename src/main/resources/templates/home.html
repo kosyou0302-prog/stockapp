@@ -21,13 +21,23 @@
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
+
+  <!--
+    ヘッダー
+    他の画面と同じデザインに統一する
+
+    bg-primary：背景を青色にする
+    text-white：文字を白色にする
+    text-center：中央揃えにする
+    py-3：上下に余白を設定する
+  -->
+  <header class="bg-primary text-white text-center py-3">
+    <h1 class="h4 fw-bold mb-0">ホーム</h1>
+  </header>
+
+
   <!-- メインコンテンツ（ここに各画面のTODOを書いていきます） -->
-  <main class="container mt-4 mb-5">
-
-    <header class="bg-primary text-white text-center py-3">
-  <h1 class="h4 fw-bold mb-0">ホーム</h1>
-
-</header>
+  <main class="container mt-4 mb-5 pb-5">
 
     <!-- TODO: ここに各画面のテーブルやフォームを作っていく -->
 
@@ -41,33 +51,37 @@
       alert-warning：黄色のお知らせ
       d-flex：横並びにする
       justify-content-between：左右に分けて配置する
+
     -->
-    <section class="mb-4  mt-4">
+    <section class="mb-4">
 
       <!-- 在庫切れのお知らせ（1件以上ある場合に表示） -->
-      <a th:if="${homeSummary.outOfStockCount > 0}"
-        th:href="@{/alerts(type='out')}"
+      <a th:if="${homeSummary != null and homeSummary.outOfStockCount > 0}"
+        th:href="@{/inventory/alerts(type='out')}"
         class="alert alert-danger d-flex justify-content-between align-items-center text-decoration-none">
 
         <span>⚠ 在庫切れの商品があります。</span>
 
         <span class="fw-bold"
-              th:text="'(' + ${homeSummary.outOfStockCount} + '件)'">
+              th:text="${'(' + homeSummary.outOfStockCount + '件)'}">
           (0件)
         </span>
+
       </a>
 
+
       <!-- 期限切れのお知らせ（1件以上ある場合に表示） -->
-      <a th:if="${homeSummary.expiredCount > 0}"
-        th:href="@{/alerts(type='expired')}"
+      <a th:if="${homeSummary != null and homeSummary.expiredCount > 0}"
+        th:href="@{/inventory/alerts(type='expired')}"
         class="alert alert-warning d-flex justify-content-between align-items-center text-decoration-none">
 
         <span>⚠ 期限切れの商品があります。</span>
 
         <span class="fw-bold"
-              th:text="'(' + ${homeSummary.expiredCount} + '件)'">
+              th:text="${'(' + homeSummary.expiredCount + '件)'}">
           (0件)
         </span>
+
       </a>
 
     </section>
@@ -80,6 +94,9 @@
       row：カードを並べる行
       g-3：カード同士の間隔
       col-6：横幅を半分にする（2列表示）
+
+      【修正点】
+      typeパラメータで個別のアラートを指定する。
     -->
     <section class="mb-4">
 
@@ -89,7 +106,8 @@
 
         <!-- 在庫切れカード -->
         <div class="col-6">
-          <a th:href="@{/alerts(type='out')}"
+
+          <a th:href="@{/inventory/alerts(type='out')}"
             class="card bg-danger-subtle text-danger text-center text-decoration-none h-100">
 
             <div class="card-body">
@@ -99,17 +117,19 @@
               <h4 class="h6 fw-bold">在庫切れ</h4>
 
               <p class="h4 fw-bold mb-0">
-                <span th:text="${homeSummary.outOfStockCount}">2</span>件
+                <span th:text="${homeSummary != null ? homeSummary.outOfStockCount : 0}">2</span>件
               </p>
 
             </div>
           </a>
+
         </div>
 
 
         <!-- 期限切れカード -->
         <div class="col-6">
-          <a th:href="@{/alerts(type='expired')}"
+
+          <a th:href="@{/inventory/alerts(type='expired')}"
             class="card bg-warning-subtle text-warning-emphasis text-center text-decoration-none h-100">
 
             <div class="card-body">
@@ -119,17 +139,19 @@
               <h4 class="h6 fw-bold">期限切れ</h4>
 
               <p class="h4 fw-bold mb-0">
-                <span th:text="${homeSummary.expiredCount}">3</span>件
+                <span th:text="${homeSummary != null ? homeSummary.expiredCount : 0}">3</span>件
               </p>
 
             </div>
           </a>
+
         </div>
 
 
         <!-- 残りわずかカード -->
         <div class="col-6">
-          <a th:href="@{/alerts(type='low')}"
+
+          <a th:href="@{/inventory/alerts(type='low')}"
             class="card bg-primary-subtle text-primary text-center text-decoration-none h-100">
 
             <div class="card-body">
@@ -139,17 +161,19 @@
               <h4 class="h6 fw-bold">残りわずか</h4>
 
               <p class="h4 fw-bold mb-0">
-                <span th:text="${homeSummary.lowStockCount}">2</span>件
+                <span th:text="${homeSummary != null ? homeSummary.lowStockCount : 0}">2</span>件
               </p>
 
             </div>
           </a>
+
         </div>
 
 
         <!-- 期限間近カード -->
         <div class="col-6">
-          <a th:href="@{/alerts(type='soon')}"
+
+          <a th:href="@{/inventory/alerts(type='soon')}"
             class="card bg-secondary-subtle text-secondary text-center text-decoration-none h-100">
 
             <div class="card-body">
@@ -159,14 +183,16 @@
               <h4 class="h6 fw-bold">期限間近</h4>
 
               <p class="h4 fw-bold mb-0">
-                <span th:text="${homeSummary.expiringSoonCount}">2</span>件
+                <span th:text="${homeSummary != null ? homeSummary.expiringSoonCount : 0}">2</span>件
               </p>
 
             </div>
           </a>
+
         </div>
 
       </div>
+
     </section>
 
 
@@ -174,6 +200,14 @@
       ③ カテゴリ別の在庫
       食品・日用品・その他の3種類に分けて商品数を表示する
       col-4：横幅を3分の1にする（3列表示）
+
+      【修正点】
+      categoryパラメータではなくcategoryIdを使用する。
+
+      ※カテゴリーIDは仮設定。
+        DBの登録内容に合わせて修正が必要。
+      ※現在のカードには商品数の表示欄はないため、
+        必要に応じて後から追加する。
     -->
     <section class="mb-4">
 
@@ -183,7 +217,8 @@
 
         <!-- 食品 -->
         <div class="col-4">
-          <a th:href="@{/inventory(category='食品')}"
+
+          <a th:href="@{/inventory/list(categoryId=1)}"
             class="card text-center text-decoration-none h-100">
 
             <div class="card-body p-2">
@@ -194,12 +229,14 @@
 
             </div>
           </a>
+
         </div>
 
 
         <!-- 日用品 -->
         <div class="col-4">
-          <a th:href="@{/inventory(category='日用品')}"
+
+          <a th:href="@{/inventory/list(categoryId=2)}"
             class="card text-center text-decoration-none h-100">
 
             <div class="card-body p-2">
@@ -210,12 +247,14 @@
 
             </div>
           </a>
+
         </div>
 
 
         <!-- その他 -->
         <div class="col-4">
-          <a th:href="@{/inventory(category='その他')}"
+
+          <a th:href="@{/inventory/list(categoryId=3)}"
             class="card text-center text-decoration-none h-100">
 
             <div class="card-body p-2">
@@ -226,12 +265,15 @@
 
             </div>
           </a>
+
         </div>
 
       </div>
+
     </section>
 
   </main>
+
 
   <!-- 共通ナビゲーションメニューの読み込み（fragments/menu.html をここに差し込む） -->
   <div th:replace="~{fragments/menu :: menu}"></div>
@@ -239,7 +281,9 @@
 
   <!-- Bootstrap 5 JS (CDN経由：ドロップダウンやモーダルなどを動かすために必要) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
   <!-- 非同期処理（JS）が必要な画面（買い物リストなど）だけ、以下のコメントアウトを外してJSを読み込む -->
   <!-- <script th:src="@{/js/app.js}"></script> -->
+
 </body>
 </html>
