@@ -1,6 +1,6 @@
 <!--
   【役割】全画面のボトムに表示されるナビゲーションメニュー（共通部品）です。
-  各画面から th:replace="fragments/menu :: header" のように呼び出されて使われます。
+  各画面から th:replace="fragments/menu :: menu" のように呼び出されて使われます。
 
   TODO: BootstrapのNavbarコンポーネントを使ってメニュー枠を作る
   TODO: 「ホーム」「在庫一覧」「買い物リスト」など各画面へのリンク（th:href）を設定する
@@ -50,7 +50,7 @@
 
         <!-- ホーム画面へのリンク -->
         <div class="col">
-          <a th:href="@{/home}"
+          <a th:href="@{/}"
             class="nav-link d-flex flex-column align-items-center py-2">
 
             <!-- ホームのアイコン -->
@@ -63,7 +63,7 @@
 
         <!-- 在庫一覧画面へのリンク -->
         <div class="col">
-          <a th:href="@{/inventory}"
+          <a th:href="@{/inventory/list}"
             class="nav-link d-flex flex-column align-items-center py-2">
 
             <!-- 在庫のアイコン -->
@@ -76,7 +76,7 @@
 
         <!-- 購入履歴画面へのリンク -->
         <div class="col">
-          <a th:href="@{/purchase-history}"
+          <a th:href="@{/purchase/history}"
             class="nav-link d-flex flex-column align-items-center py-2">
 
             <!-- 購入履歴のアイコン -->
@@ -89,28 +89,20 @@
 
         <!-- 買い物リスト画面へのリンク -->
         <div class="col">
-          <a th:href="@{/shopping-list}"
+          <a th:href="@{/shopping}"
             class="nav-link d-flex flex-column align-items-center py-2">
 
             <!-- 買い物のアイコン -->
             <span>🛒</span>
 
             <!-- メニュー名 -->
-            <small>買い物リスト2
-            </small>
+            <small>買い物リスト</small>
           </a>
         </div>
 
       </div>
     </div>
   </nav>
-
-  <div class="container mt-4 mb-5">
-
-
-    <!-- TODO: ここに各画面のテーブルやフォームを作っていく -->
-
-  </div>
 
   <!-- Bootstrap 5 JS (CDN経由：ドロップダウンやモーダルなどを動かすために必要) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
