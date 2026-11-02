@@ -28,5 +28,6 @@ public class ProductService {
     public void checkExpiringSoonProducts(Product product) {
         LocalDate startDate = product.getExpiryDate();
         LocalDate endDate = startDate.plusDays(product.getAlertDays());
+        
     }
 }
