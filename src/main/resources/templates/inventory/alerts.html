@@ -100,7 +100,7 @@
         <!-- 在庫切れ・残りわずかの商品を表示 -->
         <a th:href="@{/inventory/alerts(type='stock')}"
           class="btn btn-outline-primary btn-sm flex-fill"
-          th:classappend="${selectedAlertType == 'stock'} ? ' active' : ''">
+          th:classappend="${selectedAlertType == 'stock' or selectedAlertType == 'out' or selectedAlertType == 'low'} ? ' active' : ''">
           在庫切れ・残りわずか
         </a>
 
