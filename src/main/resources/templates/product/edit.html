@@ -27,8 +27,13 @@
     <div class="card shadow mx-auto" style="max-width: 400px;">
 
         <!-- ヘッダー -->
-      <div class="card-header bg-primary text-white text-center">
-          <h4 class="mb-0">商品編集</h4>
+      <div class="card-header bg-primary text-white position-relative">
+        <a th:href="@{/inventory/list}" class="btn  btn-primary fw-bold
+        position-absolute start-0 ms-2">
+        ← 戻る
+        </a>
+
+        <h4 class="mb-0 text-center">商品編集</h4>
       </div>
 
       <div class="card-body">
@@ -46,29 +51,30 @@
                   </ul>
               </div>
 
-              <!-- 商品名 -->
-                <div class="mb-3">
-                  <label class="form-label fw-bold">
-                      商品名
-                  </label>
-                    <div class="row align-items-center">
-                      <div class="col-8">
-                          <input type="text" class="form-control" th:field="*{name}">
-                      </div>
-                      <div class="text-danger small"
-                          th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
-                      </div>
-                    </div>
+             <!-- 商品名 -->
+<div class="mb-3">
+    <label class="form-label fw-bold">商品名</label>
 
-              <!-- アイコン -->
-                <div class="col-4 text-center">
-               <!-- 選択中アイコン -->
-                <img id="preview" th:src="${item.iconPath != null ? item.iconPath : '/images/icons/1.png'}"
-                    style="width:50px;height:50px;" class="border rounded">
-                </div>
+    <div class="row align-items-center">
 
-                <div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
-               </div>
+      <div class="col-9">
+        <input type="text" class="form-control" th:field="*{name}">
+      </div>
+
+      <!-- アイコン表示 -->
+      <div class="col-3 text-center">
+        <img id="preview"
+             th:src="${item.iconPath != null ? item.iconPath : '/images/icons/1.png'}"
+             class="border rounded" style="width:50px;height:50px;">
+      </div>
+    </div>
+
+    <!-- エラー表示 -->
+    <div class="text-danger small"
+         th:if="${#fields.hasErrors('name')}"
+         th:errors="*{name}">
+    </div>
+
 
               <!-- アイコン選択 -->
                <div class="mb-3">
@@ -78,13 +84,13 @@
 
               <!-- アイコン一覧 -->
               <div class="row row-cols-4 g-2">
-              <div class="col" th:each="i : ${#numbers.sequence(1,20)}">
+                <div class="col" th:each="i : ${#numbers.sequence(1,20)}">
 
               <img th:src="@{'/images/icons/' + ${i} + '.png'}"
               th:data-path="@{'/images/icons/' + ${i} + '.png'}"
               class="img-thumbnail icon-select"
               style="cursor:pointer; width:48px; height:48px; object-fit:cover;">
-              </div>
+                </div>
               </div>
 
               <!-- 分類 -->
