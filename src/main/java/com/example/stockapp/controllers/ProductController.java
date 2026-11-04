@@ -11,6 +11,7 @@ package com.example.stockapp.controllers;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,6 +40,7 @@ public class ProductController {
         return mav;
     }
     @PostMapping("/add")
+    @Transactional
     public ModelAndView add() {
         return new ModelAndView("redirect:/home");
     }
@@ -53,6 +55,7 @@ public class ProductController {
         return mav;
     }
     @PostMapping("/edit/{id}")
+    @Transactional
     public ModelAndView edit(@ModelAttribute("item") @Validated Product product,BindingResult result) {
         productRepository.saveAndFlush(product);
         return new ModelAndView("redirect:/home");

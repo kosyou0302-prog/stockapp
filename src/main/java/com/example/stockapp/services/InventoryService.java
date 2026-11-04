@@ -8,6 +8,21 @@
  */
 package com.example.stockapp.services;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class InventoryService {
     
+    // 【処理内容】カテゴリ別一覧取得：すべて、または指定されたカテゴリIDに一致する商品を抽出する
+
+
+    // 【処理内容】アラート対象抽出：「在庫切れ・残りわずか」や「期限切れ・期限まぢか」の条件に合致する商品を抽出する
+
+
+    // 【処理内容】ホーム画面用集計：ホーム画面に表示する「在庫切れ件数」や「期限間近件数」をカウントして返す
 }

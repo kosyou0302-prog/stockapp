@@ -9,6 +9,7 @@
 package com.example.stockapp.controllers;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,21 +24,23 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/shopping")
 public class ShoppingListController {
     // 買い物リスト表示--------------------------------------------------------------------
-    @GetMapping("")
+    @GetMapping("/list")
     public ModelAndView shop(ModelAndView mav) {
         mav.setViewName("shopping/list");
         return mav;
     }
 
     // 買い物リストに手動追加、削除---------------------------------------------------------------
-    @PostMapping("")
+    @PostMapping("/list")
+    @Transactional
     public ModelAndView add() {
         return new ModelAndView("redirect:/home");
     }
 
     // チェックボックス（JS）-------------------------------------------------------------------
     @ResponseBody
-    @PostMapping("/{id}")
+    @PostMapping("/list/{id}")
+    @Transactional
     public Integer update(@PathVariable("id") Long id) {
         return 1; //仮
     }
