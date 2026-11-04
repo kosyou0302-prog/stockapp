@@ -1,27 +1,27 @@
-<!--
+ <!--
   【役割】５商品の登録情報を変更（編集登録）するためのフォーム画面です。
 
   TODO: formタグの送信先（th:action）とメソッド（POST）を正しく設定する
   TODO: ProductForm（DTO）と入力欄を紐づけるため、th:object と th:field を設定する
   TODO: バリデーションエラーが起きた場合にエラーメッセージ（th:errors）を表示する箇所を作る
 -->
-<!DOCTYPE html>
-<!-- Thymeleafを使う宣言と、言語を日本語(ja)に設定 -->
-<html xmlns:th="http://www.thymeleaf.org" lang="ja">
-<head>
+ <!DOCTYPE html>
+ <!-- Thymeleafを使う宣言と、言語を日本語(ja)に設定 -->
+ <html xmlns:th="http://www.thymeleaf.org" lang="ja">
+ <head>
   <!-- 文字化けを防ぐUTF-8設定 -->
   <meta charset="UTF-8">
   <!-- スマホやタブレットでも綺麗に表示するためのViewport設定 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- 画面のタブに表示されるタイトル（各画面で書き換えてOK） -->
   <title>５商品編集画面</title>
-  <!-- Bootstrap 5 CSS (CDN経由で読み込み：インストール不要) -->
+<!-- Bootstrap 5 CSS (CDN経由で読み込み：インストール不要) -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- チームオリジナルの共通CSS（Thymeleafの @{} を使うと自動で正しいパスになります） -->
   <link rel="stylesheet" th:href="@{/css/style.css}">
-</head>
+ </head>
 
-<body>
+ <body>
   <!-- メインコンテンツ -->
   <div class="container py-4">
     <div class="card shadow mx-auto" style="max-width: 400px;">
@@ -32,8 +32,8 @@
       </div>
 
       <div class="card-body">
-        <form th:action="@{/product/edit}" th:object="${item}"
-              method="post" enctype="multipart/form-data">
+       <form th:action="@{/product/edit}" th:object="${item}"
+            method="post" enctype="multipart/form-data">
 
               <!-- ID保持 -->
               <input type="hidden" th:field="*{id}">
@@ -51,27 +51,41 @@
                   <label class="form-label fw-bold">
                       商品名
                   </label>
-                  <div class="row align-items-center">
+                    <div class="row align-items-center">
                       <div class="col-8">
                           <input type="text" class="form-control" th:field="*{name}">
-
-                          <div class="text-danger small"
+                      </div>
+                      <div class="text-danger small"
                           th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
-                          </div>
                       </div>
+                    </div>
 
-                    <!-- アイコン -->
-                      <div class="col-4 text-center">
-                          <img id="preview"
-                              th:src="${item.icon_id != null?
-                                item.icon_id :'/images/no-image.png'}"
-                                width="60" height="60" class="border rounded">
-
-                          <input type="file" id="icon" name="icon" accept="image/*"
-                                class="form-control form-control-sm mt-2">
-                      </div>
-                  </div>
+              <!-- アイコン -->
+                <div class="col-4 text-center">
+               <!-- 選択中アイコン -->
+                <img id="preview" th:src="${item.iconPath != null ? item.iconPath : '/images/icons/1.png'}"
+                    style="width:50px;height:50px;" class="border rounded">
                 </div>
+
+                <div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
+               </div>
+
+              <!-- アイコン選択 -->
+               <div class="mb-3">
+                <label class="form-label fw-bold">アイコン選択</label>
+
+              <input type="hidden" id="iconPath" th:field="*{iconPath}">
+
+              <!-- アイコン一覧 -->
+              <div class="row row-cols-4 g-2">
+              <div class="col" th:each="i : ${#numbers.sequence(1,20)}">
+
+              <img th:src="@{'/images/icons/' + ${i} + '.png'}"
+              th:data-path="@{'/images/icons/' + ${i} + '.png'}"
+              class="img-thumbnail icon-select"
+              style="cursor:pointer; width:48px; height:48px; object-fit:cover;">
+              </div>
+              </div>
 
               <!-- 分類 -->
               <div class="mb-3">
@@ -143,6 +157,7 @@
               </div>
 
               <!-- 通知 -->
+
               <div class="mb-4">
                 <div class="d-flex justify-content-between align-items-center">
                   <label class="form-label fw-bold mb-0">通知</label>
@@ -167,7 +182,7 @@
         </form>
         </div>
   </div>
-</div>
+ </div>
 
   <!-- アイコンプレビュー -->
   <script>
@@ -185,5 +200,5 @@
   });
   </script>
 
-</body>
-</html>
+ </body>
+ </html>
