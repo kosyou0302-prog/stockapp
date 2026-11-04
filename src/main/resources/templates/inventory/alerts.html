@@ -139,10 +139,10 @@
           <div class="d-flex align-items-center gap-3">
 
             <!-- 商品アイコン -->
-            <span class="fs-2"
-                  th:text="${product.icon.icon}">
-              🥛
-            </span>
+            <img th:src="@{'/images/icons/' + ${product.icon.id} + '.png'}"
+                style="width:40px; height:40px; object-fit:cover;"
+                class="rounded"
+                alt="アイコン">
 
             <!-- 商品名・カテゴリー -->
             <div>
@@ -155,7 +155,7 @@
 
               <!-- カテゴリー -->
               <div class="text-secondary small"
-                  th:text="${product.category.category}">
+                  th:text="${product.category.name}">
                 食品
               </div>
 
@@ -199,7 +199,7 @@
                         and product.stock > 0
                         and product.stock <= product.threshold}"
                 class="bg-light text-purple">
-            残りわずか（残り<span th:text="${product.stock}">1</span><span th:text="${product.unit.unit}">袋</span>）
+            残りわずか（残り<span th:text="${product.stock}">1</span><span th:text="${product.unit.name}">袋</span>）
           </span>
 
         </div>

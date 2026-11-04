@@ -6,7 +6,7 @@
   TODO: バリデーションエラーが起きた場合にエラーメッセージ（th:errors）を表示する箇所を作る
 -->
 <!DOCTYPE html>
- <!-- Thymeleafを使う宣言と、言語を日本語(ja)に設定 -->
+<!-- Thymeleafを使う宣言と、言語を日本語(ja)に設定 -->
 <html xmlns:th="http://www.thymeleaf.org" lang="ja">
 <head>
   <!-- 文字化けを防ぐUTF-8設定 -->
@@ -29,23 +29,14 @@
         <!-- ヘッダー -->
       <div class="card-header bg-primary text-white position-relative">
         <a th:href="@{/inventory/list}"
-<<<<<<< Updated upstream
-        class="btn btn-primary fw-bold position-absolute start-0 ms-2">
-        ← 戻る
-        </a>
-        <h4 class="mb-0 text-center">商品編集</h4>
-      </div>      
-
-=======
           class="text-white fw-bold position-absolute start-0 top-50 translate-middle-y ms-3 text-decoration-none">
         ← 戻る
         </a>
           <h4 class="mb-0 text-center">商品編集</h4>
       </div>
->>>>>>> Stashed changes
 
       <div class="card-body">
-       <form th:action="@{/product/edit}" th:object="${item}"
+      <form th:action="@{/product/edit}" th:object="${item}"
             method="post" enctype="multipart/form-data">
 
               <!-- ID保持 -->
@@ -68,24 +59,24 @@
         <!-- 商品名入力 -->
         <div class="col-9">
             <input type="text"
-                   class="form-control"
-                   th:field="*{name}">
+                  class="form-control"
+                  th:field="*{name}">
         </div>
 
         <!-- アイコン表示 -->
         <div class="col-3 text-center">
             <img id="preview"
-                 th:src="${item.iconPath != null ? item.iconPath : '/images/icons/1.png'}"
-                 class="border rounded"
-                 style="width:50px;height:50px;">
+                th:src="${item.iconPath != null ? item.iconPath : '/images/icons/1.png'}"
+                class="border rounded"
+                style="width:50px;height:50px;">
         </div>
 
     </div>
 
     <!-- エラー表示 -->
     <div class="text-danger small"
-         th:if="${#fields.hasErrors('name')}"
-         th:errors="*{name}">
+        th:if="${#fields.hasErrors('name')}"
+        th:errors="*{name}">
     </div>
     </div>
               <!-- アイコン一覧 -->
@@ -144,7 +135,7 @@
                           <input type="number" class="form-control" th:field="*{threshold}">
                       </div>
                       <div class="col-6">
-                          <select class="form-select" th:field="*{thresholdUnit}">
+                          <select class="form-select" th:field="*{Unit}">
                               <option value="個">個</option>
                               <option value="本">本</option>
                               <option value="パック">パック</option>
@@ -194,7 +185,7 @@
         </form>
         </div>
   </div>
- </div>
+</div>
 
   <!-- アイコンプレビュー -->
   <script>
