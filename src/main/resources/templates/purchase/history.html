@@ -70,11 +70,10 @@
 
 
       <!-- 購入履歴が存在しない場合 -->
-      <p th:if="${#lists.isEmpty(purchaseHistories)}"
+      <p th:if="${#maps.isEmpty(historiesByDate)}"
         class="text-center text-secondary py-4">
         購入履歴はありません。
       </p>
-
     </div>
   </main>
 
