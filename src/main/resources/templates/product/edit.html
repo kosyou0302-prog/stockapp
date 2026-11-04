@@ -63,8 +63,8 @@
                     <!-- アイコン -->
                       <div class="col-4 text-center">
                           <img id="preview"
-                              th:src="${item.icon_id != null?
-                                item.icon_id :'/images/no-image.png'}"
+                              th:src="${item.icon.id != null?
+                                item.icon.id :'/images/no-image.png'}"
                                 width="60" height="60" class="border rounded">
 
                           <input type="file" id="icon" name="icon" accept="image/*"
@@ -77,10 +77,7 @@
               <div class="mb-3">
                   <label class="form-label fw-bold">分類</label>
                   <select class="form-select" th:field="*{category}">
-                    <option value="">選択してください</option>
-                      <option value="食品">食品</option>
-                      <option value="日用品">日用品</option>
-                      <option value="その他">その他</option>
+                    <option th:each="category : ${category}">選択してください</option>
                   </select>
 
                   <div class="text-danger small" th:if="${#fields.hasErrors('category')}"

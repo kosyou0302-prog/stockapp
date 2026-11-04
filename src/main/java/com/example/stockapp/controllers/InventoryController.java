@@ -8,10 +8,15 @@
  */
 package com.example.stockapp.controllers;
 
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
+
+import com.example.stockapp.entities.Product;
+import com.example.stockapp.repositories.ProductRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,17 +24,19 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor // finalがついたフィールドを引数に持つコンストラクタをLombokで自動生成
 @RequestMapping("/inventory")
 public class InventoryController {
+    private final ProductRepository productRepository;
     // 在庫一覧---------------------------------------------------------------------------------------
-    @GetMapping("list")
+    @GetMapping("/list")
     public ModelAndView inventory(ModelAndView mav) {
-        mav.setViewName("inventory/list");
+        List<Product> product = productRepository.findAll();
+        mav.addObject("products",product);
         return mav;
     }
 
 
 
     // 期限、在庫不足一覧------------------------------------------------------------------------------
-    @GetMapping("alerts")
+    @GetMapping("/alerts")
     public ModelAndView alerts(ModelAndView mav) {
         mav.setViewName("inventory/alerts");
         return mav;

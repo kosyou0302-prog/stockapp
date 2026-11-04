@@ -16,7 +16,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "categorys")
+@Table(name = "categories")
 @Getter
 @Setter
 
@@ -29,5 +29,5 @@ public class Category {
 
     // カテゴリー名
     @Column(length=20)
-    private String category;
+    private String name;
 }

@@ -1,7 +1,8 @@
 -- =====================================
 --  マスタデータの挿入
 -- =====================================
--- カテゴリマスタ(name)
+INSERT INTO families (name) VALUES ('テスト用家族');
+-- カテゴリマスタ
 INSERT INTO categories(name) VALUES('食品');
 INSERT INTO categories(name) VALUES('日用品');
 INSERT INTO categories(name) VALUES('その他');
@@ -24,14 +25,14 @@ INSERT INTO icons (name) VALUES ('5-icon');
 -- 初期商品データの挿入
 -- =====================================
 
-INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_id, unit_id, icon_id, is_deleted) 
-VALUES ('牛乳', 1, 2, '2026-11-05', 3, 1, 2, 1, false);
+INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_id, unit_id, icon_id, is_deleted, family_id) 
+VALUES ('牛乳', 1, 2, '2026-11-05', 3, 1, 2, 1, false, 1);
 
-INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_id, unit_id, icon_id, is_deleted) 
-VALUES ('卵', 10, 3, '2026-11-15', 5, 1, 3, 1, false);
+INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_id, unit_id, icon_id, is_deleted, family_id) 
+VALUES ('卵', 10, 3, '2026-11-15', 5, 1, 3, 1, false, 1);
 
-INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_id, unit_id, icon_id, is_deleted) 
-VALUES ('しょうゆ', 0, 1, '2027-05-01', 7, 2, 2, 2, false);
+INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_id, unit_id, icon_id, is_deleted, family_id) 
+VALUES ('しょうゆ', 0, 1, '2027-05-01', 7, 2, 2, 2, false, 1);
 
-INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_id, unit_id, icon_id, is_deleted) 
-VALUES ('トイレットペーパー', 4, 2, NULL, 0, 3, 1, 3, false);
+INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_id, unit_id, icon_id, is_deleted, family_id) 
+VALUES ('トイレットペーパー', 4, 2, NULL, 0, 3, 1, 3, false, 1);

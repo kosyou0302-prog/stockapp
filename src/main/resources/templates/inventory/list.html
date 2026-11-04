@@ -180,7 +180,7 @@
 
             <!-- 商品アイコン -->
             <span class="fs-2"
-                  th:text="${product.icon.icon}">
+                  th:text="${product.icon.name}">
               🥛
             </span>
 
@@ -189,13 +189,13 @@
 
               <!-- 商品名 -->
               <div class="text-secondary small"
-                  th:text="${product.category.name}">
+                  th:text="${product.name}">
                 牛乳
               </div>
 
               <!-- カテゴリー名 -->
               <div class="text-secondary small"
-                  th:text="${product.category.category}">
+                  th:text="${product.category.name}">
                 食品
               </div>
 
@@ -222,7 +222,7 @@
               th:classappend="${product.stock == 0} ? ' text-danger' : (${product.expiryDate != null and product.expiryDate.isBefore(T(java.time.LocalDate).now())} ? ' text-warning' : '')">
 
             <!-- 在庫数と単位を表示 -->
-            残り<span th:text="${product.stock}">2</span><span th:text="${product.unit.unit}">本</span>
+            残り<span th:text="${product.stock}">2</span><span th:text="${product.unit.name}">本</span>
 
           </div>
 

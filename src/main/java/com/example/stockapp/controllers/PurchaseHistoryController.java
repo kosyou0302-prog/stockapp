@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/purchase")
 public class PurchaseHistoryController {
     
-    @GetMapping("history")
+    @GetMapping("/history")
     public ModelAndView history(ModelAndView mav) {
         return mav;
     }
