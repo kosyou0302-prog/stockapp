@@ -150,7 +150,7 @@
                 <option th:each="product : ${products}"
                         th:value="${product.id}"
                         th:text="${product.name}"
-                        th:attr="data-category=${product.category}">
+                        th:attr="data-category=${product.category.category}">
                   牛乳
                 </option>
 
@@ -275,7 +275,7 @@
                 DBに保存されているisCheckedの状態を反映する
 
                 data-id：
-                JavaScriptから商品IDを取得するための属性
+                JavaScriptから買い物リスト項目のIDを取得するための属性
 
                 【JS担当者へ】
                 チェック状態が変更されたとき、
@@ -342,7 +342,7 @@
 
                 <button type="submit"
                         class="btn btn-outline-secondary btn-sm"
-                        th:disabled="${item.threshold == null or item.threshold <= 1}"
+                        th:disabled="${item.threshold == null or item.threshold le 1}"
                         aria-label="数量を減らす">
                   －
                 </button>
