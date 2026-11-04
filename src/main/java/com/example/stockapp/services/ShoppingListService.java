@@ -8,6 +8,21 @@
  */
 package com.example.stockapp.services;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
 public class ShoppingListService {
     
+    // 【処理内容】リスト追加/削除：在庫不足の商品や手動追加されたアイテムをリストに登録・解除する
+
+
+    // 【処理内容】数量の増減：JSからの非同期リクエストを受け取り、指定アイテムの数量を「＋1」または「-1」して更新する
+
+
+    // 【処理内容】複数選択の一括操作：画面から送られた複数のIDリストを元に、一括削除や一括購入済みフラグ変更を行う
 }
