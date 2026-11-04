@@ -16,58 +16,47 @@
 <body>
   <!-- メインコンテンツ -->
   <main class="container mt-4 mb-5">
-
     <header class="bg-primary text-white text-center py-3">
       <h1 class="h4 fw-bold mb-0">購入履歴</h1>
     </header>
 
-<!-- 購入履歴リスト -->
-<div class="content mt-4">
+    <!-- 購入履歴リスト -->
+    <div class="content mt-4">
 
-  <!-- 日付ごとに繰り返す -->
-  <div class="date-group mb-4"
-      th:each="dateGroup : ${historiesByDate}">
+      <!-- 日付ごとに繰り返す -->
+      <div class="date-group mb-4" th:each="dateGroup : ${historiesByDate}">
 
-    <!-- 同じ購入日の見出しは1回だけ表示 -->
-    <div class="date-header bg-info-subtle text-primary
-                rounded-top px-3 py-2 fw-bold">
-
-      <span th:text="${#temporals.format(
-              dateGroup.key, 'M月d日（E）', new java.util.Locale('ja'))}">
-        11月4日（水）
-      </span>
-
-    </div>
-
-    <!-- その日に購入した商品 -->
-    <ul class="list-group shadow-sm">
-
-      <li th:each="history : ${dateGroup.value}"
-          class="list-group-item d-flex align-items-center py-3">
-
-        <!-- 商品アイコン -->
-        <span class="fs-4 me-3"
-              th:text="${history.product.icon.icon}">
-          🥛
-        </span>
-
-        <!-- 購入時の商品名 -->
-        <span class="flex-grow-1 fw-bold"
-              th:text="${history.name}">
-          牛乳
-        </span>
-
-        <!-- 購入数量と単位 -->
-        <div class="text-primary fw-bold text-nowrap">
-        <span th:text="${history.quantity}">2</span><span
-              th:text="${history.product.unit.unit}">本</span>
+        <!-- 同じ購入日の見出しは1回だけ表示 -->
+        <div class="date-header bg-info-subtle text-primary rounded-top px-3 py-2 fw-bold">
+          <span th:text="${#temporals.format(
+                  dateGroup.key, 'M月d日（E）', new java.util.Locale('ja'))}">
+            11月4日（水）
+          </span>
         </div>
-      </li>
 
-    </ul>
+        <!-- その日に購入した商品 -->
+        <ul class="list-group shadow-sm">
+          <li th:each="history : ${dateGroup.value}"
+              class="list-group-item d-flex align-items-center py-3">
 
-  </div>
-
+            <!-- 商品アイコン -->
+            <img th:src="@{'/images/icons/' + ${history.product.icon.id} + '.png'}"
+                style="width:36px; height:36px; object-fit:cover;"
+                class="rounded me-3"
+                alt="アイコン">
+            <!-- 購入時の商品名 -->
+            <span class="flex-grow-1 fw-bold"
+                  th:text="${history.name}">
+              牛乳
+            </span>
+            <!-- 購入数量と単位 -->
+            <div class="text-primary fw-bold text-nowrap">
+            <span th:text="${history.quantity}">2</span><span
+                  th:text="${history.product.unit.name}">本</span>
+            </div>
+          </li>
+        </ul>
+      </div>
 
       <!-- 購入履歴が存在しない場合 -->
       <p th:if="${#maps.isEmpty(historiesByDate)}"
@@ -76,8 +65,6 @@
       </p>
     </div>
   </main>
-
-
 
   <!-- 共通ナビゲーションメニューの読み込み（fragments/menu.html をここに差し込む） -->
   <div th:replace="~{fragments/menu :: menu}"></div>
