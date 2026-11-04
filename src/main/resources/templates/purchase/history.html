@@ -23,55 +23,81 @@
 
     <!-- 購入履歴リスト -->
     <div class="content mt-4">
-      
-      <!-- 2025/11/10 -->
-      <div class="date-group mb-4">
-        <div class="date-header fw-bold text-secondary mb-2 border-bottom pb-1">2025/11/10 (月)</div>
+
+      <!--
+        購入履歴を1件ずつ繰り返し表示する
+
+        purchaseHistories：
+          Controllerから受け取る購入履歴一覧
+
+        history：
+          購入履歴1件分のデータ
+      -->
+      <div class="date-group mb-4"
+          th:each="history : ${purchaseHistories}">
+
+        <!-- 購入日 -->
+        <div class="date-header bg-info-subtle text-primary rounded-top px-3 py-2 fw-bold">
+          <span th:text="${#temporals.format(history.recordDate, 'yyyy/MM/dd (E)')}">
+          2025/11/10 (月)
+          </span>
+        </div>
+
+
+        <!-- 購入履歴の商品 -->
         <ul class="list-group shadow-sm">
+
           <li class="list-group-item d-flex align-items-center py-3">
-            <div class="item-icon fs-4 me-3">🥛</div>
-            <div class="item-name flex-grow-1 fw-bold">牛乳</div>
-            <div class="item-qty text-muted">1本</div>
-          </li>
-          <li class="list-group-item d-flex align-items-center py-3">
-            <div class="item-icon fs-4 me-3">🥚</div>
-            <div class="item-name flex-grow-1 fw-bold">たまご</div>
-            <div class="item-qty text-muted">1パック</div>
+
+            <!--
+              商品アイコン
+              Productに登録されているアイコンを表示する
+            -->
+            <div class="item-icon fs-4 me-3"
+                th:text="${history.product.icon.name}">
+              🥛
+            </div>
+
+
+            <!--
+              商品名
+              PurchaseHistoryに保存されている購入時の商品名を表示する
+            -->
+            <div class="item-name flex-grow-1 fw-bold"
+                th:text="${history.name}">
+              牛乳
+            </div>
+
+
+            <!--
+              購入数量と単位
+              購入履歴のquantityと、商品に設定されたunitを表示する
+            -->
+            <div class="item-qty text-muted">
+
+              <span th:text="${history.quantity}">
+                1
+              </span>
+
+              <span th:text="${history.product.unit.name}">
+                本
+              </span>
+            </div>
           </li>
         </ul>
       </div>
 
-      <!-- 2025/11/05 -->
-      <div class="date-group mb-4">
-        <div class="date-header fw-bold text-secondary mb-2 border-bottom pb-1">2025/11/05 (水)</div>
-        <ul class="list-group shadow-sm">
-          <li class="list-group-item d-flex align-items-center py-3">
-            <div class="item-icon fs-4 me-3">🍞</div>
-            <div class="item-name flex-grow-1 fw-bold">食パン</div>
-            <div class="item-qty text-muted">1斤</div>
-          </li>
-          <li class="list-group-item d-flex align-items-center py-3">
-            <div class="item-icon fs-4 me-3">🧻</div>
-            <div class="item-name flex-grow-1 fw-bold">トイレットペーパー</div>
-            <div class="item-qty text-muted">1個</div>
-          </li>
-        </ul>
-      </div>
 
-      <!-- 2025/10/28 -->
-      <div class="date-group mb-4">
-        <div class="date-header fw-bold text-secondary mb-2 border-bottom pb-1">2025/10/28 (月)</div>
-        <ul class="list-group shadow-sm">
-          <li class="list-group-item d-flex align-items-center py-3">
-            <div class="item-icon fs-4 me-3">🧴</div>
-            <div class="item-name flex-grow-1 fw-bold">洗剤</div>
-            <div class="item-qty text-muted">1個</div>
-          </li>
-        </ul>
-      </div>
+      <!-- 購入履歴が存在しない場合 -->
+      <p th:if="${#lists.isEmpty(purchaseHistories)}"
+        class="text-center text-secondary py-4">
+        購入履歴はありません。
+      </p>
 
     </div>
   </main>
+
+
 
   <!-- 共通ナビゲーションメニューの読み込み（fragments/menu.html をここに差し込む） -->
   <div th:replace="~{fragments/menu :: menu}"></div>
