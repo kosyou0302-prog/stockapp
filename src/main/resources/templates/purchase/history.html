@@ -21,79 +21,59 @@
       <h1 class="h4 fw-bold mb-0">購入履歴</h1>
     </header>
 
-    <!-- 購入履歴リスト -->
-    <div class="content mt-4">
+<!-- 購入履歴リスト -->
+<div class="content mt-4">
 
-      <!--
-        購入履歴を1件ずつ繰り返し表示する
+  <!-- 日付ごとに繰り返す -->
+  <div class="date-group mb-4"
+      th:each="dateGroup : ${historiesByDate}">
 
-        purchaseHistories：
-          Controllerから受け取る購入履歴一覧
+    <!-- 同じ購入日の見出しは1回だけ表示 -->
+    <div class="date-header bg-info-subtle text-primary
+                rounded-top px-3 py-2 fw-bold">
 
-        history：
-          購入履歴1件分のデータ
-      -->
-      <div class="date-group mb-4"
-          th:each="history : ${purchaseHistories}">
+      <span th:text="${#temporals.format(
+              dateGroup.key, 'M月d日（E）', new java.util.Locale('ja'))}">
+        11月4日（水）
+      </span>
 
-        <!-- 購入日 -->
-        <div class="date-header bg-info-subtle text-primary rounded-top px-3 py-2 fw-bold">
-          <span th:text="${#temporals.format(history.recordDate, 'yyyy/MM/dd (E)')}">
-          2025/11/10 (月)
-          </span>
+    </div>
+
+    <!-- その日に購入した商品 -->
+    <ul class="list-group shadow-sm">
+
+      <li th:each="history : ${dateGroup.value}"
+          class="list-group-item d-flex align-items-center py-3">
+
+        <!-- 商品アイコン -->
+        <span class="fs-4 me-3"
+              th:text="${history.product.icon.icon}">
+          🥛
+        </span>
+
+        <!-- 購入時の商品名 -->
+        <span class="flex-grow-1 fw-bold"
+              th:text="${history.name}">
+          牛乳
+        </span>
+
+        <!-- 購入数量と単位 -->
+        <div class="text-primary fw-bold text-nowrap">
+        <span th:text="${history.quantity}">2</span><span
+              th:text="${history.product.unit.unit}">本</span>
         </div>
+      </li>
 
+    </ul>
 
-        <!-- 購入履歴の商品 -->
-        <ul class="list-group shadow-sm">
-
-          <li class="list-group-item d-flex align-items-center py-3">
-
-            <!--
-              商品アイコン
-              Productに登録されているアイコンを表示する
-            -->
-            <div class="item-icon fs-4 me-3"
-                th:text="${history.product.icon.name}">
-              🥛
-            </div>
-
-
-            <!--
-              商品名
-              PurchaseHistoryに保存されている購入時の商品名を表示する
-            -->
-            <div class="item-name flex-grow-1 fw-bold"
-                th:text="${history.name}">
-              牛乳
-            </div>
-
-
-            <!--
-              購入数量と単位
-              購入履歴のquantityと、商品に設定されたunitを表示する
-            -->
-            <div class="item-qty text-muted">
-
-              <span th:text="${history.quantity}">
-                1
-              </span>
-
-              <span th:text="${history.product.unit.name}">
-                本
-              </span>
-            </div>
-          </li>
-        </ul>
-      </div>
+  </div>
 
 
       <!-- 購入履歴が存在しない場合 -->
-      <p th:if="${#lists.isEmpty(purchaseHistories)}"
+      <p th:if="${#maps.isEmpty(historiesByDate)}"
         class="text-center text-secondary py-4">
         購入履歴はありません。
       </p>
-
     </div>
   </main>
 
