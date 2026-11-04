@@ -29,5 +29,5 @@ public class Unit {
 
     // 単位名
     @Column(length=20)
-    private String unit;
+    private String name;
 }

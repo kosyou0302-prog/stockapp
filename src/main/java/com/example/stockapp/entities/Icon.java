@@ -29,5 +29,5 @@ public class Icon {
 
     // アイコン名
     @Column(length=20)
-    private String icon;
+    private String name;
 }

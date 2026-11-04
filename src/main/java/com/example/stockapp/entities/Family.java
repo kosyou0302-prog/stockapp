@@ -16,7 +16,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "family")
+@Table(name = "families")
 @Getter
 @Setter
 
@@ -29,5 +29,5 @@ public class Family {
 
     // 家族名
     @Column(length=20)
-    private String groupName;
+    private String name;
 }
