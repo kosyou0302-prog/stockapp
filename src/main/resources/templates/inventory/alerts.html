@@ -19,7 +19,7 @@
   <!-- チームオリジナルの共通CSS（Thymeleafの @{} を使うと自動で正しいパスになります） -->
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
-  th:if="${selectedAlertType == 'stock'}"<body>
+  <body>
 
   <!--
     ① ヘッダー
@@ -164,72 +164,82 @@
           </div>
 
 
-          <!--
-            右側：アラート内容
-            ※Controller側で products を条件に合わせて取得する必要がある。
-            「すべて」の場合：警告表示なし
+        <!--
+          右側：アラート内容
+          ※Controller側で products を条件に合わせて取得する必要がある。
+          「すべて」の場合：警告表示なし
 
-            在庫切れ：赤色
-            期限切れ：オレンジ色
-            残りわずか：紫色
-            期限まぢか：青色
+          在庫切れ：赤色
+          期限切れ：オレンジ色
+          残りわずか：紫色
+          期限まぢか：青色
 
-            rounded：角を丸くする
-            px-3 py-2：内側に余白を設定する
-            text-center：中央揃えにする
-            text-nowrap：文字が途中で改行されないようにする
-          -->
-
-
-          <!--
-            在庫切れ・残りわずかタブの場合
-          -->
-          <div th:if="${selectedAlertType == 'stock'}"
-              class="rounded px-3 py-2 text-center fw-bold small text-nowrap"
-              th:classappend="${product.stock == 0} ? ' bg-danger-subtle text-danger' : ''">
-
-            <!-- 在庫切れの場合：赤色 -->
-            <span th:if="${product.stock == 0}">
-              在庫切れ
-            </span>
-
-            <!-- 残りわずかの場合：紫色 -->
-            <span th:if="${product.stock != null and product.threshold != null and product.stock > 0 and product.stock <= product.threshold}"
-                  class="bg-light text-purple">
-              残りわずか（残り<span th:text="${product.stock}">1</span><span th:text="${product.unit.unit}">袋</span>）
-            </span>
-
-          </div>
+          rounded：角を丸くする
+          px-3 py-2：内側に余白を設定する
+          text-center：中央揃えにする
+          text-nowrap：文字が途中で改行されないようにする
+        -->
 
 
-          <!--
-            期限切れ・期限まぢかタブの場合
-          -->
-          <div th:if="${selectedAlertType == 'expiry'}"
-              class="rounded px-3 py-2 text-center fw-bold small text-nowrap">
+        <!--
+          在庫切れ・残りわずかタブの場合
+        -->
+        <div th:if="${selectedAlertType == 'stock'}"
+            class="rounded px-3 py-2 text-center fw-bold small text-nowrap"
+            th:classappend="${product.stock == 0} ? ' bg-danger-subtle text-danger' : ''">
 
-            <!-- 期限切れの場合：オレンジ色 -->
-            <span th:if="${product.expiryDate != null and product.expiryDate.isBefore(T(java.time.LocalDate).now())}"
-                  class="bg-warning-subtle text-warning">
-              期限切れ（<span th:text="${#temporals.format(product.expiryDate, 'M/d')}">10/20</span>）
-            </span>
+          <!-- 在庫切れの場合：赤色 -->
+          <span th:if="${product.stock == 0}">
+            在庫切れ
+          </span>
 
-            <!-- 期限まぢかの場合：青色 -->
-            <span th:if="${product.expiryDate != null and product.alertDays != null and !product.expiryDate.isBefore(T(java.time.LocalDate).now()) and !product.expiryDate.isAfter(T(java.time.LocalDate).now().plusDays(product.alertDays))}"
-                  class="bg-primary-subtle text-primary">
-              期限まぢか（残り<span th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDate).now(), product.expiryDate)}">3</span>日）
-            </span>
+          <!-- 残りわずかの場合：紫色 -->
+          <span th:if="${product.stock != null
+                        and product.threshold != null
+                        and product.stock > 0
+                        and product.stock <= product.threshold}"
+                class="bg-light text-purple">
+            残りわずか（残り<span th:text="${product.stock}">1</span><span th:text="${product.unit.unit}">袋</span>）
+          </span>
 
-          </div>
-          <!--
-            selectedAlertType が null または空文字の場合は、
-            上記2つのアラート表示部分はどちらも表示されない。
+        </div>
 
-            そのため「すべて」では商品情報だけが表示される。
-          -->
-        </a>
 
-      </div>
+        <!--
+          期限切れ・期限間近タブの場合
+        -->
+        <div th:if="${selectedAlertType == 'expiry'}"
+            class="rounded px-3 py-2 text-center fw-bold small text-nowrap">
+
+          <!-- 期限切れの場合：オレンジ色 -->
+          <span th:if="${product.expiryDate != null
+                        and product.expiryDate.isBefore(T(java.time.LocalDate).now())}"
+                class="bg-warning-subtle text-warning">
+            期限切れ（<span th:text="${#temporals.format(product.expiryDate, 'M/d')}">10/20</span>）
+          </span>
+
+          <!-- 期限間近の場合：青色 -->
+          <span th:if="${product.expiryDate != null
+                        and product.alertDays != null
+                        and !product.expiryDate.isBefore(T(java.time.LocalDate).now())
+                        and !product.expiryDate.isAfter(T(java.time.LocalDate).now().plusDays(product.alertDays))}"
+                class="bg-primary-subtle text-primary">
+            期限間近（残り<span th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDate).now(), product.expiryDate)}">3</span>日）
+          </span>
+
+        </div>
+
+
+        <!--
+          selectedAlertType が null または空文字の場合は、
+          上記2つのアラート表示部分はどちらも表示されない。
+
+          そのため「すべて」では商品情報だけが表示される。
+        -->
+      </a>
+
+    </div>
+
 
 
       <!-- 商品が1件も登録されていない場合 -->
