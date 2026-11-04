@@ -1,5 +1,5 @@
 <!--
-  【役割】４商品の登録情報を入力（新規登録）するためのフォーム画面です。
+【役割】４商品の登録情報を入力（新規登録）するためのフォーム画面です。
 
   TODO: formタグの送信先（th:action）とメソッド（POST）を正しく設定する
   TODO: ProductForm（DTO）と入力欄を紐づけるため、th:object と th:field を設定する
@@ -23,165 +23,168 @@
 
 <body>
   <!-- メインコンテンツ -->
-   <div class="container py-4">
-    <div class="card shadow mx-auto" style="max-width: 400px;">
+  <div class="container py-4">
+    <div class="card shadow mx-auto" style="max-width: 380px;">
 
-        <!-- ヘッダー -->
+    <!-- ヘッダー -->
       <div class="card-header bg-primary text-white text-center">
-          <h4 class="mb-0">商品登録</h4>
+        <h4 class="mb-0">商品登録</h4>
       </div>
 
       <div class="card-body">
-          <form th:action="@{/product/add}" th:object="${item}"
-                  method="post" enctype="multipart/form-data">
+        <form th:action="@{/product/add}" th:object="${item}"
+        method="post" enctype="multipart/form-data">
 
-              <!-- エラー一覧 -->
-              <div class="alert alert-danger"
-                   th:if="${#fields.hasAnyErrors()}">
-                  <ul class="mb-0">
-                      <li th:each="err : ${#fields.errors('*')}" th:text="${err}">
-                      </li>
-                  </ul>
-              </div>
+    <!-- エラー一覧 -->
+      <div class="alert alert-danger" th:if="${#fields.hasAnyErrors()}">
+        <ul class="mb-0">
+          <li th:each="err : ${#fields.errors('*')}" th:text="${err}">
+          </li>
+        </ul>
+      </div>
 
-              <!-- 商品名 -->
-                <div class="mb-3">
-                  <label class="form-label fw-bold">
-                      商品名
-                  </label>
-                  <div class="row align-items-center">
-                      <div class="col-8">
-                          <input type="text" class="form-control"
-                           th:field="*{name}" placeholder="例）牛乳">
+    <!-- 商品名 -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">商品名</label>
+      <div class="d-flex align-items-center gap-2">
 
-                          <div class="text-danger small"
-                               th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
-                          </div>
-                      </div>
+    <!-- 商品名入力 -->
+      <input type="text" class="form-control me-2"
+      th:field="*{name}" placeholder="例）牛乳">
 
-                      <div class="col-4 text-center">
-                          <img id="preview"
-                               src="/images/no-image.png"
-                               width="60"
-                               height="60"
-                               class="border rounded">
+    <!-- 選択中アイコン -->
+     <img id="preview" th:src="${item.iconPath != null ? item.iconPath : '/images/icons/1.png'}"
+        style="width:50px;height:50px;" class="border rounded">
+    </div>
 
-                          <input type="file"
-                                 id="iconFile"
-                                 name="iconFile"
-                                 accept="image/*"
-                                 class="form-control form-control-sm mt-2">
-                      </div>
-                  </div>
-                </div>
+    <div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
+    </div>
 
-              <!-- 分類 -->
-              <div class="mb-3">
-                  <label class="form-label fw-bold">分類</label>
-                  <select class="form-select" th:field="*{category}">
-                    <option value="">選択してください</option>
-                      <option value="食品">食品</option>
-                      <option value="日用品">日用品</option>
-                      <option value="その他">その他</option>
-                  </select>
+    <!-- アイコン選択 -->
+    <div class="mb-3">
+        <label class="form-label fw-bold">アイコン選択</label>
 
-                  <div class="text-danger small"
-                       th:if="${#fields.hasErrors('category')}"
-                       th:errors="*{category}">
-                  </div>
+        <input type="hidden" id="iconPath" th:field="*{iconPath}">
 
-              </div>
+        <!-- アイコン一覧 -->
+        <div class="row row-cols-4 g-2">
+          <div class="col" th:each="i : ${#numbers.sequence(1,20)}">
 
-              <!-- 在庫数 -->
-              <div class="mb-3">
-                  <label class="form-label fw-bold">在庫数</label>
-                  <div class="row">
-                      <div class="col-6">
-                          <input type="number" class="form-control" th:field="*{stock}">
-                      </div>
-                      <div class="col-6">
-                          <select class="form-select" th:field="*{unit}">
-                              <option value="個">個</option>
-                              <option value="本">本</option>
-                              <option value="パック">パック</option>
-                              <option value="箱">箱</option>
-                          </select>
-                      </div>
-                  </div>
-                <div class="text-danger small"
-                       th:if="${#fields.hasErrors('stock')}"
-                       th:errors="*{stock}">
-                </div>
-              </div>
-
-              <!-- 購入目安 -->
-              <div class="mb-3">
-                  <label class="form-label fw-bold">購入目安</label>
-                  <div class="row">
-                      <div class="col-6">
-                          <input type="number" class="form-control" th:field="*{threshold}">
-                      </div>
-                      <div class="col-6">
-                          <select class="form-select" th:field="*{thresholdUnit}">
-                              <option value="個">個</option>
-                              <option value="本">本</option>
-                              <option value="パック">パック</option>
-                              <option value="箱">箱</option>
-                          </select>
-                      </div>
-                  </div>
-
-                  <div class="text-danger small"
-                       th:if="${#fields.hasErrors('threshold')}"
-                       th:errors="*{threshold}">
-                  </div>
-              </div>
-
-              <!-- 使用期限 -->
-              <div class="mb-3">
-                  <label class="form-label fw-bold">使用期限</label>
-                  <input type="date" class="form-control" th:field="*{expiryDate}">
-                  <div class="text-danger small"
-                       th:if="${#fields.hasErrors('expiryDate')}"
-                       th:errors="*{expiryDate}">
-                  </div>
-
-              </div>
-
-              <!-- 通知 -->
-              <div class="mb-4">
-                <div class="d-flex justify-content-between align-items-center">
-                  <label class="form-label fw-bold mb-0">通知</label>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" th:field="*{isNotify}">
-                  </div>
-                </div>
-              </div>
-
-              <!-- 登録ボタン -->
-              <div class="d-grid">
-                  <button type="submit" class="btn btn-primary btn-lg">登録する</button>
-              </div>
-          </form>
+            <img th:src="@{'/images/icons/' + ${i} + '.png'}"
+            th:data-path="@{'/images/icons/' + ${i} + '.png'}"
+            class="img-thumbnail icon-select"
+            style="cursor:pointer; width:48px; height:48px; object-fit:cover;">
+          </div>
         </div>
-  </div>
-</div>
 
-<!-- アイコンプレビュー -->
-<script>
-  document.getElementById('iconFile')
-  .addEventListener('change', function(event){
-      const file = event.target.files[0];
-      if(file){
-          const reader = new FileReader();
-          reader.onload = function(e){
-              document.getElementById('preview').src =
-                  e.target.result;
-          };
-          reader.readAsDataURL(file);
-      }
-  });
-  </script>
+        <!-- 分類 -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">分類</label>
+            <select class="form-select" th:field="*{category}">
+                <option value="">選択してください</option>
+                <option value="食品">食品</option>
+                <option value="日用品">日用品</option>
+                <option value="その他">その他</option>
+            </select>
 
+              <div class="text-danger small" th:if="${#fields.hasErrors('category')}" th:errors="*{category}">
+              </div>
+        </div>
+
+        <!-- 在庫数 -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">在庫数</label>
+            <div class="row">
+              <div class="col-6">
+              <input type="number" class="form-control" th:field="*{stock}">
+              </div>
+
+              <div class="col-6">
+              <select class="form-select" th:field="*{unit}">
+                <option value="個">個</option>
+                <option value="本">本</option>
+                <option value="パック">パック</option>
+                <option value="箱">箱</option>
+              </select>
+              </div>
+            </div>
+
+              <div class="text-danger small" th:if="${#fields.hasErrors('stock')}" th:errors="*{stock}">
+              </div>
+            </div>
+
+        <!-- 購入目安 -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">購入目安</label>
+          <div class="row">
+            <div class="col-6">
+                <input type="number" class="form-control" th:field="*{threshold}">
+            </div>
+            <div class="col-6">
+                <select class="form-select" th:field="*{thresholdUnit}">
+                <option value="個">個</option>
+                <option value="本">本</option>
+                <option value="パック">パック</option>
+                <option value="箱">箱</option>
+                </select>
+            </div>
+            </div>
+
+            <div class="text-danger small" th:if="${#fields.hasErrors('threshold')}" th:errors="*{threshold}">
+            </div>
+            </div>
+
+        <!-- 使用期限 -->
+        <div class="mb-3">
+            <label class="form-label fw-bold">使用期限</label>
+            <input type="date" class="form-control" th:field="*{expiryDate}">
+            <div class="text-danger small" th:if="${#fields.hasErrors('expiryDate')}"
+                        th:errors="*{expiryDate}">
+            </div>
+            </div>
+
+        <!-- 通知 -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <label class="form-label fw-bold mb-0">通知</label>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" th:field="*{isNotify}">
+            </div>
+          </div>
+        </div>
+
+        <!-- 登録ボタン -->
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary btn-lg">登録する</button>
+        </div>
+        </form>
+        </div>
+    </div>
+    </div>
+
+    <!-- アイコンプレビュー -->
+    <script>
+    document.querySelectorAll('.icon-select')
+        .forEach(icon => {
+        icon.addEventListener('click', function() {
+            const path = this.dataset.path;
+
+            // プレビュー変更
+            document.getElementById('preview').src = path;
+
+            // hiddenへ保存
+            document.getElementById('iconPath').value = path;
+
+            // 選択枠リセット
+            document.querySelectorAll('.icon-select')
+                .forEach(img => img.classList.remove('border-primary','border-3'));
+
+            // 選択中を強調
+            this.classList.add('border-primary','border-3');
+
+        });
+    });
+
+    </script>
 </body>
 </html>
