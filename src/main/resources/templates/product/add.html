@@ -25,97 +25,100 @@
   <!-- メインコンテンツ -->
   <div class="container py-4">
     <div class="card shadow mx-auto" style="max-width: 380px;">
-
-    <!-- ヘッダー -->
+<!-- ヘッダー（戻るボタンのデザインを綺麗に統一） -->
       <div class="card-header bg-primary text-white position-relative">
         <a th:href="@{/inventory/list}"
-          class="text-white fw-bold position-absolute start-0 top-50 translate-middle-y ms-3 text-decoration-none">
+          class="btn btn-outline-light fw-bold position-absolute start-0 top-50 translate-middle-y ms-2">
         ← 戻る
         </a>
-        <h4 class="mb-0 text-center">商品登録</h4>
+        <h4 class="mb-0 text-center py-1">商品登録</h4>
       </div>      
 
       <div class="card-body">
         <form th:action="@{/product/add}" th:object="${item}"
         method="post" enctype="multipart/form-data">
 
-    <!-- エラー一覧 -->
-      <div class="alert alert-danger" th:if="${#fields.hasAnyErrors()}">
-        <ul class="mb-0">
-          <li th:each="err : ${#fields.errors('*')}" th:text="${err}">
-          </li>
-        </ul>
-      </div>
+        <!-- エラー一覧 -->
+        <div class="alert alert-danger" th:if="${#fields.hasAnyErrors()}">
+          <ul class="mb-0">
+            <li th:each="err : ${#fields.errors('*')}" th:text="${err}">
+            </li>
+          </ul>
+        </div>
 
-    <!-- 商品名 -->
-      <div class="mb-3">
-        <label class="form-label fw-bold">商品名</label>
-      <div class="d-flex align-items-center gap-2">
+        <!-- 商品名 -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">商品名</label>
+          <div class="d-flex align-items-center gap-2">
 
-    <!-- 商品名入力 -->
-      <input type="text" class="form-control me-2"
-      th:field="*{name}" placeholder="例）牛乳">
+            <!-- 商品名入力 -->
+            <input type="text" class="form-control me-2" th:field="*{name}" placeholder="例）牛乳">
 
-    <!-- 選択中アイコン -->
-     <img id="preview" th:src="${item.iconPath != null ? item.iconPath : '/images/icons/1.png'}"
-        style="width:50px;height:50px;" class="border rounded">
-    </div>
-
-    <div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
-    </div>
-
-    <!-- アイコン選択 -->
-    <div class="mb-3">
-        <label class="form-label fw-bold">アイコン選択</label>
-
-        <input type="hidden" id="iconPath" th:field="*{iconPath}">
-
-        <!-- アイコン一覧 -->
-        <div class="row row-cols-4 g-2">
-          <div class="col" th:each="i : ${#numbers.sequence(1,20)}">
-
-            <img th:src="@{'/images/icons/' + ${i} + '.png'}"
-            th:data-path="@{'/images/icons/' + ${i} + '.png'}"
-            class="img-thumbnail icon-select"
-            style="cursor:pointer; width:48px; height:48px; object-fit:cover;">
+            <!-- 選択中アイコン（DBマスタのIDで画像を表示するように修正） -->
+            <img id="preview" th:src="${item.icon != null ? '/images/icons/' + item.icon.id + '.png' : '/images/icons/1.png'}"
+              style="width:50px;height:50px;" class="border rounded">
+          </div>
+          <div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
           </div>
         </div>
 
-        <!-- 分類 -->
+        <!-- アイコン選択 -->
+        <div class="mb-3">
+            <label class="form-label fw-bold">アイコン選択</label>
+
+            <!-- iconPath ではなく IconマスタのID（icon.id）を送信するように修正 -->
+            <input type="hidden" id="iconId" th:field="*{icon.id}">
+
+            <!-- アイコン一覧 -->
+            <div class="row row-cols-4 g-2">
+              <div class="col" th:each="i : ${#numbers.sequence(1,20)}">
+                <img th:src="@{'/images/icons/' + ${i} + '.png'}"
+                th:data-path="@{'/images/icons/' + ${i} + '.png'}"
+                th:data-id="${i}"
+                class="img-thumbnail icon-select"
+                style="cursor:pointer; width:48px; height:48px; object-fit:cover;">
+              </div>
+            </div>
+        </div>
+
+        <!-- 分類（カテゴリ） -->
         <div class="mb-3">
           <label class="form-label fw-bold">分類</label>
-            <select class="form-select" th:field="*{category}">
+            <!-- 文字列ではなく CategoryマスタのID（category.id）を送信するように修正 -->
+            <select class="form-select" th:field="*{category.id}">
                 <option value="">選択してください</option>
-                <option value="食品">食品</option>
-                <option value="日用品">日用品</option>
-                <option value="その他">その他</option>
+                <option value="1">食品</option>
+                <option value="2">日用品</option>
+                <option value="3">その他</option>
             </select>
-
-              <div class="text-danger small" th:if="${#fields.hasErrors('category')}" th:errors="*{category}">
-              </div>
+            <div class="text-danger small" th:if="${#fields.hasErrors('category')}" th:errors="*{category}">
+            </div>
         </div>
 
         <!-- 在庫数 -->
         <div class="mb-3">
           <label class="form-label fw-bold">在庫数</label>
             <div class="row">
+              
+              <!-- 左側：在庫数の入力 -->
               <div class="col-6">
-              <input type="number" class="form-control" th:field="*{stock}">
+                <input type="number" class="form-control" th:field="*{stock}">
               </div>
 
-              <div class="col-6">
-              <select class="form-select" th:field="*{unit}">
-                <option value="個">個</option>
-                <option value="本">本</option>
-                <option value="パック">パック</option>
-                <option value="箱">箱</option>
-              </select>
+              <!-- 右側：単位の選択 -->
+             <div class="col-6">
+              <select class="form-select" th:field="*{unit.id}">
+                  <option value="1">個</option>
+                  <option value="2">本</option>
+                  <option value="3">パック</option>
+                  <option value="4">箱</option>
+                </select>
               </div>
             </div>
-
-              <div class="text-danger small" th:if="${#fields.hasErrors('stock')}" th:errors="*{stock}">
-              </div>
+            <!-- エラー表示 -->
+            <div class="text-danger small" th:if="${#fields.hasErrors('stock')}" th:errors="*{stock}">
             </div>
+          </div>
 
         <!-- 購入目安 -->
         <div class="mb-3">
@@ -125,7 +128,7 @@
                 <input type="number" class="form-control" th:field="*{threshold}">
             </div>
             <div class="col-6">
-                <select class="form-select" th:field="*{thresholdUnit}">
+                <select class="form-select" th:field="*{Unit}">
                 <option value="個">個</option>
                 <option value="本">本</option>
                 <option value="パック">パック</option>
@@ -160,9 +163,11 @@
         <!-- 登録ボタン -->
         <div class="d-grid">
           <button type="submit" class="btn btn-primary btn-lg">登録する</button>
+
         </div>
         </form>
         </div>
+
     </div>
     </div>
 
@@ -172,12 +177,14 @@
         .forEach(icon => {
         icon.addEventListener('click', function() {
             const path = this.dataset.path;
-
+             
+          　// HTMLの th:data-id="${i}" から、数字のIDを取得する
+            const selectedId = this.dataset.id;
             // プレビュー変更
             document.getElementById('preview').src = path;
 
             // hiddenへ保存
-            document.getElementById('iconPath').value = path;
+            document.getElementById('iconId').value = selectedId;
 
             // 選択枠リセット
             document.querySelectorAll('.icon-select')

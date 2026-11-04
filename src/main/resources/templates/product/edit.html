@@ -29,12 +29,20 @@
         <!-- ヘッダー -->
       <div class="card-header bg-primary text-white position-relative">
         <a th:href="@{/inventory/list}"
+<<<<<<< Updated upstream
         class="btn btn-primary fw-bold position-absolute start-0 ms-2">
         ← 戻る
         </a>
         <h4 class="mb-0 text-center">商品編集</h4>
       </div>      
 
+=======
+          class="text-white fw-bold position-absolute start-0 top-50 translate-middle-y ms-3 text-decoration-none">
+        ← 戻る
+        </a>
+          <h4 class="mb-0 text-center">商品編集</h4>
+      </div>
+>>>>>>> Stashed changes
 
       <div class="card-body">
        <form th:action="@{/product/edit}" th:object="${item}"
