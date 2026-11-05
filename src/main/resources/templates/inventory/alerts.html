@@ -33,11 +33,13 @@
     <h1 class="h4 fw-bold mb-0">期限・在庫切れリスト</h1>
   </header>
 
-  <!-- メインコンテンツ（ここに各画面のTODOを書いていきます） -->
-  <div class="container mt-4 mb-5">
+  <!-- メインコンテンツ（ここに各画面のTODOを書いていきます）
+    today：この画面で使用する今日の日付。
+    -->
 
-    <!--
-      ② 画面切り替えタブ
+  <main class="container mt-4 mb-5 pb-5"
+        th:with="today=${T(java.time.LocalDate).now()}">
+    <!--  ② 画面切り替えタブ
       在庫一覧と期限・在庫切れ画面を切り替える
       nav：ナビゲーション
       nav-pills：タブ形式のデザイン
@@ -52,10 +54,11 @@
             在庫一覧
           </a>
         </li>
-        <!-- 期限・在庫切れタブ -->
+        <!-- 期限・在庫切れタブ：通常の移動では「すべて」を表示 -->
         <li class="nav-item">
           <a class="nav-link active"
-            th:href="@{/inventory/alerts}">
+            th:href="@{/inventory/alerts}"
+            aria-current="page">
             期限・在庫切れ
           </a>
         </li>
@@ -74,25 +77,35 @@
       期限切れ・期限まぢか：
         期限切れ・期限まぢかの商品だけを表示する
       商品の絞り込みはController側で行う
+
+      選択中のボタンにはactiveを付け、青背景・白文字にする。
+      typeの指定がない場合は「すべて」を選択状態にする。
+
+      商品の絞り込みはController・Service側で行う。
+      Controllerから、選択したtypeをselectedAlertTypeとして受け取る。
     -->
     <section class="mb-3">
       <div class="d-flex gap-2">
-        <!-- すべてのアラート対象商品を表示 -->
+        <!-- すべて：通常の画面移動時の標準 -->
         <a th:href="@{/inventory/alerts}"
-          class="btn btn-outline-primary btn-sm flex-fill"
-          th:classappend="${selectedAlertType == null or selectedAlertType == ''} ? ' active' : ''">
+            class="btn btn-outline-primary btn-sm flex-fill"
+            th:classappend="${selectedAlertType == null or selectedAlertType == ''} ? ' active' : ''">
           すべて
         </a>
-        <!-- 在庫切れ・残りわずかの商品を表示 -->
+        <!-- 在庫切れ・残りわずか：ホームからout・lowで移動した場合も選択状態 -->
         <a th:href="@{/inventory/alerts(type='stock')}"
-          class="btn btn-outline-primary btn-sm flex-fill"
-          th:classappend="${selectedAlertType == 'stock' or selectedAlertType == 'out' or selectedAlertType == 'low'} ? ' active' : ''">
+            class="btn btn-outline-primary btn-sm flex-fill"
+            th:classappend="${selectedAlertType == 'stock'
+                            or selectedAlertType == 'out'
+                            or selectedAlertType == 'low'} ? ' active' : ''">
           在庫切れ・残りわずか
         </a>
-        <!-- 期限切れ・期限まぢかの商品を表示 -->
+        <!-- 期限切れ・期限まぢか：ホームからexpired・soonで移動した場合も選択状態 -->
         <a th:href="@{/inventory/alerts(type='expiry')}"
-          class="btn btn-outline-primary btn-sm flex-fill"
-          th:classappend="${selectedAlertType == 'expiry'} ? ' active' : ''">
+            class="btn btn-outline-primary btn-sm flex-fill"
+            th:classappend="${selectedAlertType == 'expiry'
+                            or selectedAlertType == 'expired'
+                            or selectedAlertType == 'soon'} ? ' active' : ''">
           期限切れ・期限まぢか
         </a>
       </div>
@@ -109,31 +122,36 @@
     -->
     <section class="mb-4">
       <div class="list-group">
-        <!-- 商品リストを1件ずつ繰り返し表示 -->
-        <a th:each="product : ${products}"
-          th:href="@{/product/edit/{id}(id=${product.id})}"
-          class="list-group-item list-group-item-action d-flex align-items-center justify-content-between gap-2 py-3">
-          <!-- 商品アイコン・商品名・カテゴリー -->
-          <div class="d-flex align-items-center gap-3">
-            <!-- 商品アイコン -->
-            <img th:src="@{'/images/icons/' + ${product.icon.id} + '.png'}"
-                style="width:40px; height:40px; object-fit:cover;"
-                class="rounded"
-                alt="アイコン">
-            <!-- 商品名・カテゴリー -->
-            <div>
-              <!-- 商品名 -->
-              <div class="fw-bold"
-                  th:text="${product.name}">
-                牛乳
-              </div>
-              <!-- カテゴリー -->
-              <div class="text-secondary small"
-                  th:text="${product.category.name}">
-                食品
-              </div>
-            </div>
-          </div>
+        <!--
+          商品リストを1件ずつ繰り返し表示する。
+          外側のdivで商品1件分を囲み、内側のaで行全体をリンクにする。
+          変更点：aの中ではdivを使わず、spanで内容をまとめる。
+        -->
+        <div th:each="product : ${products}"
+              class="list-group-item p-0">
+          <a th:href="@{/product/edit/{id}(id=${product.id})}"
+              class="list-group-item-action d-flex flex-wrap align-items-center justify-content-between gap-2 w-100 px-3 py-3 text-decoration-none text-body">
+            <!-- 商品アイコン・商品名・カテゴリー -->
+            <span class="d-flex align-items-center gap-3">
+              <!-- 商品アイコン -->
+              <img th:src="@{'/images/icons/' + ${product.icon.id} + '.png'}"
+                  style="width:40px; height:40px; object-fit:cover;"
+                  class="rounded"
+                  alt="アイコン">
+              <!-- 商品名・カテゴリー -->
+              <span>
+                <!-- 商品名：d-blockで1行ずつ表示 -->
+                <span class="d-block fw-bold"
+                      th:text="${product.name}">
+                  牛乳
+                </span>
+                <!-- カテゴリー -->
+                <span class="d-block text-secondary small"
+                      th:text="${product.category.name}">
+                  食品
+                </span>
+              </span>
+            </span>
 
         <!--
           右側：アラート内容
@@ -151,63 +169,66 @@
 
         <!--
           在庫切れ・残りわずかタブの場合
+          ホームからout・lowで移動した場合も表示する。
         -->
-        <div th:if="${selectedAlertType == 'stock'}"
-            class="rounded px-3 py-2 text-center fw-bold small text-nowrap"
-            th:classappend="${product.stock == 0} ? ' bg-danger-subtle text-danger' : ''">
+        <span th:if="${selectedAlertType == 'stock'
+                      or selectedAlertType == 'out'
+                      or selectedAlertType == 'low'}"
+                  class="text-center fw-bold small">
           <!-- 在庫切れの場合：赤色 -->
-          <span th:if="${product.stock == 0}">
+          <span th:if="${product.stock != null and product.stock == 0}"
+                class="d-inline-block rounded px-3 py-2 bg-danger-subtle text-danger">
             在庫切れ
           </span>
-          <!-- 残りわずかの場合：紫色 -->
+          <!-- 残りわずかの場合：紫色。leは「以下」を表す -->
           <span th:if="${product.stock != null
                         and product.threshold != null
                         and product.stock > 0
-                        and product.stock <= product.threshold}"
-                class="bg-light text-purple">
-            残りわずか（残り<span th:text="${product.stock}">1</span><span th:text="${product.unit.name}">袋</span>）
+                        and product.stock le product.threshold}"
+                class="d-inline-block rounded px-3 py-2 bg-light text-purple">
+              残りわずか（残り<span th:text="${product.stock}">1</span><span th:text="${product.unit.name}">袋</span>）
           </span>
-        </div>
+        </span>
 
         <!--
-          期限切れ・期限間近タブの場合
+          期限切れ・期限間近タブの場合。
+          ホームからexpired・soonで移動した場合も表示する。
         -->
-        <div th:if="${selectedAlertType == 'expiry'}"
-            class="rounded px-3 py-2 text-center fw-bold small text-nowrap">
-          <!-- 期限切れの場合：オレンジ色 -->
+        <span th:if="${selectedAlertType == 'expiry'
+                        or selectedAlertType == 'expired'
+                        or selectedAlertType == 'soon'}"
+              class="text-center fw-bold small">
+          <!-- 期限切れの場合：今日より前の日付・オレンジ -->
           <span th:if="${product.expiryDate != null
-                        and product.expiryDate.isBefore(T(java.time.LocalDate).now())}"
-                class="bg-warning-subtle text-warning">
+                          and product.expiryDate.isBefore(today)}"
+                class="d-inline-block rounded px-3 py-2 bg-warning-subtle text-warning-emphasis">
             期限切れ（<span th:text="${#temporals.format(product.expiryDate, 'M/d')}">10/20</span>）
           </span>
-          <!-- 期限間近の場合：青色 -->
+          <!-- 期限まぢかの場合：今日からalertDays日後まで・青色-->
           <span th:if="${product.expiryDate != null
                         and product.alertDays != null
-                        and !product.expiryDate.isBefore(T(java.time.LocalDate).now())
-                        and !product.expiryDate.isAfter(T(java.time.LocalDate).now().plusDays(product.alertDays))}"
-                class="bg-primary-subtle text-primary">
-            期限間近（残り<span th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDate).now(), product.expiryDate)}">3</span>日）
+                        and !product.expiryDate.isBefore(today)
+                        and !product.expiryDate.isAfter(today.plusDays(product.alertDays))}"
+                class="d-inline-block rounded px-3 py-2 bg-primary-subtle text-primary">
+            期限まぢか（残り<span th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(today, product.expiryDate)}">3</span>日）
           </span>
-        </div>
+        </span>
 
         <!--
           selectedAlertType が null または空文字の場合は、
           上記2つのアラート表示部分はどちらも表示されない。
           そのため「すべて」では商品情報だけが表示される。
         -->
-      </a>-------------------------------------------
-
-    </div>
-
-
-
+          </a>
+        </div>
+      </div>
       <!-- 商品が1件も登録されていない場合 -->
       <p th:if="${#lists.isEmpty(products)}"
         class="text-center text-secondary py-4">
         アラート対象の商品はありません。
       </p>
     </section>
-  </div>
+  </main>
 
   <!-- 共通ナビゲーションメニューの読み込み（fragments/menu.html をここに差し込む） -->
   <div th:replace="~{fragments/menu :: menu}"></div>
