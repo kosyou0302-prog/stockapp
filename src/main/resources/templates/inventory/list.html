@@ -36,9 +36,11 @@
     <h1 class="h4 fw-bold mb-0">在庫一覧</h1>
   </header>
 
-  <!-- メインコンテンツ（ここに各画面のTODOを書いていきます） -->
-  <main class="container mt-4 mb-5">
-
+  <!-- メインコンテンツ（ここに各画面のTODOを書いていきます） 
+    today：この画面で使用する今日の日付。
+  -->
+  <main class="container mt-4 mb-5 pb-5"
+        th:with="today=${T(java.time.LocalDate).now()}">
 
   <!-- TODO: ここに各画面のテーブルやフォームを作っていく -->
     <!--
@@ -49,35 +51,26 @@
       form-control：入力フォームのデザイン
     -->
     <section class="mb-3">
-
       <form th:action="@{/inventory/list}" method="get">
-
         <div class="input-group">
-
           <!-- 商品名の検索キーワード -->
           <input type="text"
                 name="keyword"
                 class="form-control"
                 placeholder="商品名で検索"
                 th:value="${keyword}">
-
           <!-- 検索ボタン -->
           <button type="submit" class="btn btn-outline-primary">
             検索
           </button>
-
         </div>
-
         <!-- 選択中のカテゴリーを検索条件として引き継ぐ -->
         <input type="hidden"
               name="categoryId"
               th:value="${selectedCategoryId}"
               th:if="${selectedCategoryId != null}">
-
       </form>
-
     </section>
-
 
     <!--
       ③ 画面切り替えタブ
@@ -88,9 +81,7 @@
       nav-fill：タブを均等な幅で配置する
     -->
     <section class="mb-3">
-
       <ul class="nav nav-pills nav-fill">
-
         <!-- 在庫一覧タブ -->
         <li class="nav-item">
           <a class="nav-link active"
@@ -98,7 +89,6 @@
             在庫一覧
           </a>
         </li>
-
         <!-- 期限・在庫切れタブ -->
         <li class="nav-item">
           <a class="nav-link"
@@ -106,9 +96,7 @@
             期限・在庫切れ
           </a>
         </li>
-
       </ul>
-
     </section>
 
 
@@ -119,41 +107,38 @@
       d-flex：横並びにする
       gap-2：ボタン同士の間隔を設定する
       flex-fill：各ボタンの幅を均等にする
+
+      選択中のボタンにはactiveを付け、青背景・白文字にする。
+      selectedCategoryIdがnullの場合は「すべて」を選択状態にする。
+      カテゴリーIDはDBの登録内容と合わせる。
     -->
     <section class="mb-3">
-
       <div class="d-flex gap-2">
-
         <!-- すべて -->
         <a th:href="@{/inventory/list(keyword=${keyword})}"
           class="btn btn-outline-primary btn-sm flex-fill"
           th:classappend="${selectedCategoryId == null} ? ' active' : ''">
           すべて
         </a>
-
         <!-- 食品 -->
         <a th:href="@{/inventory/list(categoryId=1,keyword=${keyword})}"
           class="btn btn-outline-primary btn-sm flex-fill"
           th:classappend="${selectedCategoryId == 1} ? ' active' : ''">
           食品
         </a>
-
         <!-- 日用品 -->
         <a th:href="@{/inventory/list(categoryId=2,keyword=${keyword})}"
           class="btn btn-outline-primary btn-sm flex-fill"
           th:classappend="${selectedCategoryId == 2} ? ' active' : ''">
           日用品
         </a>
-
         <!-- その他 -->
         <a th:href="@{/inventory/list(categoryId=3,keyword=${keyword})}"
           class="btn btn-outline-primary btn-sm flex-fill"
           th:classappend="${selectedCategoryId == 3} ? ' active' : ''">
           その他
         </a>
-
       </div>
-
     </section>
 
 
@@ -167,42 +152,36 @@
       justify-content-between：左右に分けて配置する
     -->
     <section class="mb-4">
-
       <div class="list-group">
-
-        <!-- 商品リストを1件ずつ繰り返し表示 -->
-        <a th:each="product : ${products}"
-          th:href="@{/product/edit/{id}(id=${product.id})}"
-          class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-3">
-
-          <!-- 商品アイコン・商品名・カテゴリー -->
-          <div class="d-flex align-items-center gap-3">
-
-            <!-- 商品アイコン -->
-            <span class="fs-2"
-                  th:text="${product.icon.icon}">
-              🥛
+        <!-- 商品リストを1件ずつ繰り返し表示。
+          外側のdivで商品1件分を囲み、内側のaで行全体をリンクにする。
+          aの中ではdivを使わず、spanで内容をまとめる。
+          -->
+        <div th:each="product : ${products}"
+            class="list-group-item p-0">
+          <a th:href="@{/product/edit/{id}(id=${product.id})}"
+            class="list-group-item-action d-flex flex-wrap align-items-center justify-content-between gap-2 w-100 px-3 py-3 text-decoration-none text-body">
+            <!-- 商品アイコン・商品名・カテゴリー -->
+            <span class="d-flex align-items-center gap-3">
+              <!-- 商品アイコン：alerts.htmlと同じ画像表示 -->
+              <img th:src="@{'/images/icons/' + ${product.icon.id} + '.png'}"
+                  style="width:40px; height:40px; object-fit:cover;"
+                  class="rounded"
+                  alt="アイコン">
+              <!-- 商品名・カテゴリー -->
+              <span>
+                <!-- 商品名：d-blockで1行ずつ表示 -->
+                <span class="d-block fw-bold"
+                      th:text="${product.name}">
+                  牛乳
+                </span>
+                <!-- カテゴリー名 -->
+                <span class="d-block text-secondary small"
+                      th:text="${product.category.name}">
+                  食品
+                </span>
+              </span>
             </span>
-
-            <!-- 商品名・カテゴリー -->
-            <div>
-
-              <!-- 商品名 -->
-              <div class="text-secondary small"
-                  th:text="${product.name}">
-                牛乳
-              </div>
-
-              <!-- カテゴリー名 -->
-              <div class="text-secondary small"
-                  th:text="${product.category.category}">
-                食品
-              </div>
-
-            </div>
-
-          </div>
-
 
           <!--
             右側：在庫数と単位
@@ -211,30 +190,26 @@
             期限切れの場合：黄色系の文字
             通常の場合：通常の文字色
 
-            text-nowrap：文字が途中で改行されないようにする
-
-            th:classappend：条件に応じて文字色のクラスを追加する
-
             在庫切れと期限切れの両方に該当する場合は、
-            在庫切れ（赤文字）を優先する
+            在庫切れ（赤文字）を優先する。
+            期限切れは、使用期限が今日より前の日付の場合。
           -->
-          <div class="fw-bold text-nowrap"
-              th:classappend="${product.stock == 0} ? ' text-danger' : (${product.expiryDate != null and product.expiryDate.isBefore(T(java.time.LocalDate).now())} ? ' text-warning' : '')">
-
-            <!-- 在庫数と単位を表示 -->
-            残り<span th:text="${product.stock}">2</span><span th:text="${product.unit.unit}">本</span>
-
-          </div>
-
-        </a>
-
+            <span class="fw-bold text-nowrap"
+                  th:classappend="${product.stock == 0 ? 'text-danger' :
+                    (product.expiryDate != null
+                    and product.expiryDate.isBefore(today)
+                    ? 'text-warning' : '')}">
+              <!-- 在庫数と単位を表示 -->
+              残り<span th:text="${product.stock}">2</span><span th:text="${product.unit.name}">本</span>
+            </span>
+          </a>
+        </div>
       </div>
 
-
-      <!-- 商品が1件も登録されていない場合 -->
+      <!-- 商品未登録、または検索・絞り込みの結果が0件の場合 -->
       <p th:if="${#lists.isEmpty(products)}"
         class="text-center text-secondary py-4">
-        商品が登録されていません。
+        表示対象の商品はありません。
       </p>
 
     </section>
@@ -249,24 +224,19 @@
       rounded-pill：ボタンの角を丸くする
     -->
     <section class="d-flex justify-content-end mb-4">
-
       <a th:href="@{/product/add}"
         class="btn btn-primary rounded-pill px-4 py-2">
-
         <span class="fs-5">＋</span>
-
       </a>
-
     </section>
-
   </main>
+
 
   <!--
     ⑦ 共通ナビゲーションメニューの読み込み
     fragments/menu.html の menu フラグメントを画面下部に配置する
   -->
   <div th:replace="~{fragments/menu :: menu}"></div>
-
 
   <!-- Bootstrap 5 JS (CDN経由：ドロップダウンやモーダルなどを動かすために必要) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

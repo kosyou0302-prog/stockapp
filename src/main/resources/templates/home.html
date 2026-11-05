@@ -38,10 +38,6 @@
 
   <!-- メインコンテンツ（ここに各画面のTODOを書いていきます） -->
   <main class="container mt-4 mb-5 pb-5">
-
-    <!-- TODO: ここに各画面のテーブルやフォームを作っていく -->
-
-
     <!--
       ① お知らせエリア
       在庫切れ・期限切れの商品がある場合にお知らせを表示する
@@ -51,22 +47,17 @@
       alert-warning：黄色のお知らせ
       d-flex：横並びにする
       justify-content-between：左右に分けて配置する
-
     -->
     <section class="mb-4">
-
       <!-- 在庫切れのお知らせ（1件以上ある場合に表示） -->
       <a th:if="${homeSummary != null and homeSummary.outOfStockCount > 0}"
         th:href="@{/inventory/alerts(type='out')}"
         class="alert alert-danger d-flex justify-content-between align-items-center text-decoration-none">
-
         <span>⚠ 在庫切れの商品があります。</span>
-
         <span class="fw-bold"
               th:text="${'(' + homeSummary.outOfStockCount + '件)'}">
           (0件)
         </span>
-
       </a>
 
 
@@ -74,16 +65,12 @@
       <a th:if="${homeSummary != null and homeSummary.expiredCount > 0}"
         th:href="@{/inventory/alerts(type='expired')}"
         class="alert alert-warning d-flex justify-content-between align-items-center text-decoration-none">
-
         <span>⚠ 期限切れの商品があります。</span>
-
         <span class="fw-bold"
               th:text="${'(' + homeSummary.expiredCount + '件)'}">
           (0件)
         </span>
-
       </a>
-
     </section>
 
 
@@ -95,104 +82,68 @@
       g-3：カード同士の間隔
       col-6：横幅を半分にする（2列表示）
 
-      【修正点】
-      typeパラメータで個別のアラートを指定する。
+      外側のdivで配置を決め、内側のaでカード全体をリンクにする。
+      aの中ではdivを使わず、spanで内容をまとめる。
     -->
     <section class="mb-4">
-
-      <h3 class="h5 fw-bold mb-3">在庫状況</h3>
-
+      <h2 class="h5 fw-bold mb-3">在庫状況</h2>
       <div class="row g-3">
-
         <!-- 在庫切れカード -->
         <div class="col-6">
-
           <a th:href="@{/inventory/alerts(type='out')}"
             class="card bg-danger-subtle text-danger text-center text-decoration-none h-100">
-
-            <div class="card-body">
-
-              <div class="fs-2 mb-2">🛒</div>
-
-              <h4 class="h6 fw-bold">在庫切れ</h4>
-
-              <p class="h4 fw-bold mb-0">
-                <span th:text="${homeSummary != null ? homeSummary.outOfStockCount : 0}">2</span>件
-              </p>
-
-            </div>
+            <span class="card-body d-block">
+              <span class="d-block fs-2 mb-2">🛒</span>
+              <span class="d-block h6 fw-bold">在庫切れ</span>
+              <span class="d-block h4 fw-bold mb-0">
+                <span th:text="${homeSummary != null ? homeSummary.outOfStockCount : 0}">0</span>件
+              </span>
+            </span>
           </a>
-
         </div>
-
 
         <!-- 期限切れカード -->
         <div class="col-6">
-
           <a th:href="@{/inventory/alerts(type='expired')}"
             class="card bg-warning-subtle text-warning-emphasis text-center text-decoration-none h-100">
-
-            <div class="card-body">
-
-              <div class="fs-2 mb-2">⏰</div>
-
-              <h4 class="h6 fw-bold">期限切れ</h4>
-
-              <p class="h4 fw-bold mb-0">
-                <span th:text="${homeSummary != null ? homeSummary.expiredCount : 0}">3</span>件
-              </p>
-
-            </div>
+            <span class="card-body d-block">
+              <span class="d-block fs-2 mb-2">⏰</span>
+              <span class="d-block h6 fw-bold">期限切れ</span>
+              <span class="d-block h4 fw-bold mb-0">
+                <span th:text="${homeSummary != null ? homeSummary.expiredCount : 0}">0</span>件
+              </span>
+            </span>
           </a>
-
         </div>
-
 
         <!-- 残りわずかカード -->
         <div class="col-6">
-
           <a th:href="@{/inventory/alerts(type='low')}"
             class="card bg-primary-subtle text-primary text-center text-decoration-none h-100">
-
-            <div class="card-body">
-
-              <div class="fs-2 mb-2">📦</div>
-
-              <h4 class="h6 fw-bold">残りわずか</h4>
-
-              <p class="h4 fw-bold mb-0">
-                <span th:text="${homeSummary != null ? homeSummary.lowStockCount : 0}">2</span>件
-              </p>
-
-            </div>
+            <span class="card-body d-block">
+              <span class="d-block fs-2 mb-2">📦</span>
+              <span class="d-block h6 fw-bold">残りわずか</span>
+              <span class="d-block h4 fw-bold mb-0">
+                <span th:text="${homeSummary != null ? homeSummary.lowStockCount : 0}">0</span>件
+              </span>
+            </span>
           </a>
-
         </div>
 
-
-        <!-- 期限間近カード -->
+        <!-- 期限まぢかカード -->
         <div class="col-6">
-
           <a th:href="@{/inventory/alerts(type='soon')}"
             class="card bg-secondary-subtle text-secondary text-center text-decoration-none h-100">
-
-            <div class="card-body">
-
-              <div class="fs-2 mb-2">📅</div>
-
-              <h4 class="h6 fw-bold">期限まぢか</h4>
-
-              <p class="h4 fw-bold mb-0">
-                <span th:text="${homeSummary != null ? homeSummary.expiringSoonCount : 0}">2</span>件
-              </p>
-
-            </div>
+            <span class="card-body d-block">
+              <span class="d-block fs-2 mb-2">📅</span>
+              <span class="d-block h6 fw-bold">期限まぢか</span>
+              <span class="d-block h4 fw-bold mb-0">
+                <span th:text="${homeSummary != null ? homeSummary.expiringSoonCount : 0}">0</span>件
+              </span>
+            </span>
           </a>
-
         </div>
-
       </div>
-
     </section>
 
 
@@ -201,8 +152,7 @@
       食品・日用品・その他の3種類に分けて商品数を表示する
       col-4：横幅を3分の1にする（3列表示）
 
-      【修正点】
-      categoryパラメータではなくcategoryIdを使用する。
+      categoryId：移動先で絞り込むカテゴリーID
 
       ※カテゴリーIDは仮設定。
         DBの登録内容に合わせて修正が必要。
@@ -210,68 +160,43 @@
         必要に応じて後から追加する。
     -->
     <section class="mb-4">
-
-      <h3 class="h5 fw-bold mb-3">カテゴリ別の在庫</h3>
-
+      <h2 class="h5 fw-bold mb-3">カテゴリ別の在庫</h2>
       <div class="row g-3">
-
         <!-- 食品 -->
         <div class="col-4">
-
           <a th:href="@{/inventory/list(categoryId=1)}"
             class="card text-center text-decoration-none h-100">
-
-            <div class="card-body p-2">
-
-              <div class="fs-2 mb-2">🛒</div>
-
-              <h4 class="h6 fw-bold text-dark">食品</h4>
-
-            </div>
+            <span class="card-body d-block p-2">
+              <span class="d-block fs-2 mb-2">🛒</span>
+              <span class="d-block h6 fw-bold text-dark">食品</span>
+            </span>
           </a>
-
         </div>
-
 
         <!-- 日用品 -->
         <div class="col-4">
-
           <a th:href="@{/inventory/list(categoryId=2)}"
             class="card text-center text-decoration-none h-100">
-
-            <div class="card-body p-2">
-
-              <div class="fs-2 mb-2">🧴</div>
-
-              <h4 class="h6 fw-bold text-dark">日用品</h4>
-
-            </div>
+            <span class="card-body d-block p-2">
+              <span class="d-block fs-2 mb-2">🧴</span>
+              <span class="d-block h6 fw-bold text-dark">日用品</span>
+            </span>
           </a>
-
         </div>
-
 
         <!-- その他 -->
         <div class="col-4">
-
           <a th:href="@{/inventory/list(categoryId=3)}"
             class="card text-center text-decoration-none h-100">
-
-            <div class="card-body p-2">
-
-              <div class="fs-2 mb-2">🧹</div>
-
-              <h4 class="h6 fw-bold text-dark">その他</h4>
-
-            </div>
+            <span class="card-body d-block p-2">
+              <span class="d-block fs-2 mb-2">🧹</span>
+              <span class="d-block h6 fw-bold text-dark">その他</span>
+            </span>
           </a>
-
         </div>
-
       </div>
-
     </section>
-
+  </main>
   </main>
 
 
