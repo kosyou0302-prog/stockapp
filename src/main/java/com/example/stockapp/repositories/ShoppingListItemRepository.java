@@ -14,4 +14,6 @@ import com.example.stockapp.entities.ShoppingListItem;
 @Repository
 public interface ShoppingListItemRepository extends JpaRepository<ShoppingListItem, Long> {
 
+    // 買い物データを物理的に削除するメソッド
+    void deleteByProductId(Long productId);
 }
