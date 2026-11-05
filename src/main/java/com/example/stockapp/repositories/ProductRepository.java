@@ -16,6 +16,13 @@ import com.example.stockapp.entities.Product;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    List<Product> findByIsDeletedFalse(); // 論理削除していない＝falseのものを全権取得 在庫一覧で削除以外を表示するため
+    // 論理削除していない＝falseのものを全権取得 在庫一覧で削除以外を表示するため
+    List<Product> findByIsDeletedFalse();
+
+    // 在庫一覧あいうえお昇順
+    List<Product> findByFamilyIdAndIsDeletedFalseOrderByNameAsc(Long familyId);
+
+    // 在庫一覧あいまい検索機能（結果あいうえお昇順）
+    List<Product> findByNameContainingAndFamilyIdAndIsDeletedFalseOrderByNameAsc(String keyword, Long familyId);
 
 }
