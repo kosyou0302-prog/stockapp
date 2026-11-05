@@ -22,19 +22,27 @@
 </head>
 
 <body>
-  <!-- メインコンテンツ -->
-  <div class="container py-4">
-    <div class="card shadow mx-auto" style="max-width: 380px;">
-<!-- ヘッダー（戻るボタンのデザインを綺麗に統一） -->
-      <div class="card-header bg-primary text-white position-relative">
-        <a th:href="@{/inventory/list}"
-          class="btn btn-outline-light fw-bold position-absolute start-0 top-50 translate-middle-y ms-2">
-        ← 戻る
-        </a>
-        <h4 class="mb-0 text-center py-1">商品登録</h4>
-      </div>      
+  <!--
+    ※ ヘッダー（色は未だ仮設定）
+    bg-primary：背景を青色にする
+    text-white：文字を白色にする
+  -->
 
-      <div class="card-body">
+  <!-- ヘッダー（戻るボタンのデザインを綺麗に統一） -->
+  <div class="card-header bg-primary text-white position-relative">
+    <a th:href="@{/inventory/list}"
+      class="btn btn-outline-light fw-bold position-absolute start-0 top-50 translate-middle-y ms-2">
+    ← 戻る
+    </a>
+
+  <header class="bg-primary text-white text-center py-3">
+    <h1 class="h4 fw-bold mb-0">商品登録</h1>
+  </header>
+  </div>
+
+  <!-- メインコンテンツ -->
+  <main class="container mt-4 mb-5 pb-5">
+    <section class="mb-3">
         <form th:action="@{/product/add}" th:object="${item}"
         method="post" enctype="multipart/form-data">
 
@@ -128,12 +136,12 @@
                 <input type="number" class="form-control" th:field="*{threshold}">
             </div>
             <div class="col-6">
-                <select class="form-select" th:field="*{Unit}">
-                <option value="個">個</option>
-                <option value="本">本</option>
-                <option value="パック">パック</option>
-                <option value="箱">箱</option>
-                </select>
+              <select class="form-select" th:field="*{unit.id}">
+                <option value="1">個</option>
+                <option value="2">本</option>
+                <option value="3">パック</option>
+                <option value="4">箱</option>
+              </select>
             </div>
             </div>
 
@@ -150,15 +158,20 @@
             </div>
             </div>
 
-        <!-- 通知 -->
-        <div class="mb-4">
-          <div class="d-flex justify-content-between align-items-center">
-            <label class="form-label fw-bold mb-0">通知</label>
-            <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" th:field="*{isNotify}">
-            </div>
+        <!-- 通知設定 　日数設定を追加-->
+        <div class="d-flex align-items-center gap-3">
+          <label class="form-label fw-bold mb-0">通知</label>
+
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" th:field="*{isNotify}">
           </div>
-        </div>
+
+          <label class="mb-0 align-items fw-bold"></label>
+          <select class="form-select w-auto" th:field="*{alertDays}">
+            <option value="3">3日前</option>
+            <option value="7">7日前</option>
+          </select>
+        </div><br>
 
         <!-- 登録ボタン -->
         <div class="d-grid">
@@ -171,8 +184,12 @@
     </div>
     </div>
 
+  <!-- Bootstrap 5 JS (CDN経由：ドロップダウンやモーダルなどを動かすために必要) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <!-- アイコンプレビュー -->
-    <script>
+    <!--js/app.jsにて別途まとめて設定予定
+<script>
     document.querySelectorAll('.icon-select')
         .forEach(icon => {
         icon.addEventListener('click', function() {
@@ -195,6 +212,7 @@
 
         });
     });
+  -->
 
     </script>
 </body>
