@@ -195,17 +195,17 @@
               </span>
             </span>
 
-          <!--
-            右側：在庫数と単位
+            <!--
+              右側：在庫数と単位
 
-            在庫切れの場合：赤文字
-            期限切れの場合：黄色系の文字
-            通常の場合：通常の文字色
+              在庫切れの場合：赤文字
+              期限切れの場合：黄色系の文字
+              通常の場合：通常の文字色
 
-            在庫切れと期限切れの両方に該当する場合は、
-            在庫切れ（赤文字）を優先する。
-            期限切れは、使用期限が今日より前の日付の場合。
-          -->
+              在庫切れと期限切れの両方に該当する場合は、
+              在庫切れ（赤文字）を優先する。
+              期限切れは、使用期限が今日より前の日付の場合。
+            -->
             <span class="fw-bold text-nowrap"
                   th:classappend="${product.getPrimaryAlert(today) == 'OUT_OF_STOCK' ? 'text-danger' :
                     (product.getPrimaryAlert(today) == 'EXPIRED' ? 'text-warning' : '')}">
