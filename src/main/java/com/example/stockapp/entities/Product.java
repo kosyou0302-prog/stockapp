@@ -80,4 +80,27 @@ public class Product {
     // 論理削除
     @Column(nullable = false)
     private Boolean isDeleted = false;
+
+
+    // 一覧表示の優先度判定
+    public String getPrimaryAlert(LocalDate today) {
+        // 優先度１：期限切れ
+        if (expiryDate != null && today.isAfter(expiryDate)) {
+            return "EXPIRED";
+        }
+        // 優先度２：在庫切れ
+        else if (stock != null && stock == 0) {
+            return "OUT_OF_STOCK";
+        }
+        // 優先度３：期限間近
+        else if (expiryDate != null && alertDays != null
+                && !today.isBefore(expiryDate.minusDays(alertDays)) && !today.isAfter(expiryDate)) {
+            return "EXPIRING_SOON";
+        }
+        // 優先度４：残り僅か
+        else if (stock != null && threshold != null && 0 < stock && stock <= threshold) {
+            return "LOW_STOCK";
+        }
+        return "NONE";
+    }
 }
