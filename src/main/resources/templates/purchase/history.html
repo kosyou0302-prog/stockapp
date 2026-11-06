@@ -1,3 +1,10 @@
+<!--
+  【役割】過去に購入した商品を、購入日ごとにまとめて表示する画面です。
+
+  PurchaseHistoryControllerから渡されたhistoriesByDateを使用する。
+  同じ購入日の見出しは1回だけ表示し、その下に商品を並べる。
+  購入数量と単位は、見やすいように青色・太字で表示する。
+-->
 <!DOCTYPE html>
 <!-- Thymeleafを使う宣言と、言語を日本語(ja)に設定 -->
 <html xmlns:th="http://www.thymeleaf.org" lang="ja">
@@ -14,19 +21,39 @@
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
+      <!--
+    ① ヘッダー
+    在庫一覧・アラート画面と同じ位置に配置する。
+  -->
+  <header class="bg-primary text-white text-center py-3">
+    <h1 class="h4 fw-bold mb-0">購入履歴</h1>
+  </header>
+
   <!-- メインコンテンツ -->
-  <main class="container mt-4 mb-5">
-    <header class="bg-primary text-white text-center py-3">
-      <h1 class="h4 fw-bold mb-0">購入履歴</h1>
-    </header>
+  <main class="container mt-4 mb-5 pb-5">
+    <!--
+      ② 購入履歴リスト
 
-    <!-- 購入履歴リスト -->
-    <div class="content mt-4">
+      historiesByDate：
+        Controllerから受け取る、日付ごとにまとめた購入履歴。
+        Map<LocalDate, List<PurchaseHistory>>を想定する。
 
+      dateGroup.key：
+        購入日。
+
+      dateGroup.value：
+        その日に購入した商品の履歴一覧。
+    -->
+    <div class="content">
       <!-- 日付ごとに繰り返す -->
-      <div class="date-group mb-4" th:each="dateGroup : ${historiesByDate}">
-
-        <!-- 同じ購入日の見出しは1回だけ表示 -->
+      <div class="date-group mb-4"
+          th:each="dateGroup : ${historiesByDate}">
+        <!--
+          同じ購入日の見出しは1回だけ表示する。
+          M月d日（E）：月・日・曜日の表示形式。
+          Locale('ja')：日本語で表示するための指定。
+          表示例：11月4日（水）
+        -->
         <div class="date-header bg-info-subtle text-primary rounded-top px-3 py-2 fw-bold">
           <span th:text="${#temporals.format(
                   dateGroup.key, 'M月d日（E）', new java.util.Locale('ja'))}">
@@ -34,22 +61,34 @@
           </span>
         </div>
 
-        <!-- その日に購入した商品 -->
+        <!-- その日に購入した商品。
+            dateGroup.valueから購入履歴を1件ずつ取り出す。
+        -->
         <ul class="list-group shadow-sm">
           <li th:each="history : ${dateGroup.value}"
               class="list-group-item d-flex align-items-center py-3">
 
-            <!-- 商品アイコン -->
+            <!-- 商品アイコン
+              商品に設定されたアイコンIDに対応する画像を表示する。
+              例：static/images/icons/1.png
+            -->
             <img th:src="@{'/images/icons/' + ${history.product.icon.id} + '.png'}"
                 style="width:36px; height:36px; object-fit:cover;"
                 class="rounded me-3"
                 alt="アイコン">
-            <!-- 購入時の商品名 -->
+
+            <!-- 購入時の商品名
+                PurchaseHistoryに保存されたnameを表示する。
+            -->
             <span class="flex-grow-1 fw-bold"
                   th:text="${history.name}">
               牛乳
             </span>
-            <!-- 購入数量と単位 -->
+
+            <!-- 購入数量と単位
+                history.quantity：購入した数量
+                history.product.unit.name：商品に設定されている単位名
+            -->
             <div class="text-primary fw-bold text-nowrap">
             <span th:text="${history.quantity}">2</span><span
                   th:text="${history.product.unit.name}">本</span>
