@@ -34,23 +34,20 @@
       class="btn btn-outline-light fw-bold position-absolute start-0 top-50 translate-middle-y ms-2">
     ← 戻る
     </a>
-
-  <header class="bg-primary text-white text-center py-3">
-    <h1 class="h4 fw-bold mb-0">商品登録</h1>
-  </header>
+    <header class="bg-primary text-white text-center py-3">
+      <h1 class="h4 fw-bold mb-0">商品登録</h1>
+    </header>
   </div>
 
   <!-- メインコンテンツ -->
   <main class="container mt-4 mb-5 pb-5">
     <section class="mb-3">
-        <form th:action="@{/product/add}" th:object="${item}"
-        method="post" enctype="multipart/form-data">
+      <form th:action="@{/product/add}" th:object="${item}" method="post" enctype="multipart/form-data">
 
         <!-- エラー一覧 -->
         <div class="alert alert-danger" th:if="${#fields.hasAnyErrors()}">
           <ul class="mb-0">
-            <li th:each="err : ${#fields.errors('*')}" th:text="${err}">
-            </li>
+            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
           </ul>
         </div>
 
@@ -66,54 +63,44 @@
             <img id="preview" th:src="${item.icon != null ? '/images/icons/' + item.icon.id + '.png' : '/images/icons/1.png'}"
               style="width:50px;height:50px;" class="border rounded">
           </div>
-          <div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
-          </div>
+          <div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
         </div>
 
         <!-- アイコン選択 -->
         <div class="mb-3">
-            <label class="form-label fw-bold">アイコン選択</label>
+          <label class="form-label fw-bold">アイコン選択</label>
 
-            <!-- iconPath ではなく IconマスタのID（icon.id）を送信するように修正 -->
-            <input type="hidden" id="iconId" th:field="*{icon.id}">
+          <!-- iconPath ではなく IconマスタのID（icon.id）を送信するように修正 -->
+          <input type="hidden" id="iconId" th:field="*{icon.id}">
 
-            <!-- アイコン一覧 -->
-            <div class="row row-cols-4 g-2">
-              <div class="col" th:each="i : ${#numbers.sequence(1,20)}">
-                <img th:src="@{'/images/icons/' + ${i} + '.png'}"
-                th:data-path="@{'/images/icons/' + ${i} + '.png'}"
-                th:data-id="${i}"
-                class="img-thumbnail icon-select"
-                style="cursor:pointer; width:48px; height:48px; object-fit:cover;">
-              </div>
-            </div>
+          <!-- アイコン一覧 -->
+          <img id="preview" th:src="${item.icon != null ? '/images/icons/' + item.icon.id + '.png' : '/images/icons/1.png'}"
+          style="width:50px;height:50px;" class="border rounded">
         </div>
 
         <!-- 分類（カテゴリ） -->
         <div class="mb-3">
           <label class="form-label fw-bold">分類</label>
-            <!-- 文字列ではなく CategoryマスタのID（category.id）を送信するように修正 -->
-            <select class="form-select" th:field="*{category.id}">
-                <option value="">選択してください</option>
-                <option value="1">食品</option>
-                <option value="2">日用品</option>
-                <option value="3">その他</option>
-            </select>
-            <div class="text-danger small" th:if="${#fields.hasErrors('category')}" th:errors="*{category}">
-            </div>
+          <!-- 文字列ではなく CategoryマスタのID（category.id）を送信するように修正 -->
+          <select class="form-select" th:field="*{category.id}">
+              <option value="">選択してください</option>
+              <option value="1">食品</option>
+              <option value="2">日用品</option>
+              <option value="3">その他</option>
+          </select>
+          <div class="text-danger small" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>
         </div>
 
         <!-- 在庫数 -->
         <div class="mb-3">
           <label class="form-label fw-bold">在庫数</label>
-            <div class="row">
+          <div class="row">
+            <!-- 左側：在庫数の入力 -->
+            <div class="col-6">
+              <input type="number" class="form-control" th:field="*{stock}">
+            </div>
 
-              <!-- 左側：在庫数の入力 -->
-              <div class="col-6">
-                <input type="number" class="form-control" th:field="*{stock}">
-              </div>
-
-              <!-- 右側：単位の選択 -->
+            <!-- 右側：単位の選択 -->
             <div class="col-6">
               <select class="form-select" th:field="*{unit.id}">
                   <option value="1">個</option>
@@ -121,12 +108,11 @@
                   <option value="3">パック</option>
                   <option value="4">箱</option>
                 </select>
-              </div>
-            </div>
-            <!-- エラー表示 -->
-            <div class="text-danger small" th:if="${#fields.hasErrors('stock')}" th:errors="*{stock}">
             </div>
           </div>
+          <!-- エラー表示 -->
+          <div class="text-danger small" th:if="${#fields.hasErrors('stock')}" th:errors="*{stock}"></div>
+        </div>
 
         <!-- 購入目安 -->
         <div class="mb-3">
@@ -143,20 +129,16 @@
                 <option value="4">箱</option>
               </select>
             </div>
-            </div>
-
-            <div class="text-danger small" th:if="${#fields.hasErrors('threshold')}" th:errors="*{threshold}">
-            </div>
-            </div>
+          </div>
+          <div class="text-danger small" th:if="${#fields.hasErrors('threshold')}" th:errors="*{threshold}"></div>
+        </div>
 
         <!-- 使用期限 -->
         <div class="mb-3">
-            <label class="form-label fw-bold">使用期限</label>
-            <input type="date" class="form-control" th:field="*{expiryDate}">
-            <div class="text-danger small" th:if="${#fields.hasErrors('expiryDate')}"
-                        th:errors="*{expiryDate}">
-            </div>
-            </div>
+          <label class="form-label fw-bold">使用期限</label>
+          <input type="date" class="form-control" th:field="*{expiryDate}">
+          <div class="text-danger small" th:if="${#fields.hasErrors('expiryDate')}" th:errors="*{expiryDate}"></div>
+        </div>
 
         <!-- 通知設定 　日数設定を追加-->
         <div class="d-flex align-items-center gap-3">
@@ -176,13 +158,12 @@
         <!-- 登録ボタン -->
         <div class="d-grid">
           <button type="submit" class="btn btn-primary btn-lg">登録する</button>
-
         </div>
-        </form>
-        </div>
+      </form>
 
-    </div>
-    </div>
+      <div class="row row-cols-4 g-2"></div>
+    </section>
+  </main>
 
   <!-- Bootstrap 5 JS (CDN経由：ドロップダウンやモーダルなどを動かすために必要) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

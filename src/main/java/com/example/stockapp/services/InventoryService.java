@@ -78,22 +78,42 @@ public class InventoryService {
     public Map<String, Long> getHomeSummary() {
         List<Product> products = getAllInventory();
 
+        long outOfStockCount = 0L;
+        long lowStockCount = 0L;
+        long expiredCount = 0L;
+        long nearExpiryCount = 0L;
+
+        for(Product product : products) {
+            if (productService.isOutOfStock(product)) {
+                outOfStockCount++;
+            }else if(productService.isLowStock(product)) {
+                lowStockCount++;
+            }
+            if (productService.isPastExpiry(product)) {
+                expiredCount++;
+            }else if(productService.isNearExpiry(product)) {
+                nearExpiryCount++;
+            }
+        }
+
+        // 4回全件ループしてしまうので↑に変更
         // 在庫切れ件数
-        long outOfStockCount = products.stream()
-                .filter(productService::isOutOfStock)
-                .count();
-        // 残りわずか件数
-                long lowStockCount = products.stream()
-                .filter(productService::isLowStock)
-                .count();
-        // 期限切れ件数
-                long expiredCount = products.stream()
-                .filter(productService::isPastExpiry)
-                .count();
-        // 期限間近件数
-                long nearExpiryCount = products.stream()
-                .filter(productService::isNearExpiry)
-                .count();
+        // long outOfStockCount = products.stream()
+        //         .filter(productService::isOutOfStock)
+        //         .count();
+        // // 残りわずか件数
+        //         long lowStockCount = products.stream()
+        //         .filter(productService::isLowStock)
+        //         .count();
+        // // 期限切れ件数
+        //         long expiredCount = products.stream()
+        //         .filter(productService::isPastExpiry)
+        //         .count();
+        // // 期限間近件数
+        //         long nearExpiryCount = products.stream()
+        //         .filter(productService::isNearExpiry)
+        //         .count();
+
         // 空のMapを作成し、各集計値をあてはめる
         Map<String, Long> summaryMap = new HashMap<>();
         summaryMap.put("outOfStockCount", outOfStockCount);
