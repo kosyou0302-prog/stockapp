@@ -152,7 +152,7 @@ public class ProductService {
     }
 
     // 【処理内容】期限間近を判定
-    public boolean isExpired(Product product) {
+    public boolean isNearExpiry(Product product) {
         // nullを弾く
         if(product.getExpiryDate() == null || product.getAlertDays() == null){return false;}
         LocalDate startDate = product.getExpiryDate();

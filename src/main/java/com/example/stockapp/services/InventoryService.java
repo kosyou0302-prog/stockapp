@@ -2,11 +2,6 @@
  * 【役割】在庫一覧画面、アラート画面、ホーム画面の表示に必要なデータを取得・集計する「参照専用」のロジックを担当します。
 　　　　　 商品情報の参照処理を担当するサービスクラス
 　　　　　 登録・更新・削除は行わず、商品データの取得や集計のみを行う
- *
- * TODO: クラスに @Service と @Transactional(readOnly = true) を付与する
- * TODO: ホーム画面表示用の集計データをまとめるメソッドを実装する
- * TODO: 論理削除を除外した全在庫リストを取得するメソッドを実装する
- * TODO: アラート対象（在庫不足・期限切れ）の商品リストを取得するメソッドを実装する
  */
 package com.example.stockapp.services;
 
@@ -22,7 +17,6 @@ import com.example.stockapp.repositories.ProductRepository;
 
 import lombok.RequiredArgsConstructor;
 
-
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -35,7 +29,6 @@ public class InventoryService {
     private static final Long FAMILY_ID = 1L;
     /*Family dummyFamily = familyRepository.findById(1L).orElseThrow();
     product.setFamily(dummyFamily); */
-
 
     // 【処理内容】全在庫一覧取得：論理削除されていない商品を取得する
     public List<Product> getAllInventory() {
@@ -58,12 +51,11 @@ public class InventoryService {
 
     //カテゴリ別一覧取得
     public List<Product> getInventoryByCategory(Long categoryId) {
-
         if (categoryId == null) {
             return getAllInventory();
         }
         return productRepository
-            .findByCategoryIdAndFamilyIdAndIsDeletedFalseOrderByNameAsc(
+            .findByCategory_IdAndFamily_IdAndIsDeletedFalseOrderByNameAsc(
                         categoryId,FAMILY_ID);
     }
 
@@ -76,7 +68,7 @@ public class InventoryService {
                         productService.isOutOfStock(product)
                         || productService.isLowStock(product)
                         || productService.isPastExpiry(product)
-                        || productService.isExpired(product))
+                        || productService.isNearExpiry(product))
                     .toList();
         return alertProducts;
     }
@@ -100,7 +92,7 @@ public class InventoryService {
                 .count();
         // 期限間近件数
                 long nearExpiryCount = products.stream()
-                .filter(productService::isExpired)
+                .filter(productService::isNearExpiry)
                 .count();
         // 空のMapを作成し、各集計値をあてはめる
         Map<String, Long> summaryMap = new HashMap<>();
