@@ -25,4 +25,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // 在庫一覧あいまい検索機能（結果あいうえお昇順）
     List<Product> findByNameContainingAndFamilyIdAndIsDeletedFalseOrderByNameAsc(String keyword, Long familyId);
 
+    // カテゴリ別商品一覧取得（商品名昇順）
+    List<Product> findByCategoryIdAndFamilyIdAndIsDeletedFalseOrderByNameAsc(
+            Long categoryId,
+            Long familyId);
+
 }
