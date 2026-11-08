@@ -42,7 +42,6 @@
     <h1 class="h4 fw-bold mb-0">買い物リスト</h1>
   </header>
 
-
   <!-- メインコンテンツ（ここに各画面のTODOを書いていきます） -->
   <main class="container mt-4 mb-5 pb-5">
 
@@ -63,16 +62,14 @@
     -->
 
     <section class="mb-4">
-
       <h2 class="h5 fw-bold mb-3">買い物リストに追加</h2>
 
-      <form th:action="@{/shopping}"
+      <form th:action="@{/shopping/list}"
             method="post"
             class="card">
-
         <div class="card-body">
 
-                    <!--
+          <!--
             ②-1 カテゴリー絞り込み
 
             商品選択欄の前にカテゴリーを選択する。
@@ -100,14 +97,11 @@
             -->
             <select id="categoryFilter"
                     class="form-select form-select-sm">
-
               <option value="すべて">すべて</option>
               <option value="食品">食品</option>
               <option value="日用品">日用品</option>
               <option value="その他">その他</option>
-
             </select>
-
           </div>
 
           <!--
@@ -116,7 +110,6 @@
             商品選択欄、数量入力欄、追加ボタンを
             Bootstrapのrowで横一列に配置する。
           -->
-
           <div class="row g-2 align-items-end">
 
             <!--
@@ -134,7 +127,6 @@
             -->
 
             <div class="col">
-
               <label for="productId"
                     class="form-label fw-bold mb-1">
                 商品
@@ -144,25 +136,19 @@
                       name="productId"
                       class="form-select form-select-sm"
                       required>
-
                 <option value="">商品を選択してください</option>
-
                 <option th:each="product : ${products}"
                         th:value="${product.id}"
                         th:text="${product.name}"
                         th:attr="data-category=${product.category.name}">
                   牛乳
                 </option>
-
               </select>
-
             </div>
 
 
             <!-- 購入予定数 -->
-
             <div class="col-auto">
-
               <label for="quantity"
                     class="form-label fw-bold mb-1">
                 数量
@@ -175,7 +161,6 @@
 
                 ※サーバー側でも入力チェックが必要
               -->
-
               <input type="number"
                     id="quantity"
                     name="quantity"
@@ -187,28 +172,20 @@
 
             </div>
 
-
             <!-- 追加ボタン -->
-
             <div class="col-auto">
-
               <label class="form-label mb-1 d-block">
                 &nbsp;
               </label>
-
               <button type="submit"
                       class="btn btn-primary btn-sm text-nowrap">
                 ＋追加
               </button>
-
             </div>
 
           </div>
-
         </div>
-
       </form>
-
     </section>
 
 
@@ -229,13 +206,10 @@
       shoppingItems：買い物リストに登録された商品一覧
     -->
     <section class="mb-4">
-
       <h2 class="h5 fw-bold mb-3">購入予定の商品</h2>
-
 
       <!--
         買い物リストが空の場合
-
         #lists.isEmpty：リストが空かどうかを判定する
       -->
       <p th:if="${shoppingItems == null or #lists.isEmpty(shoppingItems)}"
@@ -243,28 +217,21 @@
         買い物リストに商品がありません。
       </p>
 
-
       <!-- 買い物リストが存在する場合 -->
       <div class="list-group"
           th:if="${shoppingItems != null and !#lists.isEmpty(shoppingItems)}">
 
-
         <!--
           商品リストを1件ずつ繰り返し表示
-
           th:each：
           shoppingItemsの中からitemを1件ずつ取り出す
         -->
         <div th:each="item : ${shoppingItems}"
             class="list-group-item py-3">
-
-
           <div class="d-flex align-items-center justify-content-between gap-2">
-
 
             <!-- 左側：チェックボックス・商品情報 -->
             <div class="d-flex align-items-center gap-3">
-
 
               <!--
                 ④ 購入チェックボックス
@@ -279,7 +246,9 @@
 
                 【JS担当者へ】
                 チェック状態が変更されたとき、
-                Fetch APIを使ってPOST /shopping/{id}へ送信する。
+                Fetch APIを使ってPOST /shopping/list/{id}へ送信する。
+                {id}には、data-idから取得した買い物リスト項目のIDを使用する。
+                app.js側の送信先URLも、Controllerに合わせる。
 
                 ※現在のControllerは仮実装のため、
                   実際のDB更新処理は今後追加する。
@@ -291,8 +260,8 @@
                     aria-label="購入する商品を選択">
 
 
-              <!-- 商品アイコン -->
-              <img th:src="@{'/images/icons/' + ${product.icon.id} + '.png'}"
+              <!-- 商品アイコン:買い物リスト項目に紐づく商品のアイコンを表示 -->
+              <img th:src="@{'/images/icons/' + ${item.product.icon.id} + '.png'}"
                 style="width:40px; height:40px; object-fit:cover;"
                 class="rounded"
                 alt="アイコン">
@@ -300,16 +269,13 @@
 
               <!-- 商品名 -->
               <div>
-
                 <div class="fw-bold"
                     th:text="${item.product.name}">
                   牛乳
                 </div>
-
                 <div class="text-secondary small">
                   購入予定
                 </div>
-
               </div>
 
             </div>
@@ -331,24 +297,19 @@
             -->
             <div class="d-flex align-items-center gap-2">
 
-
               <!-- 数量を減らす -->
               <form th:action="@{/shopping/quantity/{id}(id=${item.id})}"
                     method="post">
-
                 <input type="hidden"
                       name="change"
                       value="-1">
-
                 <button type="submit"
                         class="btn btn-outline-secondary btn-sm"
                         th:disabled="${item.threshold == null or item.threshold le 1}"
                         aria-label="数量を減らす">
                   －
                 </button>
-
               </form>
-
 
               <!--
                 購入予定数を表示する
@@ -361,34 +322,24 @@
                 1
               </span>
 
-
               <!-- 数量を増やす -->
               <form th:action="@{/shopping/quantity/{id}(id=${item.id})}"
                     method="post">
-
                 <input type="hidden"
                       name="change"
                       value="1">
-
                 <button type="submit"
                         class="btn btn-outline-secondary btn-sm"
                         aria-label="数量を増やす">
                   ＋
                 </button>
-
               </form>
 
             </div>
-
           </div>
-
         </div>
-
       </div>
-
     </section>
-
-
 
     <!--
       ⑥ 買い物リストの操作ボタン
@@ -404,9 +355,7 @@
     -->
     <section class="mb-4"
             th:if="${shoppingItems != null and !#lists.isEmpty(shoppingItems)}">
-
       <div class="d-grid gap-2">
-
 
         <!--
           ⑥ 買い物リストの操作ボタン
@@ -438,14 +387,11 @@
 
             <form th:action="@{/shopping/delete}"
                   method="post">
-
               <button type="submit"
                       class="btn btn-outline-danger w-100">
                 チェックした商品を削除
               </button>
-
             </form>
-
           </div>
 
 
@@ -471,26 +417,17 @@
 
             <form th:action="@{/shopping/complete}"
                   method="post">
-
               <button type="submit"
                       class="btn btn-primary w-100">
                 ✓ チェックした商品を購入完了
               </button>
-
             </form>
-
           </div>
 
         </div>
-
       </div>
-
     </section>
-
-
   </main>
-
-
 
   <!--
     共通ナビゲーションメニューの読み込み
