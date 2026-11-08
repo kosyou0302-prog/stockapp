@@ -70,8 +70,8 @@ public class ShoppingListController {
 
     // 追加後は買い物リスト画面へ戻り、更新された一覧を表示する
     return new ModelAndView("redirect:/shopping/list");
-    
-        return new ModelAndView("redirect:/home");
+
+        //return new ModelAndView("redirect:/home");
     }
 
     // チェックボックス（JS）-------------------------------------------------------------------
