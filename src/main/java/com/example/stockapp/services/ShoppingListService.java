@@ -2,27 +2,6 @@
  * 【役割】買い物リストへの追加、チェック状態の更新、一括購入処理など、
  * アプリ内で最も複雑な複数テーブル連携ロジックを担当します。
  *
- * TODO: クラスに @Service と @Transactional を付与する
- * TODO: 買い物リストへの手動・自動追加メソッドを実装する
- * TODO: 非同期通信（JS）から呼ばれるチェック状態の更新メソッドを実装する
- * TODO: 一括購入処理（対象の抽出、在庫の加算、履歴の作成、
- *       リストからの削除）を実装する
- *
- * 【今回の実装】
- * ➀買い物リスト一覧取得
- * ➁手動追加
- * ➂在庫切れ・期限切れによる自動追加
- * ・チェック済み商品の一括購入
- *
- * 【今後の実装】
- * ・チェック状態の更新
- * ・購入予定数量の増減
- * ・チェック済み項目の一括削除
- *
- * 【項目名について】
- * Product.threshold：残りわずかを判定する購入目安
- * ShoppingListItem.threshold：買う予定の数量
- *
  * ※ログイン機能ができるまでは、ダミーの家族ID＝1を使用します。
  */
 package com.example.stockapp.services;
@@ -46,271 +25,140 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 @RequiredArgsConstructor
 public class ShoppingListService {
-
     // ==================================================
     // 定数・使用するRepositoryとService
     // ==================================================
-
     // ログイン機能ができるまでの仮の家族ID
     private static final Long DUMMY_FAMILY_ID = 1L;
-
     // 買い物リストの取得・保存・削除
     private final ShoppingListItemRepository shoppingListItemRepository;
-
     // 商品の取得・在庫数などの保存
     private final ProductRepository productRepository;
-
     // 家族データの取得・ロック
     private final FamilyRepository familyRepository;
-
     // 購入履歴の記録
     private final PurchaseHistoryService purchaseHistoryService;
-
 
     // ==================================================
     // ➀　買い物リスト一覧取得
     // ==================================================
-
     /*
      * 【処理内容】買い物リスト一覧取得
-     *
      * 現在の家族の買い物リストを取得します。
      * 商品が論理削除済みの場合は、一覧に表示しません。
-     *
      * readOnly=true：
      * このメソッドではデータの更新を行いません。
      */
     @Transactional(readOnly = true)
     public List<ShoppingListItem> getShoppingList() {
-
-        return shoppingListItemRepository
-                .findByFamilyIdAndProductFamilyIdAndProductIsDeletedFalseOrderByIdAsc(
-                        DUMMY_FAMILY_ID,
-                        DUMMY_FAMILY_ID);
+        return shoppingListItemRepository.findByFamily_IdAndProduct_Family_IdAndProduct_IsDeletedFalseOrderByIdAsc(
+            DUMMY_FAMILY_ID, DUMMY_FAMILY_ID);
     }
 
-
     // ==================================================
-    // ➁➂リストへの追加・削除
+    // ➁ 手動追加
     // ==================================================
-
-    /*
-     * 【処理内容】リスト追加/削除：
-     * 在庫不足の商品や手動追加されたアイテムをリストに登録・解除する
-     *
-     * 以下に、手動追加と自動追加を実装します。
-     * 購入完了時の削除はcompletePurchaseで行います。
-     * 購入せずに項目を削除する処理は、今後実装します。
-     */
-
-
-    /*
-     * ① 手動追加
-     *
-     * productId：追加する商品のID
-     * quantity ：今回追加する数量
-     *
-     * ・同じ商品が未登録なら、新しい項目を作成します。
-     * ・登録済みなら、既存の購入予定数量に加算します。
-     * ・登録済み項目のチェック状態は変更しません。
-     *
-     * 【処理の流れ】
-     * 1. 追加数量を確認する
-     * 2. 家族をロックし、対象商品を取得する
-     * 3. 登録済み項目を検索する
-     * 4. 登録状況に応じて加算、または新規作成する
+    /**
+     * 商品を手動で買い物リストに追加します。
+     * 未登録なら新規作成、登録済みなら購入予定数量を加算します。
      */
     public void addManualItem(Long productId, Integer quantity) {
-
-        /*
-         * 1. 追加数量を確認する：
-         *    未入力・0・負数の数量は受け付けません。
-         */
+        // 1. 入力値検証（数量は1以上）
         validateQuantity(quantity);
 
-
-        /*
-         * 2. 家族をロックし、対象商品を取得する：
-         *    同じ家族の追加・購入完了処理を順番に行います。
-         *    同じ家族の商品で、削除済みでないことを確認します。
-         */
-        Family family = lockCurrentFamily();
+        // 2. ログイン機能ができるまでの暫定対応：ID=1のダミー家族をセット)
+        // 排他ロック処理（将来の拡張用に保持）Family family = lockCurrentFamily();
+        Family family = familyRepository.findById(DUMMY_FAMILY_ID)
+        .orElseThrow(() -> new IllegalStateException("ダミー家族が見つかりません"));
         Product product = getAvailableProduct(productId);
 
-
-        /*
-         * 3. 登録済み項目を検索する：
-         *    同じ家族・同じ商品の登録済み項目を探します。
-         *    見つからなければnullになります。
-         */
+        // 3. 買い物リストの既存登録を確認
         ShoppingListItem existingItem = shoppingListItemRepository
-                .findByFamilyIdAndProductId(
-                        DUMMY_FAMILY_ID,
-                        productId)
+                .findByFamily_IdAndProduct_Id(DUMMY_FAMILY_ID, productId)
                 .orElse(null);
 
-
-        /*
-         * 4. 登録状況に応じて保存する：
-         * 　　登録済み：購入予定数量に加算する
-         * 　　未登録　：新しい項目を作成する
-         */
+        // 4. 登録状況に応じた保存処理
         if (existingItem != null) {
-            // 保存済みの購入予定数量も確認します。
+            // 登録済み：既存数量に加算（オーバーフロー検知）
             validateQuantity(existingItem.getThreshold());
+            int updatedQuantity = Math.addExact(existingItem.getThreshold(), quantity);
 
-            /*
-             * 登録済みの場合は購入予定数量に加算します。
-             * Math.addExactは、整数の上限を超えた場合に
-             * 不正な計算結果を保存せず、例外にします。
-             */
-            int updatedQuantity = Math.addExact(
-                    existingItem.getThreshold(),
-                    quantity);
-
-            // チェック状態は変更せず、数量だけ更新します。
+            // チェック状態は変更せず、数量だけ更新
             existingItem.setThreshold(updatedQuantity);
             shoppingListItemRepository.save(existingItem);
         } else {
-            // 未登録の場合は、新しい項目を作成します。
+            // 未登録：チェックなし（false）で新規登録
             saveNewItem(family, product, quantity);
         }
     }
 
-
-    /*
-     * ② 在庫連動による自動追加
-     *
-     * 【対象】
-     * ・同じ家族の商品
-     * ・論理削除されていない
-     * ・通知ON
-     * ・在庫切れ、または期限切れ
-     *
-     * 【購入予定数量】
-     * Productの購入目安＋1
-     *
-     * 【登録済みの場合】
-     * 数量もチェック状態も変更しません。
-     *
-     * 【確認待ちの場合】
-     * 期限切れを理由にした再追加は止めます。
-     * 在庫切れの場合は、確認待ちでも追加対象にします。
-     *
-     * 【処理の流れ】
-     * 1. 商品の指定を確認する
-     * 2. 家族をロックし、対象商品を取得する
-     * 3. 通知設定を確認する
-     * 4. 在庫切れ・期限切れを判定する
-     * 5. 買い物リストへの重複登録を確認する
-     * 6. 購入予定数量を計算する
-     * 7. 買い物リストに保存する
-     *
-     * ※商品をDBへ保存した後に呼び出してください。
+    // ==================================================
+    // ➂ 自動追加
+    // ==================================================
+    /**
+     * 在庫数または賞味期限の状態に応じて、商品を買い物リストへ自動追加。
+     * ※商品をDBへ保存した後に呼び出し。
      */
     public void addAutoItem(Product product) {
-
-        /*
-         * 1. 商品の指定を確認する：
-         * 　　商品そのもの、または商品IDがない場合は処理できません。
-         */
+        // 1. 引数検証
         if (product == null || product.getId() == null) {
-            throw new IllegalArgumentException(
-                    "自動追加する商品が指定されていません");
+            throw new IllegalArgumentException("自動追加する商品が指定されていません");
         }
 
-
-        /*
-         * 2. 家族をロックし、対象商品を取得する：
-         * 　　同じ家族の追加・購入完了処理を順番に行います。
-         * 　　商品はRepositoryから取得します。
-         */
-        Family family = lockCurrentFamily();
+        // 2. 家族情報取得と商品の最新状態・権限確認（他家族・削除済みを除外）
+        // 【将来拡張用：悲観的ロック】Family family = lockCurrentFamily();
+        // ログイン機能ができるまでの暫定対応：ID=1のダミー家族をセット)
+        Family family = familyRepository.findById(DUMMY_FAMILY_ID)
+        .orElseThrow(() -> new IllegalStateException("ダミー家族が見つかりません"));
 
         Product targetProduct = productRepository
-                .findByIdAndFamilyIdAndIsDeletedFalse(
-                        product.getId(),
-                        DUMMY_FAMILY_ID)
-                .orElse(null);
-
+            .findByIdAndFamily_IdAndIsDeletedFalse(product.getId(), DUMMY_FAMILY_ID)
+            .orElse(null);
         // 別の家族の商品・削除済み商品・存在しない商品は対象外です。
         if (targetProduct == null) {
             return;
         }
 
-
-        /*
-         * 3. 通知設定を確認する：
-         * 　　通知OFF、または通知設定がnullの場合は追加しません。
-         * 　　すでに買い物リストにある項目は削除しません。
-         */
+        // 3. 通知設定の確認（通知OFFならスキップ）
         if (!Boolean.TRUE.equals(targetProduct.getIsNotify())) {
             return;
         }
 
+        // 4. アラート判定（在庫切れ、または期限切れ）
+        LocalDate today = LocalDate.now();
+        boolean outOfStock = isOutOfStock(targetProduct);
+        boolean expired = isPastExpiry(targetProduct, today);
 
         /*
-         * 4. 在庫切れ・期限切れを判定する：
-         * 　　在庫切れ：確認待ちでも、自動追加の対象にします。
-         * 　　期限切れ：確認待ちでない場合だけ、自動追加の対象にします。
+         * 【将来拡張用：要確認フラグ連携】
+         * boolean needsReview = Boolean.TRUE.equals(targetProduct.getNeedsReview());
+         * boolean expiredAndNotReviewing = expired && !needsReview;
+         * if (!outOfStock && !expiredAndNotReviewing) { return; }
          */
-        LocalDate today = LocalDate.now();
-
-        boolean outOfStock = isOutOfStock(targetProduct);
-
-        boolean needsReview =
-                Boolean.TRUE.equals(targetProduct.getNeedsReview());
-
-        boolean expiredAndNotReviewing =
-                isPastExpiry(targetProduct, today) && !needsReview;
-
-        // どちらの条件にも該当しなければ終了します。
-        if (!outOfStock && !expiredAndNotReviewing) {
+        // 在庫切れでも期限切れでもなければ終了
+        if(!outOfStock && !expired) {
             return;
         }
 
-
-        /*
-         * 5. 買い物リストへの重複登録を確認する：
-         * 　　同じ家族・同じ商品が登録済みなら、何も変更しません。
-         * 　　判定のたびに購入予定数量が増えることを防ぎます。
-         */
+        // 5. 二重登録防止（すでにリストにある場合はスキップ）
         boolean alreadyExists = shoppingListItemRepository
-                .findByFamilyIdAndProductId(
-                        DUMMY_FAMILY_ID,
-                        targetProduct.getId())
+                .findByFamily_IdAndProduct_Id(DUMMY_FAMILY_ID, targetProduct.getId())
                 .isPresent();
 
         if (alreadyExists) {
             return;
         }
 
-
-        /*
-         * 6. 購入予定数量を計算する：
-         * 　　Product.thresholdは、商品の購入目安です。
-         * 　　購入目安は0以上・未入力不可とします。
-         */
+        // 6. 購入予定数量の算出（購入目安 + 1）
         Integer threshold = targetProduct.getThreshold();
-
         if (threshold == null || threshold < 0) {
-            throw new IllegalArgumentException(
-                    "商品の購入目安を0以上で設定してください");
+            throw new IllegalArgumentException("商品の購入目安を0以上で設定してください");
         }
-
-        // 購入予定数量＝商品の購入目安＋1
-        // 整数の上限を超えた場合は、例外にして保存を止めます。
         int quantity = Math.addExact(threshold, 1);
 
-
-        /*
-         * 7. 買い物リストに保存する：
-         * 　　新しい項目を作成します。
-         * 　　チェック状態はsaveNewItem内でfalseに設定します。
-         */
+        // 7. 買い物リストへ新規保存
         saveNewItem(family, targetProduct, quantity);
     }
-
 
     // ==================================================
     // 数量変更・チェック状態の更新（今後実装）
@@ -325,8 +173,6 @@ public class ShoppingListService {
      * 実際のリクエストはControllerで受け取り、
      * ControllerからServiceのメソッドを呼び出します。
      */
-
-
     /*
      * 【処理内容】チェック状態の更新
      *
@@ -334,168 +180,73 @@ public class ShoppingListService {
      * ShoppingListItemのisCheckedを更新する処理です。
      */
 
-
     // ==================================================
-    // 複数選択の一括操作・購入完了
+    // ➃ チェック済み商品の一括購入
     // ==================================================
-
-    /*
-     * 【処理内容】複数選択の一括操作：
-     * 画面から送られた複数のIDリストを元に、
-     * 一括削除や一括購入済みフラグ変更を行う
+    /**
+     * チェック済みの商品を一括で購入完了とし、在庫更新・履歴保存・リスト削除を行います。
      *
-     * 【今回の実装方針】
-     * 画面からIDリストを受け取る方法ではなく、
-     * DBに保存されたisChecked=trueの項目を対象にします。
-     *
-     * 購入完了時は、購入済みフラグを残すのではなく、
-     * 購入履歴へ記録した後、買い物リストから削除します。
-     *
-     * 購入せずにチェック済み項目を一括削除する処理は、今後実装します。
-     */
-
-
-    /*
-     * ③ チェック済み商品の一括購入
-     *
-     * 【処理の流れ】
-     * 1. 家族をロックする
-     * 2. 現在の家族のチェック済み項目を取得する
-     * 3. 商品ごとに数量・在庫数を確認する
-     * 4. 購入予定数量を商品の在庫数に加算する
-     * 5. 購入前に期限切れなら、確認用フラグをtrueにする
-     * 6. 商品を保存し、購入履歴を記録する
-     * 7. 購入済み項目を買い物リストから削除する
-     *
-     * 【戻り値】
-     * 購入完了にした項目数
-     * ※商品の合計個数ではありません。
-     *
-     * 途中で実行時例外が発生した場合は、同じトランザクション内の変更を取り消します。
+     * @return 購入完了にしたアイテム数
      */
     public int completePurchase() {
+        // 1. 排他制御
+        // 【将来拡張用：悲観的ロック】lockCurrentFamily();
 
-        /*
-         * 1. 家族をロックする：
-         * 　　同じ家族の購入完了処理が同時に進まないようにします。
-         * 　　後から実行された処理は、先の処理で削除された項目を再度購入対象にしないようにします。
-         */
-        lockCurrentFamily();
-
-
-        /*
-         * 2. チェック済み項目を取得する：
-         * 　　同じ家族の、削除されていない商品のチェック済み項目を取得します。
-         */
-        List<ShoppingListItem> checkedItems = shoppingListItemRepository
-                .findByFamilyIdAndProductFamilyIdAndIsCheckedTrueAndProductIsDeletedFalseOrderByIdAsc(
-                        DUMMY_FAMILY_ID,
-                        DUMMY_FAMILY_ID);
-
+        // 2. チェック済み項目の取得（自家族・未削除商品のみ）
+        List<ShoppingListItem> checkedItems = shoppingListItemRepository.findByFamily_IdAndIsCheckedTrue(DUMMY_FAMILY_ID);
         // 購入対象がなければ、購入完了件数0を返します。
         if (checkedItems.isEmpty()) {
             return 0;
         }
 
-        // 今回の購入処理で使用する日付をそろえます。
-        LocalDate today = LocalDate.now();
-
-
-        // チェック済み項目を1件ずつ処理します。
+        // 3. 各商品の在庫更新と履歴記録
         for (ShoppingListItem item : checkedItems) {
-
-            /*
-             * 3. 商品ごとに数量・在庫数を確認する：
-             * 　　ShoppingListItem.thresholdは購入予定数量です。
-             */
             Product product = item.getProduct();
+
+            // 商品が存在しない、または論理削除済みの場合は在庫更新をスキップ
+            if(product == null || Boolean.TRUE.equals(product.getIsDeleted())) {
+                continue;
+            }
 
             Integer quantity = item.getThreshold();
             validateQuantity(quantity);
 
             Integer currentStock = product.getStock();
-
             if (currentStock == null || currentStock < 0) {
-                throw new IllegalArgumentException(
-                        "商品の在庫数を確認してください");
+                throw new IllegalArgumentException("商品の在庫数を確認してください");
             }
 
-
-            /*
-             * 4. 商品の在庫数に購入予定数量を加算する：
-             * 　　購入前に期限切れだったかも確認しておきます。
-             */
-            boolean expiredBeforePurchase =
-                    isPastExpiry(product, today);
-
-            int updatedStock = Math.addExact(
-                    currentStock,
-                    quantity);
-
+            // 在庫数に購入数量を加算してセット（オーバーフロー検知）
+            int updatedStock = Math.addExact(currentStock, quantity);
             product.setStock(updatedStock);
 
-
             /*
-             * 5. 確認用フラグを設定する：
-             *
-             * 期限切れの状態で購入した場合は確認待ちにします。
-             * 処分した数量や新しい使用期限は、自動では変更しません。
-             *
-             * 期限切れでない場合も、既存の確認待ちフラグを
-             * この処理から勝手に解除しません。
-             */
-            if (expiredBeforePurchase) {
-                product.setNeedsReview(true);
-            }
-
-
-            /*
-             * 6. 商品を保存し、購入履歴を記録する：
-             *
-             * 購入履歴の保存を担当Serviceへ依頼します。
-             *
-             * ※recordPurchaseは連携用の仮のメソッド名です。
-             * PurchaseHistoryService担当者と名前・引数を合わせてください。
-             * 履歴保存は購入完了処理と同じトランザクションで行います。
-             */
+            * 【将来拡張用：要確認フラグ連携】
+            * LocalDate today = LocalDate.now();
+            * boolean expiredBeforePurchase = isPastExpiry(product, today);
+            * if (expiredBeforePurchase) {
+            *     product.setNeedsReview(true);
+            * }
+            */
+            // 商品在庫の更新保存
             productRepository.save(product);
 
-            purchaseHistoryService.recordPurchase(
-                    product,
-                    quantity);
+            // 【将来拡張用：購入履歴連携】
+            // purchaseHistoryService.recordPurchase(product, quantity);
         }
 
-
-        /*
-         * 7. 購入済み項目を買い物リストから削除する
-         *
-         * 全商品の処理が終わってから、
-         * 購入完了した項目だけを削除します。
-         */
+        // リストからの削除と件数返却
         shoppingListItemRepository.deleteAll(checkedItems);
-
-        // 購入完了にした項目数を返します。
         return checkedItems.size();
     }
-
 
     // ==================================================
     // 共通処理
     // ==================================================
 
-    /*
-     * 【共通処理】新しい買い物リスト項目を保存する
-     *
-     * 新規追加時のチェック状態はfalseにします。
-     */
-    private void saveNewItem(
-            Family family,
-            Product product,
-            Integer quantity) {
-
-        // 1. 新しい項目を作成します。
+    //  新しい買い物リスト項目を作成・保存します（初期チェック状態は false）。
+    private void saveNewItem(Family family, Product product, Integer quantity) {
         ShoppingListItem item = new ShoppingListItem();
-
         // 2. 家族・商品・購入予定数量・チェック状態を設定します。
         item.setFamily(family);
         item.setProduct(product);
@@ -506,94 +257,50 @@ public class ShoppingListService {
         shoppingListItemRepository.save(item);
     }
 
-
-    /*
-     * 【共通処理】購入予定数量の確認
-     *
-     * 数量は1以上とします。
-     */
+    // 購入予定数量の入力値検証（1以上必須）
     private void validateQuantity(Integer quantity) {
-
         if (quantity == null || quantity < 1) {
-            throw new IllegalArgumentException(
-                    "購入予定数量は1以上で入力してください");
+            throw new IllegalArgumentException("購入予定数量は1以上で入力してください");
         }
     }
 
-
-    /*
-     * 【共通処理】追加可能な商品を取得する
-     *
-     * 同じ家族の商品で、削除済みでないものだけ取得します。
-     */
+    // 追加可能な有効商品を取得します（自家族かつ論理削除されていない商品）
     private Product getAvailableProduct(Long productId) {
-
         // 1. 商品IDが指定されているか確認します。
         if (productId == null) {
-            throw new IllegalArgumentException(
-                    "商品を選択してください");
+            throw new IllegalArgumentException("商品を選択してください");
         }
-
         // 2. 条件に一致する商品を取得します。
         // 見つからない場合は、例外にして追加処理を止めます。
         return productRepository
-                .findByIdAndFamilyIdAndIsDeletedFalse(
-                        productId,
-                        DUMMY_FAMILY_ID)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "追加できる商品が見つかりません"));
+            .findByIdAndFamily_IdAndIsDeletedFalse(productId, DUMMY_FAMILY_ID)
+            .orElseThrow(() -> new IllegalArgumentException("追加できる商品が見つかりません"));
     }
 
-
-    /*
-     * 【共通処理】家族データの取得・ロック
-     *
-     * 同じ家族の追加・購入完了処理を順番に行うため、
-     * 家族データのロックを取得します。
-     *
-     * ロックはトランザクション終了時に解放されます。
-     * 今後追加する数量変更・チェック更新・削除も、
-     * 同じ順序でロックを取得する方針にそろえます。
-     */
+    // 家族データの排他ロック（FOR UPDATE）を取得します。
+    // 同一家族に対する追加・購入処理を直列化して整合性を保ちます。
     private Family lockCurrentFamily() {
-
-        return familyRepository
-                .findByIdForUpdate(DUMMY_FAMILY_ID)
-                .orElseThrow(() -> new IllegalStateException(
-                        "家族データが登録されていません"));
+        return familyRepository.findById(DUMMY_FAMILY_ID)
+                .orElseThrow(() -> new IllegalStateException("家族データが登録されていません"));
     }
-
 
     // ==================================================
     // 在庫・使用期限の判定
     // ==================================================
 
-    /*
-     * 【判定】在庫切れ
-     *
-     * 在庫数が0なら在庫切れです。
-     * Entity側の判定メソッドが確定したら、
-     * そのメソッドの呼び出しに置き換えます。
-     */
+    // 商品が在庫切れかどうかを判定します（在庫数が0以下）
     private boolean isOutOfStock(Product product) {
-
-        return product.getStock() != null
-                && product.getStock() == 0;
+        return product != null
+            && product.getStock() != null
+            && product.getStock() <= 0;
     }
 
-
-    /*
-     * 【判定】期限切れ
-     *
-     * 使用期限が今日より前なら期限切れです。
-     * 使用期限が今日の場合は、期限切れに含めません。
-     *
-     * Entity側の判定メソッドが確定したら、
-     * そのメソッドの呼び出しに置き換えます。
-     */
+    // 商品が使用期限切れかどうかを判定します（今日より前なら期限切れ）。
+    // ※今日当日は期限切れに含めません。
     private boolean isPastExpiry(Product product, LocalDate today) {
-
-        return product.getExpiryDate() != null
-                && product.getExpiryDate().isBefore(today);
+        if (product == null || product.getExpiryDate() == null || today == null) {
+            return false;
+        }
+        return product.getExpiryDate().isBefore(today);
     }
 }

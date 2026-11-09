@@ -8,6 +8,7 @@
 package com.example.stockapp.repositories;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -20,14 +21,17 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByIsDeletedFalse();
 
     // 在庫一覧あいうえお昇順
-    List<Product> findByFamilyIdAndIsDeletedFalseOrderByNameAsc(Long familyId);
+    List<Product> findByFamily_IdAndIsDeletedFalseOrderByNameAsc(Long familyId);
 
     // 在庫一覧あいまい検索機能（結果あいうえお昇順）
-    List<Product> findByNameContainingAndFamilyIdAndIsDeletedFalseOrderByNameAsc(String keyword, Long familyId);
+    List<Product> findByFamily_IdAndProduct_Family_IdAndProduct_IsDeletedFalseOrderByIdAsc(String keyword, Long familyId);
 
     // カテゴリ別商品一覧取得（商品名昇順）
     List<Product> findByCategory_IdAndFamily_IdAndIsDeletedFalseOrderByNameAsc(
             Long categoryId,
             Long familyId);
+
+    // 指定家族の未削除商品をIDで取得（他家族のデータ・削除済み商品を除外）
+    Optional<Product> findByIdAndFamily_IdAndIsDeletedFalse(Long id, Long familyId);
 
 }

@@ -23,55 +23,45 @@ import com.example.stockapp.entities.ShoppingListItem;
 @Repository
 public interface ShoppingListItemRepository extends JpaRepository<ShoppingListItem, Long> {
 
-    // 買い物データを物理的に削除するメソッド
+    /**
+     * 【物理削除】商品に紐づく買い物リスト項目を削除します。
+     * 商品マスタが削除された場合の整合性保持などに使用します。
+     *
+     * @param productId 削除対象の商品ID
+     */
     void deleteByProductId(Long productId);
 
-    /*
-     * 【処理内容】買い物リスト一覧の取得
+    /**
+     * 【一覧取得】指定した家族の買い物リスト一覧を取得します。
+     * 論理削除された商品は除外され、IDの昇順で並びます。
      *
-     * ・買い物リスト項目の家族IDが指定値と一致する
-     * ・紐づく商品の家族IDも指定値と一致する
-     * ・商品が論理削除されていない（isDeleted=false）
-     * ・買い物リスト項目のIDが小さい順に並べる
-     *
-     * familyId：買い物リスト項目の家族ID
-     * productFamilyId：商品の家族ID
-     *
-     * 戻り値：条件に一致した買い物リスト項目の一覧
+     * @param familyId 買い物リスト項目の家族ID
+     * @param productFamilyId 商品マスタ側の家族ID
+     * @return 条件に一致した買い物リスト項目の一覧
      */
     List<ShoppingListItem>
-        findByFamilyIdAndProductFamilyIdAndProductIsDeletedFalseOrderByIdAsc(
-            Long familyId,
-            Long productFamilyId);
+        findByFamily_IdAndProduct_Family_IdAndProduct_IsDeletedFalseOrderByIdAsc(
+            Long familyId, Long productFamilyId);
 
-    /*
-     * 【処理内容】同じ家族・同じ商品の登録済み項目を検索する
+    /**
+     * 【重複確認】同一家族内で特定の商品が既にリストへ登録されているかを検索します。
      *
-     * 手動追加：
-     * 登録済みなら、既存の購入予定数へ加算する。
+     * ・手動追加：登録済みの場合は購入予定数量を加算
+     * ・自動追加：登録済みの場合は二重登録防止のためスキップ
      *
-     * 自動追加：
-     * 登録済みなら、追加しない。
-     *
-     * 戻り値：該当項目があればその項目、なければ空のOptional
-     * ※同じ家族・同じ商品につき1件の運用を前提とする。
+     * @param familyId 家族ID
+     * @param productId 商品ID
+     * @return 該当する項目（存在しない場合は空の Optional）
      */
-    Optional<ShoppingListItem> findByFamilyIdAndProductId(
-            Long familyId,
-            Long productId);
+    Optional<ShoppingListItem> findByFamily_IdAndProduct_Id(
+            Long familyId, Long productId);
 
-    /*
-     * 【処理内容】購入完了の対象となるチェック済み項目を取得する
+    /**
+     * 【購入対象抽出】指定した家族の買い物リストから、チェックが付いている（isChecked = true）項目を取得します。
+     * 一括購入処理（completePurchase）の在庫加算・リスト削除対象として使用します。
      *
-     * ・買い物リスト項目と商品の家族IDが指定値と一致する
-     * ・チェック状態がtrue
-     * ・商品が論理削除されていない
-     * ・買い物リスト項目のIDが小さい順に並べる
+     * @param familyId 家族ID
+     * @return チェック済みの買い物リスト項目一覧
      */
-    List<ShoppingListItem>
-        findByFamilyIdAndProductFamilyIdAndIsCheckedTrueAndProductIsDeletedFalseOrderByIdAsc(
-            Long familyId,
-            Long productFamilyId);
-
-
+    List<ShoppingListItem> findByFamily_IdAndIsCheckedTrue(Long familyId);
 }
