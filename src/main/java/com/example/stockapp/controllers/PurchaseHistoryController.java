@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor // finalがついたフィールドを引数に持つコンストラクタをLombokで自動生成
 @RequestMapping("/purchase")
 public class PurchaseHistoryController {
-    
+
     @GetMapping("/history")
     public ModelAndView history(ModelAndView mav) {
         return mav;
