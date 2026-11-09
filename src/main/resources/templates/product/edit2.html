@@ -1,0 +1,343 @@
+<!--
+  【役割】商品の登録情報を変更（編集登録）するためのフォーム画面です。
+
+  TODO: formタグの送信先（th:action）とメソッド（POST）を正しく設定する
+  TODO: ProductForm（DTO）と入力欄を紐づけるため、th:object と th:field を設定する
+  TODO: バリデーションエラーのメッセージ（th:errors）を表示する
+
+  ※itemはProductと同じ項目構成であることを想定する。
+-->
+<!DOCTYPE html>
+<!-- Thymeleafを使う宣言と、言語を日本語(ja)に設定 -->
+<html xmlns:th="http://www.thymeleaf.org" lang="ja">
+<head>
+  <!-- 文字化けを防ぐUTF-8設定 -->
+  <meta charset="UTF-8">
+  <!-- スマホやタブレットでも綺麗に表示するためのViewport設定 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 画面のタブに表示されるタイトル -->
+  <title>商品編集｜生活必需品ストックアプリ</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+  <!-- チームオリジナルの共通CSS -->
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+  <!--
+    ① ヘッダー
+    他の画面と同じ色・文字サイズに統一する。
+
+    position-relative：戻るリンクを配置する基準にする
+    position-absolute：戻るリンクをヘッダーの左側に配置する
+    top-50・translate-middle-y：上下中央に配置する
+    px-5：タイトルの左右に余白を取る
+  -->
+  <header class="bg-primary text-white text-center py-3 position-relative">
+    <!-- 戻るリンク：在庫一覧へ移動する -->
+    <a th:href="@{/inventory/list}"
+      class="text-white text-decoration-none fw-bold fs-4 position-absolute start-0 top-50 translate-middle-y ms-2 px-2">
+      ＜
+    </a>
+    <h1 class="h4 fw-bold mb-0 px-5">商品編集</h1>
+  </header>
+
+  <!--
+    メインコンテンツ
+    他の画面と同じcontainerを使用する。
+    フォーム独自の幅制限や、全体を囲む枠・影は付けない。
+    pb-5：画面下部の共通メニュー用に余白を取る
+  -->
+  <main class="container mt-4 mb-5 pb-5">
+
+    <!--
+      ② 商品編集フォーム
+      th:object：入力内容を紐づけるオブジェクト
+      th:field：各入力欄をオブジェクトの項目と紐づける
+
+      ※送信先はControllerのPOSTマッピングと合わせる。
+    -->
+    <form id="editForm"
+          th:action="@{/product/edit}"
+          th:object="${item}"
+          method="post">
+
+      <!-- ID保持 -->
+      <input type="hidden" th:field="*{id}">
+
+      <!-- エラー一覧 -->
+      <div class="alert alert-danger"
+          th:if="${#fields.hasAnyErrors()}">
+        <ul class="mb-0">
+          <li th:each="err : ${#fields.errors('*')}"
+              th:text="${err}">
+          </li>
+        </ul>
+      </div>
+
+      <!-- 商品名 -->
+      <div class="mb-3">
+        <label for="name" class="form-label fw-bold">商品名</label>
+        <input type="text"
+              id="name"
+              class="form-control"
+              th:field="*{name}"
+              maxlength="20"
+              placeholder="例）牛乳">
+        <!-- エラー表示 -->
+        <div class="text-danger small"
+            th:if="${#fields.hasErrors('name')}"
+            th:errors="*{name}">
+        </div>
+      </div>
+
+      <!--
+        ③ アイコン選択
+        選択中のアイコンと「▼」を表示する。
+        ボタンを押すと、その下に候補一覧が開く。
+
+        icon.id：保存するアイコンID
+        ※1～20のIDと画像が存在する想定。DBの登録内容と合わせる。
+      -->
+      <div class="mb-3">
+        <p class="form-label fw-bold">アイコン選択</p>
+
+        <!-- 登録済み、または新しく選択したアイコンIDを送信する -->
+        <input type="hidden" id="iconId" th:field="*{icon.id}">
+
+        <div class="dropdown">
+          <!--
+            選択中アイコン・候補一覧を開くボタン
+            type="button"：押してもフォームを送信しない
+            data-bs-toggle="dropdown"：Bootstrapで候補一覧を開閉する
+          -->
+          <button type="button"
+                  class="btn btn-outline-secondary d-inline-flex align-items-center gap-3"
+                  data-bs-toggle="dropdown">
+            <!-- 登録済みのアイコンIDに対応した画像を表示する -->
+            <img id="preview"
+                th:src="@{/images/icons/{id}.png(id=${item.icon != null and item.icon.id != null ? item.icon.id : 1})}"
+                style="width:40px; height:40px; object-fit:cover;"
+                class="rounded"
+                alt="選択中のアイコン">
+            <span>▼</span>
+          </button>
+
+          <!-- アイコンの候補一覧：開いたときに横4列で表示する -->
+          <div class="dropdown-menu p-2" style="width:240px;">
+            <div class="row row-cols-4 g-2">
+              <div class="col"
+                  th:each="i : ${#numbers.sequence(1,20)}">
+                <!--
+                  data-path：プレビューに表示する画像のパス
+                  data-id：保存するアイコンID
+                  ※選択時の処理はJSファイルに実装する。
+                -->
+                <button type="button"
+                        class="btn btn-light border p-1 w-100 icon-select"
+                        th:data-path="@{'/images/icons/' + ${i} + '.png'}"
+                        th:data-id="${i}">
+                  <img th:src="@{'/images/icons/' + ${i} + '.png'}"
+                      style="width:40px; height:40px; object-fit:cover;"
+                      class="rounded"
+                      alt="選択用アイコン">
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分類（カテゴリ） -->
+      <div class="mb-3">
+        <label for="categoryId" class="form-label fw-bold">分類</label>
+        <!-- CategoryマスタのIDを送信する。IDはDBの登録内容と合わせる -->
+        <select id="categoryId"
+                class="form-select"
+                th:field="*{category.id}">
+          <option value="">選択してください</option>
+          <option value="1">食品</option>
+          <option value="2">日用品</option>
+          <option value="3">その他</option>
+        </select>
+        <div class="text-danger small"
+            th:if="${#fields.hasErrors('category')}"
+            th:errors="*{category}">
+        </div>
+      </div>
+
+      <!--
+        在庫数と単位
+        単位はここで1回だけ選択する。
+        購入目安にも同じ単位を使用する。
+      -->
+      <div class="mb-3">
+        <div class="row g-2">
+          <!-- 左側：在庫数の入力 -->
+          <div class="col-6">
+            <label for="stock" class="form-label fw-bold">在庫数</label>
+            <input type="number"
+                  id="stock"
+                  class="form-control"
+                  th:field="*{stock}"
+                  min="0"
+                  step="1">
+          </div>
+          <!-- 右側：単位の選択。IDはDBの登録内容と合わせる -->
+          <div class="col-6">
+            <label for="unitId" class="form-label fw-bold">単位</label>
+            <select id="unitId"
+                    class="form-select"
+                    th:field="*{unit.id}">
+              <option value="1">個</option>
+              <option value="2">本</option>
+              <option value="3">パック</option>
+              <option value="4">箱</option>
+            </select>
+          </div>
+        </div>
+        <!-- エラー表示 -->
+        <div class="text-danger small"
+            th:if="${#fields.hasErrors('stock')}"
+            th:errors="*{stock}">
+        </div>
+      </div>
+
+      <!-- 購入目安 -->
+      <div class="mb-3">
+        <label for="threshold" class="form-label fw-bold">購入目安</label>
+        <input type="number"
+              id="threshold"
+              class="form-control"
+              th:field="*{threshold}"
+              min="0"
+              step="1">
+        <div class="form-text">在庫数と同じ単位で入力してください。</div>
+        <div class="text-danger small"
+            th:if="${#fields.hasErrors('threshold')}"
+            th:errors="*{threshold}">
+        </div>
+      </div>
+
+      <!-- 使用期限 -->
+      <div class="mb-3">
+        <label for="expiryDate" class="form-label fw-bold">使用期限</label>
+        <input type="date"
+              id="expiryDate"
+              class="form-control"
+              th:field="*{expiryDate}">
+        <div class="text-danger small"
+            th:if="${#fields.hasErrors('expiryDate')}"
+            th:errors="*{expiryDate}">
+        </div>
+      </div>
+
+      <!-- 期限通知：使用期限の何日前から通知するかを選択する -->
+      <div class="mb-3">
+        <label for="alertDays" class="form-label fw-bold">期限の通知タイミング</label>
+        <select id="alertDays"
+                class="form-select"
+                th:field="*{alertDays}">
+          <option value="3">3日前</option>
+          <option value="7">7日前</option>
+        </select>
+        <div class="text-danger small"
+            th:if="${#fields.hasErrors('alertDays')}"
+            th:errors="*{alertDays}">
+        </div>
+      </div>
+
+      <!-- 通知 -->
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <label for="isNotify" class="form-label fw-bold mb-0">通知</label>
+          <div class="form-check form-switch">
+            <input id="isNotify"
+                  class="form-check-input"
+                  type="checkbox"
+                  th:field="*{isNotify}">
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <!--
+      ④ 削除・保存ボタン
+      削除フォームは編集フォームの外に配置する。
+      formタグの中に別のformタグを入れない。
+    -->
+    <div class="row g-2">
+      <!-- 削除：POSTで商品IDを送信する -->
+      <div class="col-6">
+        <form th:action="@{/product/delete/{id}(id=${item.id})}"
+              method="post">
+          <button type="submit"
+                  class="btn btn-outline-danger w-100 fw-bold">
+            この商品を削除する
+          </button>
+        </form>
+      </div>
+
+      <!--
+        保存
+        form="editForm"：上の商品編集フォームを送信する。
+        ボタンがフォームの外にあっても、対象のフォームを指定できる。
+      -->
+      <div class="col-6">
+        <button type="submit"
+                form="editForm"
+                class="btn btn-primary w-100 fw-bold">
+          保存する
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- 共通ナビゲーションメニューの読み込み -->
+  <div th:replace="~{fragments/menu :: menu}"></div>
+
+  <!-- Bootstrap 5 JS：アイコン候補一覧の開閉に使用する -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!--
+    アイコン選択・プレビュー更新
+    実際の処理はJSファイルにまとめる予定のため、現在はコメントアウトする。
+    登録画面と同じ処理を、共通のJSファイルへ移して使用する。
+
+    【JS担当者へ】
+    ・選択した画像をプレビューに表示する
+    ・選択したアイコンIDをhiddenに保存する
+    ・選択した候補に青い枠を付ける
+
+    候補をクリックした後、一覧はBootstrapの標準動作で閉じる。
+    この処理はHTMLの読み込み後に実行する。
+
+    ※JSを有効にするまでは、候補一覧の開閉だけが動作する。
+    ※変更しない場合は、登録済みのアイコンIDを送信する。
+  -->
+  <!--
+  <script>
+    document.querySelectorAll('.icon-select').forEach(button => {
+      button.addEventListener('click', function() {
+        // 選択した画像をプレビューに表示する
+        document.getElementById('preview').src = this.dataset.path;
+
+        // 選択したアイコンIDをhiddenに保存する
+        document.getElementById('iconId').value = this.dataset.id;
+
+        // 選択枠をリセットする
+        document.querySelectorAll('.icon-select').forEach(candidate => {
+          candidate.classList.remove('border-primary', 'border-3');
+        });
+
+        // 選択した候補を青い枠で強調する
+        this.classList.add('border-primary', 'border-3');
+      });
+    });
+  </script>
+  -->
+  <!-- <script th:src="@{/js/app.js}"></script> -->
+
+</body>
+</html>
