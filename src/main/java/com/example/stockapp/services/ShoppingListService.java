@@ -231,8 +231,7 @@ public class ShoppingListService {
             // 商品在庫の更新保存
             productRepository.save(product);
 
-            // 【将来拡張用：購入履歴連携】
-            // purchaseHistoryService.recordPurchase(product, quantity);
+            purchaseHistoryService.recordPurchase(product, quantity);
         }
 
         // リストからの削除と件数返却
