@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.example.stockapp.entities.Product;
-import com.example.stockapp.repositories.ProductRepository;
+import com.example.stockapp.services.InventoryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,12 +24,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor // finalがついたフィールドを引数に持つコンストラクタをLombokで自動生成
 @RequestMapping("/inventory")
 public class InventoryController {
-    private final ProductRepository productRepository;
+    private final InventoryService inventoryService;
     // 在庫一覧---------------------------------------------------------------------------------------
     @GetMapping("/list")
     public ModelAndView inventory(ModelAndView mav) {
-        List<Product> product = productRepository.findAll();
-        mav.addObject("products",product);
+        List<Product> products =inventoryService.getAllInventory();
+        mav.addObject("products",products);
+        mav.setViewName("inventory/list");
         return mav;
     }
 
@@ -38,6 +39,11 @@ public class InventoryController {
     // 期限、在庫不足一覧------------------------------------------------------------------------------
     @GetMapping("/alerts")
     public ModelAndView alerts(ModelAndView mav) {
+
+        List<Product> alertProducts =
+            inventoryService.getAlertInventory();
+
+        mav.addObject("alertProducts", alertProducts);
         mav.setViewName("inventory/alerts");
         return mav;
     }

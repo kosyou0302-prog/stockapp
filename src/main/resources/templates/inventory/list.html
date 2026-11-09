@@ -36,7 +36,7 @@
     <h1 class="h4 fw-bold mb-0">在庫一覧</h1>
   </header>
 
-  <!-- メインコンテンツ（ここに各画面のTODOを書いていきます） 
+  <!-- メインコンテンツ（ここに各画面のTODOを書いていきます）
     today：この画面で使用する今日の日付。
   -->
   <main class="container mt-4 mb-5 pb-5"
@@ -138,9 +138,21 @@
           th:classappend="${selectedCategoryId == 3} ? ' active' : ''">
           その他
         </a>
+        <!-- 【将来用】Controllerから categories が渡されたらこちらに切り替え
+        <a th:href="@{/inventory/list(keyword=${keyword})}"
+          class="btn btn-outline-primary btn-sm flex-fill"
+          th:classappend="${selectedCategoryId == null} ? ' active' : ''">
+          すべて
+        </a>
+        <a th:each="category : ${categories}"
+          th:href="@{/inventory/list(categoryId=${category.id}, keyword=${keyword})}"
+          th:text="${category.name}"
+          class="btn btn-outline-primary btn-sm flex-fill"
+          th:classappend="${selectedCategoryId == category.id} ? ' active' : ''">
+        </a>
+        -->
       </div>
     </section>
-
 
     <!--
       ⑤ 商品一覧
@@ -195,10 +207,8 @@
               期限切れは、使用期限が今日より前の日付の場合。
             -->
             <span class="fw-bold text-nowrap"
-                  th:classappend="${product.stock == 0 ? 'text-danger' :
-                    (product.expiryDate != null
-                    and product.expiryDate.isBefore(today)
-                    ? 'text-warning' : '')}">
+                  th:classappend="${product.getPrimaryAlert(today) == 'OUT_OF_STOCK' ? 'text-danger' :
+                    (product.getPrimaryAlert(today) == 'EXPIRED' ? 'text-warning' : '')}">
               <!-- 在庫数と単位を表示 -->
               残り<span th:text="${product.stock}">2</span><span th:text="${product.unit.name}">本</span>
             </span>
