@@ -33,7 +33,7 @@ public class InventoryService {
     // 【処理内容】全在庫一覧取得：論理削除されていない商品を取得する
     public List<Product> getAllInventory() {
         List<Product> products =
-            productRepository.findByFamilyIdAndIsDeletedFalseOrderByNameAsc(FAMILY_ID);
+            productRepository.findByFamily_IdAndIsDeletedFalseOrderByNameAsc(FAMILY_ID);
         return products;
     }
 
@@ -44,7 +44,7 @@ public class InventoryService {
             return getAllInventory();
         }
         List<Product> products =productRepository
-            .findByNameContainingAndFamilyIdAndIsDeletedFalseOrderByNameAsc(
+            .findByFamily_IdAndProduct_Family_IdAndProduct_IsDeletedFalseOrderByIdAsc(
                 keyword,FAMILY_ID);
             return products;
     }
