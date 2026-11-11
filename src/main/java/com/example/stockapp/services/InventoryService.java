@@ -48,6 +48,31 @@ public class InventoryService {
             return products;
     }
 
+    // 【処理内容】商品名とカテゴリーを組み合わせたあいまい検索
+    // 在庫一覧の検索フォームから受け取った条件で取得する（結果は商品名昇順）
+    public List<Product> searchInventory(String keyword, Long categoryId) {
+        // 検索文字がnullの場合は空文字とし、前後の余分な空白を取り除く
+        String searchKeyword = keyword == null ? "" : keyword.trim();
+
+        // キーワード未入力の場合は、選択中のカテゴリーの商品を取得する
+        // カテゴリーも未指定の場合は全件取得する
+        if (searchKeyword.isEmpty()) {
+            return getInventoryByCategory(categoryId);
+        }
+
+        // 「すべて」の場合は、全カテゴリーから商品名で検索する
+        if (categoryId == null) {
+            return productRepository
+                    .findByNameContainingAndFamily_IdAndIsDeletedFalseOrderByNameAsc(
+                            searchKeyword, FAMILY_ID);
+        }
+
+        // カテゴリー選択中の場合は、そのカテゴリー内で商品名を検索する
+        return productRepository
+                .findByNameContainingAndCategory_IdAndFamily_IdAndIsDeletedFalseOrderByNameAsc(
+                        searchKeyword, categoryId, FAMILY_ID);
+    }
+
     //カテゴリ別一覧取得
     public List<Product> getInventoryByCategory(Long categoryId) {
         if (categoryId == null) {

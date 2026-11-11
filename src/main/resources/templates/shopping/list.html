@@ -81,7 +81,7 @@
             -->
             <select id="categoryFilter" class="form-select form-select-sm">
               <option value="すべて">すべて</option>
-              <option th:each="category : ${categories}" th:value="${category.name}" th:text="${category.name}"></option>
+              <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}"></option>
             </select>
           </div>
 
@@ -101,7 +101,7 @@
               <select id="productId" name="productId" class="form-select form-select-sm" required>
                 <option value="">商品を選択してください</option>
                 <option th:each="product : ${products}" th:value="${product.id}" th:text="${product.name}"
-                        th:attr="data-category=${product.category.name}">牛乳</option>
+                        th:attr="data-category=${product.category.id}">牛乳</option>
               </select>
             </div>
 
