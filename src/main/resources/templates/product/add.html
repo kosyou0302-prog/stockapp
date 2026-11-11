@@ -24,18 +24,23 @@
 <body>
   <!--
     ※ ヘッダー（色は未だ仮設定）
-    bg-primary：背景を青色にする
-    text-white：文字を白色にする
+    bg-primary：背景を青色にする  text-white：文字を白色にする
   -->
 
-  <!-- ヘッダー（戻るボタンのデザインを綺麗に統一） -->
+  <!-- ヘッダー（戻るボタンのデザインを綺麗に統一）
+    position-relative：戻るリンクを配置する基準にする
+    position-absolute：戻るリンクをヘッダーの左側に配置する
+    top-50・translate-middle-y：上下中央に配置する
+    px-5：タイトルの左右に余白を取る
+  -->
   <div class="card-header bg-primary text-white position-relative">
+    <!-- 戻るリンク：在庫一覧へ移動する -->
     <a th:href="@{/inventory/list}"
       class="btn btn-outline-light fw-bold position-absolute start-0 top-50 translate-middle-y ms-2">
     ← 戻る
     </a>
     <header class="bg-primary text-white text-center py-3">
-      <h1 class="h4 fw-bold mb-0">商品登録</h1>
+      <h1 class="h4 fw-bold mb-0  px-5">商品登録</h1>
     </header>
   </div>
 
@@ -56,13 +61,12 @@
           <label class="form-label fw-bold">商品名</label>
           <div class="d-flex align-items-center gap-2">
 
-            <!-- 商品名入力 -->
-            <input type="text" class="form-control me-2" th:field="*{name}" placeholder="例）牛乳">
-
-            <!-- 選択中アイコン（DBマスタのIDで画像を表示するように修正） -->
-            <img id="preview" th:src="${item.icon != null ? '/images/icons/' + item.icon.id + '.png' : '/images/icons/1.png'}"
-              style="width:50px;height:50px;" class="border rounded">
+            <!-- 商品名入力（20文字以内） -->
+            <input type="text" class="form-control me-2" th:field="*{name}"
+              placeholder="例）牛乳" maxlength="20">
           </div>
+
+          <!-- エラーメッセージ -->
           <div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
         </div>
 
@@ -93,16 +97,18 @@
 
         <!-- 在庫数 -->
         <div class="mb-3">
-          <label class="form-label fw-bold">在庫数</label>
-          <div class="row">
+          <div class="row g-2">
             <!-- 左側：在庫数の入力 -->
             <div class="col-6">
-              <input type="number" class="form-control" th:field="*{stock}">
+              <label class="form-label fw-bold">在庫数</label>
+              <input type="number" id="stock" class="form-control" th:field="*{stock}"
+                          min="0" max="50" step="1">
             </div>
 
             <!-- 右側：単位の選択 -->
             <div class="col-6">
-              <select class="form-select" th:field="*{unit.id}">
+              <label for="unitId" class="form-label fw-bold">単位</label>
+              <select id="unitId" class="form-select" th:field="*{unit.id}">
                   <option value="1">個</option>
                   <option value="2">本</option>
                   <option value="3">パック</option>
@@ -116,53 +122,66 @@
 
         <!-- 購入目安 -->
         <div class="mb-3">
-          <label class="form-label fw-bold">購入目安</label>
-          <div class="row">
+          <div class="row g-2">
             <div class="col-6">
-                <input type="number" class="form-control" th:field="*{threshold}">
+              <label class="form-label fw-bold">購入目安</label>
+              <input type="number" id="threshold" class="form-control" th:field="*{threshold}"
+                        min="0" max="50" step="1">
             </div>
+
             <div class="col-6">
-              <select class="form-select" th:field="*{thresholdUnit.id}">
+              <label for="unitId" class="form-label fw-bold">単位</label>
+              <select id="unitId" class="form-select" th:field="*{thresholdUnit.id}">
                 <option value="1">個</option>
                 <option value="2">本</option>
                 <option value="3">パック</option>
                 <option value="4">箱</option>
               </select>
+              <div class="form-text">在庫数と同じ単位で入力してください。</div>
+
             </div>
           </div>
           <div class="text-danger small" th:if="${#fields.hasErrors('threshold')}" th:errors="*{threshold}"></div>
         </div>
 
-        <!-- 使用期限 -->
+        <!-- 使用期限・期限お知らせ -->
         <div class="mb-3">
-          <label class="form-label fw-bold">使用期限</label>
-          <input type="date" class="form-control" th:field="*{expiryDate}">
-          <div class="text-danger small" th:if="${#fields.hasErrors('expiryDate')}" th:errors="*{expiryDate}"></div>
-        </div>
+          <div class="row g-2">
+          <!-- 左側：使用期限の入力 -->
+            <div class="col-6">
+            <label class="form-label fw-bold">使用期限</label>
+            <input type="date" class="form-control" th:field="*{expiryDate}">
+            <div class="text-danger small" th:if="${#fields.hasErrors('expiryDate')}" th:errors="*{expiryDate}"></div>
+            </div>
 
-        <!-- 通知設定 　日数設定を追加-->
-        <div class="d-flex align-items-center gap-3">
-          <label class="form-label fw-bold mb-0">通知</label>
-
-          <div class="form-check form-switch mb-0">
-            <input class="form-check-input" type="checkbox" th:field="*{isNotify}">
-          </div>
-
-          <label class="mb-0 align-items fw-bold"></label>
+          <!-- 右側：期限お知らせの選択 -->
+          <div class="col-6">
+            <label for="alertDays" class="form-label fw-bold">期限お知らせ</label>
+          <div class="d-flex align-items-center gap-3">
           <select class="form-select w-auto" th:field="*{alertDays}">
             <option value="3">3日前</option>
             <option value="7">7日前</option>
           </select>
         </div><br>
+      </div>
 
-        <!-- 登録ボタン -->
-        <div class="d-grid">
-          <button type="submit" class="btn btn-primary btn-lg">登録する</button>
+      <!-- 通知設定 -->
+      <div class="mb-4">
+        <div class="d-flex align-items-center gap-4">
+          <label for="isNotify" class="form-label fw-bold mb-0">通知ON/OFF</label>
+          <div class="form-check form-switch">
+            <input id="isNotify" class="form-check-input" type="checkbox" th:field="*{isNotify}">
+          </div>
         </div>
-      </form>
+      </div>
 
-      <div class="row row-cols-4 g-2"></div>
-    </section>
+      <!-- 登録ボタン：フォームの横幅いっぱいに表示する -->
+      <div class="d-grid">
+        <button type="submit" class="btn btn-primary fw-bold">
+          登録する
+        </button>
+      </div>
+    </form>
   </main>
 
   <!-- Bootstrap 5 JS (CDN経由：ドロップダウンやモーダルなどを動かすために必要) -->
