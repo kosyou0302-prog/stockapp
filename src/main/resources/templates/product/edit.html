@@ -43,7 +43,7 @@
   <!-- メインコンテンツ -->
   <main class="container mt-4 mb-5 pb-5">
     <section class="mb-3">
-      <form th:action="@{/product/edit}" th:object="${item}"
+      <form id="editForm" th:action="@{/product/edit}" th:object="${item}"
             method="post" enctype="multipart/form-data">
 
         <!-- ID保持 -->
@@ -69,20 +69,6 @@
                   th:field="*{name}" maxlength="20">
         </div>
 
-        <!-- アイコン選択 -->
-        <div class="mb-3">
-          <div class="row row-cols-4 g-2">
-            <label class="form-label fw-bold">アイコン選択</label>
-
-            <!-- iconPath ではなく IconマスタのID（icon.id）を送信するように修正 -->
-            <input type="hidden" id="iconId" th:field="*{icon.id}">
-
-            <!-- アイコン一覧 -->
-            <img id="preview" class="border rounded" alt="アイコンプレビュー"
-              th:src="${item != null && item.icon != null && item.icon.id != null ? '/images/icons/' + item.icon.id + '.png' : '/images/icons/1.png'}"
-              style="width:50px;height:50px; cursor: pointer;"
-              data-bs-toggle="modal" data-bs-target="#iconModal">
-          </div>
         </div>
 
     <!-- エラー表示 -->
@@ -94,16 +80,17 @@
 
     <!-- アイコン選択 -->
       <div class="mb-3">
-      <div class="row row-cols-4 g-2">
-        <label class="form-label fw-bold">アイコン選択</label>
+        <div class="row row-cols-4 g-2">
+          <label class="form-label fw-bold">アイコン選択</label>
 
-    <!-- アイコン一覧 -->
-        <div class="col" th:each="i : ${#numbers.sequence(1,20)}">
+          <!-- iconPath ではなく IconマスタのID（icon.id）を送信するように修正 -->
+          <input type="hidden" id="iconId" th:field="*{icon.id}">
 
-        <img th:src="@{'/images/icons/' + ${i} + '.png'}"
-        th:data-path="@{'/images/icons/' + ${i} + '.png'}"
-        class="img-thumbnail icon-select"
-        style="cursor:pointer; width:48px; height:48px; object-fit:cover;">
+          <!-- アイコン一覧 -->
+          <img id="preview" class="border rounded" alt="アイコンプレビュー"
+            th:src="${item != null && item.icon != null && item.icon.id != null ? '/images/icons/' + item.icon.id + '.png' : '/images/icons/1.png'}"
+            style="width:50px;height:50px; cursor: pointer;"
+            data-bs-toggle="modal" data-bs-target="#iconModal">
         </div>
       </div>
 
