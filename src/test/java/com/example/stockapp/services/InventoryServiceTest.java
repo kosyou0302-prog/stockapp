@@ -1,177 +1,299 @@
 package com.example.stockapp.services;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import static org.mockito.ArgumentMatchers.any;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.example.stockapp.entities.Category;
+import com.example.stockapp.entities.Family;
+import com.example.stockapp.entities.Icon;
 import com.example.stockapp.entities.Product;
+import com.example.stockapp.entities.Unit;
+import com.example.stockapp.repositories.CategoryRepository;
+import com.example.stockapp.repositories.FamilyRepository;
+import com.example.stockapp.repositories.IconRepository;
 import com.example.stockapp.repositories.ProductRepository;
+import com.example.stockapp.repositories.UnitRepository;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@Transactional
 class InventoryServiceTest {
 
-    @Mock
-    private ProductRepository productRepository;
-
-    @Mock
-    private ProductService productService;
-
-    @InjectMocks
+    @Autowired
     private InventoryService inventoryService;
+    @Autowired
+    private ProductRepository productRepository;
+    @Autowired
+    private FamilyRepository familyRepository;
+    @Autowired
+    private CategoryRepository categoryRepository;
+    @Autowired
+    private UnitRepository unitRepository;
+    @Autowired
+    private IconRepository iconRepository;
 
-    //商品0件の場合
-    @Test
-    void getHomeSummary_商品0件の場合は全て0件() {
+    private Family testFamily;
+    private Category testCategory1;
+    private Category testCategory2;
+    private Unit testUnit;
+    private Icon testIcon;
 
-        when(productRepository
-                .findByFamily_IdAndIsDeletedFalseOrderByNameAsc(1L))
-                .thenReturn(List.of());
+    @BeforeEach
+    void setUp() {
+        productRepository.deleteAll();
 
-        Map<String, Long> result =
-                inventoryService.getHomeSummary();
+        // プレースホルダー（FAMILY_ID = 1L）に対応するFamilyエンティティを作成
+        testFamily = new Family();
+        testFamily.setId(1L); // IDを 1L に固定
+        testFamily = familyRepository.save(testFamily);
 
-        assertEquals(0L, result.get("outOfStockCount"));
-        assertEquals(0L, result.get("lowStockCount"));
-        assertEquals(0L, result.get("expiredCount"));
-        assertEquals(0L, result.get("nearExpiryCount"));
+        testCategory1 = new Category();
+        testCategory1.setName("食品");
+        testCategory1 = categoryRepository.save(testCategory1);
 
-        verify(productRepository, times(1))
-                .findByFamily_IdAndIsDeletedFalseOrderByNameAsc(1L);
+        testCategory2 = new Category();
+        testCategory2.setName("日用品");
+        testCategory2 = categoryRepository.save(testCategory2);
+
+        testUnit = new Unit();
+        testUnit.setName("個");
+        testUnit = unitRepository.save(testUnit);
+
+        testIcon = new Icon();
+        testIcon.setName("default.png");
+        testIcon = iconRepository.save(testIcon);
     }
 
-    //ホーム画面集計
+    // =========================================================================
+    // UT-INV-001: 全在庫一覧取得（論理削除除外）
+    // =========================================================================
     @Test
-    void getHomeSummary_各件数を正しく集計できる() {
+    @DisplayName("UT-INV-001: 論理削除されていない商品のみが全件取得できること")
+    void utInv001_getAllInventory_ShouldReturnActiveProductsOnly() {
+        // ① 準備 (Given): 有効な商品を作成
+        Product activeProduct = new Product();
+        activeProduct.setName("りんご");
+        activeProduct.setFamily(testFamily);
+        activeProduct.setStock(5);
+        activeProduct.setThreshold(2);
+        activeProduct.setCategory(testCategory1);
+        activeProduct.setUnit(testUnit);
+        activeProduct.setThresholdUnit(testUnit);
+        activeProduct.setIcon(testIcon);
+        activeProduct.setIsDeleted(false);
+        activeProduct.setIsNotify(true);
+        productRepository.save(activeProduct);
 
+        // 準備 (Given): 論理削除された商品を作成
+        Product deletedProduct = new Product();
+        deletedProduct.setName("みかん");
+        deletedProduct.setFamily(testFamily); // 修正：正しく deletedProduct にセット
+        deletedProduct.setStock(3);
+        deletedProduct.setThreshold(1);
+        deletedProduct.setCategory(testCategory1);
+        deletedProduct.setUnit(testUnit);
+        deletedProduct.setThresholdUnit(testUnit);
+        deletedProduct.setIcon(testIcon);
+        deletedProduct.setIsDeleted(true); // 論理削除済み
+        deletedProduct.setIsNotify(true);
+        productRepository.save(deletedProduct);
+
+        // ② 実行 (When)
+        List<Product> result = inventoryService.getAllInventory();
+
+        // ③ 検証 (Then): 有効な商品（りんご）の1件のみ取得されること
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getName()).isEqualTo("りんご");
+    }
+
+    // =========================================================================
+    // UT-INV-002: 商品名によるあいまい検索
+    // =========================================================================
+    @Test
+    @DisplayName("UT-INV-002: キーワードを用いた部分一致検索が正しく機能し、未入力時は全件取得されること")
+    void utInv002_searchInventory_ShouldReturnFilteredOrAllProducts() {
         Product p1 = new Product();
+        p1.setName("牛乳");
+        p1.setFamily(testFamily);
+        p1.setStock(2);
+        p1.setThreshold(1);
+        p1.setCategory(testCategory1);
+        p1.setUnit(testUnit);
+        p1.setThresholdUnit(testUnit);
+        p1.setIcon(testIcon);
+        p1.setIsDeleted(false);
+        p1.setIsNotify(true);
+        productRepository.save(p1);
+
         Product p2 = new Product();
-        Product p3 = new Product();
-        Product p4 = new Product();
+        p2.setName("コーヒー牛乳");
+        p2.setFamily(testFamily);
+        p2.setStock(1);
+        p2.setThreshold(1);
+        p2.setCategory(testCategory1);
+        p2.setUnit(testUnit);
+        p2.setThresholdUnit(testUnit);
+        p2.setIcon(testIcon);
+        p2.setIsDeleted(false);
+        p2.setIsNotify(true);
+        productRepository.save(p2);
 
-        when(productRepository
-                .findByFamily_IdAndIsDeletedFalseOrderByNameAsc(1L))
-                .thenReturn(List.of(p1, p2, p3, p4));
+        List<Product> searchResult = inventoryService.searchInventory("牛乳");
+        assertThat(searchResult).hasSize(2);
 
-        when(productService.isOutOfStock(p1))
-                .thenReturn(true);
-
-        when(productService.isLowStock(p2))
-                .thenReturn(true);
-
-        when(productService.isPastExpiry(p3))
-                .thenReturn(true);
-
-        when(productService.isNearExpiry(p4))
-                .thenReturn(true);
-
-        Map<String, Long> result =
-                inventoryService.getHomeSummary();
-
-        assertEquals(1L, result.get("outOfStockCount"));
-        assertEquals(1L, result.get("lowStockCount"));
-        assertEquals(1L, result.get("expiredCount"));
-        assertEquals(1L, result.get("nearExpiryCount"));
+        List<Product> emptyResult = inventoryService.searchInventory(null);
+        assertThat(emptyResult).hasSize(2);
     }
 
-    //アラート対象なし
+    // =========================================================================
+    // UT-INV-003: カテゴリ別一覧取得
+    // =========================================================================
     @Test
-    void getAlertInventory_アラート対象なし() {
+    @DisplayName("UT-INV-003: 指定したカテゴリIDに一致する在庫一覧が取得でき、null指定時は全件返ること")
+    void utInv003_getInventoryByCategory_ShouldFilterByCategory() {
+        Product pFood = new Product();
+        pFood.setName("パン");
+        pFood.setFamily(testFamily);
+        pFood.setStock(2);
+        pFood.setThreshold(1);
+        pFood.setCategory(testCategory1);
+        pFood.setUnit(testUnit);
+        pFood.setThresholdUnit(testUnit);
+        pFood.setIcon(testIcon);
+        pFood.setIsDeleted(false);
+        pFood.setIsNotify(true);
+        productRepository.save(pFood);
 
-        Product product = new Product();
+        Product pDaily = new Product();
+        pDaily.setName("洗剤");
+        pDaily.setFamily(testFamily);
+        pDaily.setStock(1);
+        pDaily.setThreshold(1);
+        pDaily.setCategory(testCategory2);
+        pDaily.setUnit(testUnit);
+        pDaily.setThresholdUnit(testUnit);
+        pDaily.setIcon(testIcon);
+        pDaily.setIsDeleted(false);
+        pDaily.setIsNotify(true);
+        productRepository.save(pDaily);
 
-        when(productRepository
-                .findByFamily_IdAndIsDeletedFalseOrderByNameAsc(1L))
-                .thenReturn(List.of(product));
+        List<Product> foodList = inventoryService.getInventoryByCategory(testCategory1.getId());
+        assertThat(foodList).hasSize(1);
+        assertThat(foodList.get(0).getName()).isEqualTo("パン");
 
-        when(productService.isOutOfStock(any(Product.class)))
-                .thenReturn(false);
-
-        when(productService.isLowStock(any(Product.class)))
-                .thenReturn(false);
-
-        when(productService.isPastExpiry(any(Product.class)))
-                .thenReturn(false);
-
-        when(productService.isNearExpiry(any(Product.class)))
-                .thenReturn(false);
-
-        List<Product> result =
-                inventoryService.getAlertInventory();
-
-        assertTrue(result.isEmpty());
+        List<Product> allList = inventoryService.getInventoryByCategory(null);
+        assertThat(allList).hasSize(2);
     }
 
-    //アラート対象あり
+    // =========================================================================
+    // UT-INV-004: アラート対象抽出
+    // =========================================================================
     @Test
-    void getAlertInventory_アラート対象のみ取得できる() {
+    @DisplayName("UT-INV-004: 在庫切れ・残りわずか・期限切れ・期限間近のいずれかに該当する商品が抽出されること")
+    void utInv004_getAlertInventory_ShouldReturnAlertProducts() {
+        Product alertProduct = new Product();
+        alertProduct.setName("卵");
+        alertProduct.setFamily(testFamily);
+        alertProduct.setStock(0);
+        alertProduct.setThreshold(1);
+        alertProduct.setCategory(testCategory1);
+        alertProduct.setUnit(testUnit);
+        alertProduct.setThresholdUnit(testUnit);
+        alertProduct.setIcon(testIcon);
+        alertProduct.setIsDeleted(false);
+        alertProduct.setIsNotify(true);
+        productRepository.save(alertProduct);
 
-        Product product1 = new Product();
-        Product product2 = new Product();
-
-        when(productRepository
-                .findByFamily_IdAndIsDeletedFalseOrderByNameAsc(1L))
-                .thenReturn(List.of(product1, product2));
-
-        when(productService.isLowStock(product1))
-                .thenReturn(true);
-
-        when(productService.isLowStock(product2))
-                .thenReturn(false);
-
-        when(productService.isOutOfStock(any(Product.class)))
-                .thenReturn(false);
-
-        when(productService.isPastExpiry(any(Product.class)))
-                .thenReturn(false);
-
-        when(productService.isNearExpiry(any(Product.class)))
-                .thenReturn(false);
-
-        List<Product> result =
-                inventoryService.getAlertInventory();
-
-        assertEquals(1, result.size());
-        assertSame(product1, result.get(0));
+        List<Product> alerts = inventoryService.getAlertInventory();
+        assertThat(alerts).hasSize(1);
+        assertThat(alerts.get(0).getName()).isEqualTo("卵");
     }
 
-    //キーワード未入力
+    // =========================================================================
+    // UT-INV-005: ホーム画面用集計
+    // =========================================================================
     @Test
-    void searchInventory_nullの場合は全件取得() {
+    @DisplayName("UT-INV-005: ホーム画面用の各ステータス件数が正しく集計されること")
+    void utInv005_getHomeSummary_ShouldReturnCorrectCounts() {
+        Product outOfStockProduct = new Product();
+        outOfStockProduct.setName("お米");
+        outOfStockProduct.setFamily(testFamily);
+        outOfStockProduct.setStock(0);
+        outOfStockProduct.setThreshold(1);
+        outOfStockProduct.setCategory(testCategory1);
+        outOfStockProduct.setUnit(testUnit);
+        outOfStockProduct.setThresholdUnit(testUnit);
+        outOfStockProduct.setIcon(testIcon);
+        outOfStockProduct.setIsDeleted(false);
+        outOfStockProduct.setIsNotify(true);
+        productRepository.save(outOfStockProduct);
 
-        when(productRepository
-                .findByFamily_IdAndIsDeletedFalseOrderByNameAsc(1L))
-                .thenReturn(List.of());
+        Map<String, Long> summary = inventoryService.getHomeSummary();
 
-        inventoryService.searchInventory(null);
-
-        verify(productRepository, times(1))
-                .findByFamily_IdAndIsDeletedFalseOrderByNameAsc(1L);
+        assertThat(summary.get("outOfStockCount")).isEqualTo(1L);
+        assertThat(summary.get("lowStockCount")).isEqualTo(0L);
     }
 
-    // カテゴリ未選択
-
+    // =========================================================================
+    // UT-INV-006: 複数ステータスが混在するホーム画面集計の検証
+    // =========================================================================
     @Test
-    void getInventoryByCategory_nullの場合は全件取得() {
+    @DisplayName("UT-INV-006: 期限切れや残りわずか等の商品が複数混在している場合に、ホーム画面の各件数が正確に集計されること")
+    void utInv006_getHomeSummary_ShouldCountMultipleStatusesCorrectly() {
+        LocalDate today = LocalDate.now();
 
-        when(productRepository
-                .findByFamily_IdAndIsDeletedFalseOrderByNameAsc(1L))
-                .thenReturn(List.of());
+        Product expiredProduct = new Product();
+        expiredProduct.setName("期限切れ牛乳");
+        expiredProduct.setFamily(testFamily);
+        expiredProduct.setStock(5);
+        expiredProduct.setThreshold(1);
+        expiredProduct.setExpiryDate(today.minusDays(2));
+        expiredProduct.setCategory(testCategory1);
+        expiredProduct.setUnit(testUnit);
+        expiredProduct.setThresholdUnit(testUnit);
+        expiredProduct.setIcon(testIcon);
+        expiredProduct.setIsDeleted(false);
+        expiredProduct.setIsNotify(true);
+        productRepository.save(expiredProduct);
 
-        inventoryService.getInventoryByCategory(null);
+        Product lowStockProduct = new Product();
+        lowStockProduct.setName("残りわずか卵");
+        lowStockProduct.setFamily(testFamily);
+        lowStockProduct.setStock(1);
+        lowStockProduct.setThreshold(2);
+        lowStockProduct.setExpiryDate(today.plusDays(10));
+        lowStockProduct.setCategory(testCategory1);
+        lowStockProduct.setUnit(testUnit);
+        lowStockProduct.setThresholdUnit(testUnit);
+        lowStockProduct.setIcon(testIcon);
+        lowStockProduct.setIsDeleted(false);
+        lowStockProduct.setIsNotify(true);
+        productRepository.save(lowStockProduct);
 
-        verify(productRepository, times(1))
-                .findByFamily_IdAndIsDeletedFalseOrderByNameAsc(1L);
+        Map<String, Long> summary = inventoryService.getHomeSummary();
+
+        assertThat(summary.get("expiredCount")).isEqualTo(1L);
+        assertThat(summary.get("lowStockCount")).isEqualTo(1L);
+        assertThat(summary.get("outOfStockCount")).isEqualTo(0L);
+    }
+
+    // =========================================================================
+    // UT-INV-007: 登録データが0件の場合の空リスト返却検証
+    // =========================================================================
+    @Test
+    @DisplayName("UT-INV-007: 在庫データが一件も登録されていない場合、各取得メソッドが空のリストを返すこと")
+    void utInv007_emptyInventory_ShouldReturnEmptyLists() {
+        assertThat(inventoryService.getAllInventory()).isEmpty();
+        assertThat(inventoryService.searchInventory("テスト")).isEmpty();
+        assertThat(inventoryService.getInventoryByCategory(testCategory1.getId())).isEmpty();
+        assertThat(inventoryService.getAlertInventory()).isEmpty();
     }
 }

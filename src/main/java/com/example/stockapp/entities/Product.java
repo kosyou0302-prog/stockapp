@@ -73,8 +73,8 @@ public class Product {
     private Unit unit;
 
     // 購入目安単位
-    @ManyToOne(optional= false, fetch= FetchType.LAZY)
-    @JoinColumn(name="threshold_unit_id")
+    @ManyToOne(optional= true, fetch= FetchType.LAZY)
+    @JoinColumn(name="threshold_unit_id", nullable = true)
     private Unit thresholdUnit;
 
     // アイコン
