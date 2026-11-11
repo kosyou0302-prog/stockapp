@@ -8,35 +8,39 @@
   TODO: 画面下部に「一括購入する」ボタンを配置する
 
   【今回の実装状況】
-  ・買い物リストの繰り返し表示：HTML作成済み
-  ・手動追加フォーム：HTML作成済み
+  ・買い物リストの繰り返し表示・手動追加フォーム：HTML作成済み
+  ・カテゴリー選択欄：DBから取得したカテゴリー一覧を表示
+  ・カテゴリーによる商品選択欄の絞り込み：JS担当
   ・チェックボックス：HTML作成済み（非同期通信はJS担当）
-  ・数量変更ボタン：HTML作成済み（Controller側の処理は今後実装）
-  ・チェックした商品の削除：HTML作成済み（Controller側の処理は今後実装）
-  ・一括購入ボタン：HTML作成済み（Controller側の処理は今後実装）
+  ・数量変更・チェックした商品の削除・一括購入：HTML作成済み（Controller側との接続が必要）
 -->
 <!DOCTYPE html>
+
 <!-- Thymeleafを使う宣言と、言語を日本語(ja)に設定 -->
 <html xmlns:th="http://www.thymeleaf.org" lang="ja">
+
 <head>
   <!-- 文字化けを防ぐUTF-8設定 -->
   <meta charset="UTF-8">
+
   <!-- スマホやタブレットでも綺麗に表示するためのViewport設定 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <!-- 画面のタブに表示されるタイトル（各画面で書き換えてOK） -->
   <title>生活必需品ストックアプリ</title>
+
   <!-- Bootstrap 5 CSS (CDN経由で読み込み：インストール不要) -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
   <!-- チームオリジナルの共通CSS（Thymeleafの @{} を使うと自動で正しいパスになります） -->
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
+
 <body>
   <!--
     ① ヘッダー
-    bg-primary：背景を青色にする
-    text-white：文字を白色にする
-    text-center：中央揃えにする
-    py-3：上下に余白を設定する
+    bg-primary：背景を青色 ／ text-white：文字を白色
+    text-center：中央揃え ／ py-3：上下に余白を設定
   -->
   <header class="bg-primary text-white text-center py-3">
     <h1 class="h4 fw-bold mb-0">買い物リスト</h1>
@@ -45,186 +49,101 @@
   <!-- メインコンテンツ（ここに各画面のTODOを書いていきます） -->
   <main class="container mt-4 mb-5 pb-5">
 
-<!--
+    <!--
       ② 買い物リストへの手動追加
-
       登録済みの商品を選択し、購入予定数を指定して追加する。
 
-      form：入力したデータをControllerに送信する
-      th:action：送信先のURLを指定する
-      method="post"：データを登録するためPOSTで送信する
-
-      【Controller担当者へ】
-      POST /shopping
-
-      【必要なModel】
-      products：登録済みの商品一覧
+      form：入力データをControllerへ送信 ／ th:action：送信先URL ／ method="post"：POSTで登録
+      【Controller担当者へ】送信先は POST /shopping/list。Controller側の受付URLと一致させる。
+      【必要なModel】products：登録済みの商品一覧 ／ categories：DBから取得したカテゴリー一覧
     -->
-
     <section class="mb-4">
       <h2 class="h5 fw-bold mb-3">買い物リストに追加</h2>
 
-      <form th:action="@{/shopping/list}"
-            method="post"
-            class="card">
+      <form th:action="@{/shopping/list}" method="post" class="card">
         <div class="card-body">
 
           <!--
             ②-1 カテゴリー絞り込み
-
             商品選択欄の前にカテゴリーを選択する。
-
-            選択できるカテゴリー：
-            ・すべて
-            ・食品
-            ・日用品
-            ・その他
+            選択肢：「すべて」とDBに登録されているカテゴリー（食品・日用品・その他など）。
 
             【JS担当者へ】
-            categoryFilterの選択内容に応じて、
-            商品選択欄に表示する商品を絞り込む。
+            categoryFilterが「すべて」なら全商品、それ以外はdata-categoryが一致する商品だけを表示する。
+            絞り込みによって選択中の商品が対象外になった場合は、商品の選択を解除する。
           -->
           <div class="mb-3">
-
-            <label for="categoryFilter"
-                  class="form-label fw-bold">
-              カテゴリー
-            </label>
+            <label for="categoryFilter" class="form-label fw-bold">カテゴリー</label>
 
             <!--
-              select：カテゴリー選択用のプルダウン
-              この項目は絞り込み用なので、Controllerには送信しない
+              select：カテゴリー選択用。この項目は絞り込み用なので、Controllerには送信しない。
+              th:each：カテゴリー一覧を繰り返す ／ th:value：絞り込み用の名前 ／ th:text：表示する名前
             -->
             <select id="categoryFilter" class="form-select form-select-sm">
               <option value="すべて">すべて</option>
-              <option value=""></option>
+              <option th:each="category : ${categories}" th:value="${category.name}" th:text="${category.name}"></option>
             </select>
           </div>
 
           <!--
             ②-2 商品選択・購入予定数・追加ボタン
-
-            商品選択欄、数量入力欄、追加ボタンを
-            Bootstrapのrowで横一列に配置する。
+            商品選択欄、数量入力欄、追加ボタンをBootstrapのrowで横一列に配置する。
           -->
           <div class="row g-2 align-items-end">
 
             <!--
-              商品選択
-
-              select：プルダウン形式の入力欄
-
-              th:each：商品一覧を1件ずつ繰り返し表示
-              th:value：送信する商品ID
-              th:text：画面に表示する商品名
-              data-category：カテゴリー絞り込み用の情報
-
-              【JS担当者へ】
-              data-categoryの値を使って商品を絞り込む。
+              商品選択：selectでプルダウン形式の入力欄を作る。
+              th:each：商品一覧を繰り返す ／ th:value：送信する商品ID ／ th:text：表示する商品名
+              【JS担当者へ】data-categoryに設定したカテゴリー名を使って商品を絞り込む。
             -->
-
             <div class="col">
-              <label for="productId"
-                    class="form-label fw-bold mb-1">
-                商品
-              </label>
-
-              <select id="productId"
-                      name="productId"
-                      class="form-select form-select-sm"
-                      required>
+              <label for="productId" class="form-label fw-bold mb-1">商品</label>
+              <select id="productId" name="productId" class="form-select form-select-sm" required>
                 <option value="">商品を選択してください</option>
-                <option th:each="product : ${products}"
-                        th:value="${product.id}"
-                        th:text="${product.name}"
-                        th:attr="data-category=${product.category.name}">
-                  牛乳
-                </option>
+                <option th:each="product : ${products}" th:value="${product.id}" th:text="${product.name}"
+                        th:attr="data-category=${product.category.name}">牛乳</option>
               </select>
             </div>
 
-
             <!-- 購入予定数 -->
             <div class="col-auto">
-              <label for="quantity"
-                    class="form-label fw-bold mb-1">
-                数量
-              </label>
+              <label for="quantity" class="form-label fw-bold mb-1">数量</label>
 
-              <!--
-                type="number"：数値入力欄
-                min="1"：1以上の数値のみ入力できるようにする
-                required：未入力での送信を防ぐ
-
-                ※サーバー側でも入力チェックが必要
-              -->
-              <input type="number"
-                    id="quantity"
-                    name="quantity"
-                    class="form-control form-control-sm"
-                    value="1"
-                    min="1"
-                    style="width: 65px;"
-                    required>
-
+              <!-- type="number"：数値入力 ／ min="1"：1以上 ／ required：入力必須。サーバー側でも検証が必要。 -->
+              <input type="number" id="quantity" name="quantity" class="form-control form-control-sm"
+                    value="1" min="1" style="width:65px;" required>
             </div>
 
             <!-- 追加ボタン -->
             <div class="col-auto">
-              <label class="form-label mb-1 d-block">
-                &nbsp;
-              </label>
-              <button type="submit"
-                      class="btn btn-primary btn-sm text-nowrap">
-                ＋追加
-              </button>
+              <button type="submit" class="btn btn-primary btn-sm text-nowrap">＋追加</button>
             </div>
-
           </div>
         </div>
       </form>
     </section>
 
-
-
     <!--
       ③ 買い物リスト一覧
+      ShoppingListControllerから渡されたshoppingItemsを th:each でループ表示する。
 
-      ShoppingListControllerから渡された
-      shoppingItems を th:each でループ表示する。
-
-      list-group：商品を一覧形式で並べる
-      list-group-item：一覧の各商品
-      d-flex：横並びにする
-      justify-content-between：左右に分けて配置する
-      align-items-center：上下中央揃えにする
-
-      【必要なModel】
-      shoppingItems：買い物リストに登録された商品一覧
+      list-group：商品を一覧形式で並べる ／ list-group-item：一覧の各商品
+      d-flex：横並び ／ justify-content-between：左右に分ける ／ align-items-center：上下中央揃え
+      【必要なModel】shoppingItems：買い物リストに登録された商品一覧
     -->
     <section class="mb-4">
       <h2 class="h5 fw-bold mb-3">購入予定の商品</h2>
 
-      <!--
-        買い物リストが空の場合
-        #lists.isEmpty：リストが空かどうかを判定する
-      -->
-      <p th:if="${shoppingItems == null or #lists.isEmpty(shoppingItems)}"
-        class="text-center text-secondary py-4">
+      <!-- 買い物リストが空の場合。#lists.isEmpty：リストが空かどうかを判定する。 -->
+      <p th:if="${shoppingItems == null or #lists.isEmpty(shoppingItems)}" class="text-center text-secondary py-4">
         買い物リストに商品がありません。
       </p>
 
       <!-- 買い物リストが存在する場合 -->
-      <div class="list-group"
-          th:if="${shoppingItems != null and !#lists.isEmpty(shoppingItems)}">
+      <div class="list-group" th:if="${shoppingItems != null and !#lists.isEmpty(shoppingItems)}">
 
-        <!--
-          商品リストを1件ずつ繰り返し表示
-          th:each：
-          shoppingItemsの中からitemを1件ずつ取り出す
-        -->
-        <div th:each="item : ${shoppingItems}"
-            class="list-group-item py-3">
+        <!-- 商品リストを1件ずつ繰り返し表示。shoppingItemsからitemを1件ずつ取り出す。 -->
+        <div th:each="item : ${shoppingItems}" class="list-group-item py-3">
           <div class="d-flex align-items-center justify-content-between gap-2">
 
             <!-- 左側：チェックボックス・商品情報 -->
@@ -232,106 +151,54 @@
 
               <!--
                 ④ 購入チェックボックス
-
                 form-check-input：Bootstrapのチェックボックス
-
-                th:checked：
-                DBに保存されているisCheckedの状態を反映する
-
-                data-id：
-                JavaScriptから買い物リスト項目のIDを取得するための属性
+                th:checked：DBのisCheckedを反映 ／ data-id：JSから取得する買い物リスト項目ID
 
                 【JS担当者へ】
-                チェック状態が変更されたとき、
-                Fetch APIを使ってPOST /shopping/list/{id}へ送信する。
-                {id}には、data-idから取得した買い物リスト項目のIDを使用する。
-                app.js側の送信先URLも、Controllerに合わせる。
-
-                ※現在のControllerは仮実装のため、
-                  実際のDB更新処理は今後追加する。
+                チェック変更時にFetch APIで POST /shopping/list/{id} へ送信する。
+                {id}にはdata-idを使用し、app.js側の送信先URLもControllerに合わせる。
+                ※Controller・Service側でDB更新処理との接続が必要。
               -->
-              <input type="checkbox"
-                    class="form-check-input shopping-check"
-                    th:attr="data-id=${item.id}"
-                    th:checked="${item.isChecked}"
-                    aria-label="購入する商品を選択">
+              <input type="checkbox" class="form-check-input shopping-check" th:attr="data-id=${item.id}"
+                    th:checked="${item.isChecked}" aria-label="購入する商品を選択">
 
-
-              <!-- 商品アイコン:買い物リスト項目に紐づく商品のアイコンを表示 -->
+              <!-- 商品アイコン：買い物リスト項目に紐づく商品のアイコンを表示 -->
               <img th:src="@{'/images/icons/' + ${item.product.icon.id} + '.png'}"
-                style="width:40px; height:40px; object-fit:cover;"
-                class="rounded"
-                alt="アイコン">
-
+                  style="width:40px; height:40px; object-fit:cover;" class="rounded" alt="アイコン">
 
               <!-- 商品名 -->
               <div>
-                <div class="fw-bold"
-                    th:text="${item.product.name}">
-                  牛乳
-                </div>
-                <div class="text-secondary small">
-                  購入予定
-                </div>
+                <div class="fw-bold" th:text="${item.product.name}">牛乳</div>
+                <div class="text-secondary small">購入予定</div>
               </div>
-
             </div>
-
 
             <!--
               ⑤ 購入予定数量の変更
-
-              「－」ボタンで1減らす
-              「＋」ボタンで1増やす
-
-              【Controller担当者へ】
-              POST /shopping/quantity/{id}
-
-              change=-1：数量を1減らす
-              change=1：数量を1増やす
-
-              ※このURLは今後追加する想定。
+              「－」ボタンで1減らす ／ 「＋」ボタンで1増やす
+              【Controller担当者へ】POST /shopping/quantity/{id}
+              change=-1：数量を1減らす ／ change=1：数量を1増やす
+              ※Controller側に対応する処理が必要。
             -->
             <div class="d-flex align-items-center gap-2">
 
               <!-- 数量を減らす -->
-              <form th:action="@{/shopping/quantity/{id}(id=${item.id})}"
-                    method="post">
-                <input type="hidden"
-                      name="change"
-                      value="-1">
-                <button type="submit"
-                        class="btn btn-outline-secondary btn-sm"
-                        th:disabled="${item.threshold == null or item.threshold le 1}"
-                        aria-label="数量を減らす">
+              <form th:action="@{/shopping/quantity/{id}(id=${item.id})}" method="post">
+                <input type="hidden" name="change" value="-1">
+                <button type="submit" class="btn btn-outline-secondary btn-sm"
+                        th:disabled="${item.threshold == null or item.threshold le 1}" aria-label="数量を減らす">
                   －
                 </button>
               </form>
 
-              <!--
-                購入予定数を表示する
-
-                現在のShoppingListItem.javaでは、
-                購入予定数の変数名がthresholdになっている。
-              -->
-              <span class="fw-bold"
-                    th:text="${item.threshold}">
-                1
-              </span>
+              <!-- 購入予定数を表示。現在のShoppingListItem.javaでは、変数名がthresholdになっている。 -->
+              <span class="fw-bold" th:text="${item.threshold}">1</span>
 
               <!-- 数量を増やす -->
-              <form th:action="@{/shopping/quantity/{id}(id=${item.id})}"
-                    method="post">
-                <input type="hidden"
-                      name="change"
-                      value="1">
-                <button type="submit"
-                        class="btn btn-outline-secondary btn-sm"
-                        aria-label="数量を増やす">
-                  ＋
-                </button>
+              <form th:action="@{/shopping/quantity/{id}(id=${item.id})}" method="post">
+                <input type="hidden" name="change" value="1">
+                <button type="submit" class="btn btn-outline-secondary btn-sm" aria-label="数量を増やす">＋</button>
               </form>
-
             </div>
           </div>
         </div>
@@ -340,64 +207,33 @@
 
     <!--
       ⑥ 買い物リストの操作ボタン
+      チェックした商品を削除する、または一括購入する。
 
-      チェックした商品を削除する、
-      または一括購入する。
-
-      d-grid：ボタンを横幅いっぱいに表示する
-      gap-2：ボタン同士の間隔を設定する
-
-      ※チェック状態はDBのisCheckedを使用する想定。
-      ※チェックボックスの非同期更新が必要。
+      d-grid：ボタンのまとまりを横幅いっぱいに配置 ／ gap-2：要素同士の間隔
+      ※チェック状態はDBのisCheckedを使用する想定。チェックボックスの非同期更新が必要。
     -->
-    <section class="mb-4"
-            th:if="${shoppingItems != null and !#lists.isEmpty(shoppingItems)}">
+    <section class="mb-4" th:if="${shoppingItems != null and !#lists.isEmpty(shoppingItems)}">
       <div class="d-grid gap-2">
-
-        <!--
-          ⑥ 買い物リストの操作ボタン
-
-          チェックした商品を削除する、
-          または一括購入する。
-
-          d-grid：ボタンを横幅いっぱいに表示する
-          gap-2：ボタン同士の間隔を設定する
-
-          ※チェック状態はDBのisCheckedを使用する想定。
-          ※チェックボックスの非同期更新が必要。
-        -->
 
         <!-- ボタンを横一列に配置 -->
         <div class="row g-2">
 
           <!-- 削除ボタン：横幅50% -->
           <div class="col-6">
-
             <!--
               チェックした商品を削除する
-
-              【Controller担当者へ】
-              POST /shopping/delete
-
-              ※現在は未実装。
+              【Controller担当者へ】POST /shopping/delete
+              ※Controller側に対応する処理が必要。
             -->
-
-            <form th:action="@{/shopping/delete}"
-                  method="post">
-              <button type="submit"
-                      class="btn btn-outline-danger w-100">
-                チェックした商品を削除
-              </button>
+            <form th:action="@{/shopping/delete}" method="post">
+              <button type="submit" class="btn btn-outline-danger w-100">チェックした商品を削除</button>
             </form>
           </div>
 
-
           <!-- 購入完了ボタン：横幅50% -->
           <div class="col-6">
-
             <!--
               ⑦ 一括購入ボタン
-
               チェックした商品を購入完了にする。
 
               【購入完了時の処理】
@@ -406,53 +242,36 @@
               3. 購入履歴に記録
               4. 買い物リストから削除
 
-              【Controller担当者へ】
-              POST /shopping/complete
-
-              ※現在は未実装。
+              【Controller担当者へ】POST /shopping/complete
+              ※Controller側から購入完了処理を呼び出す必要がある。
             -->
-
-            <form th:action="@{/shopping/complete}"
-                  method="post">
-              <button type="submit"
-                      class="btn btn-primary w-100">
-                ✓ チェックした商品を購入完了
-              </button>
+            <form th:action="@{/shopping/complete}" method="post">
+              <button type="submit" class="btn btn-primary w-100">✓ チェックした商品を購入完了</button>
             </form>
           </div>
-
         </div>
       </div>
     </section>
   </main>
 
   <!--
-    共通ナビゲーションメニューの読み込み
-    （fragments/menu.html をここに差し込む）
-
-    ※元のコードでは :: header だったが、
-      現在のmenu.htmlでは :: menu が定義されているため修正。
+    共通ナビゲーションメニューの読み込み（fragments/menu.html をここに差し込む）
+    ※元のコードでは :: header だったが、現在のmenu.htmlでは :: menu が定義されているため修正。
   -->
   <div th:replace="~{fragments/menu :: menu}"></div>
-
-
 
   <!-- Bootstrap 5 JS (CDN経由：ドロップダウンやモーダルなどを動かすために必要) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-
   <!--
-    非同期処理（JS）が必要な画面（買い物リストなど）だけ、
-    以下のコメントアウトを外してJSを読み込む。
+    非同期処理（JS）が必要な画面（買い物リストなど）だけ、コメントアウトを外してJSを読み込む。
+    今回はチェックボックスの非同期更新が必要なため、コメントアウトを外している。
 
-    今回はチェックボックスの非同期更新が必要なため、
-    コメントアウトを外している。
-
-    【JS担当者へ】
-    static/js/app.js にFetch APIによる
-    チェック状態更新処理を実装する。
+    【JS担当者へ】static/js/app.js に以下の処理を実装する。
+    ・カテゴリー選択による商品選択欄の絞り込み
+    ・Fetch APIによるチェック状態更新処理
   -->
   <script th:src="@{/js/app.js}"></script>
-
 </body>
+
 </html>
