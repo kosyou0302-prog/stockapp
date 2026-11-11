@@ -44,8 +44,7 @@ public class InventoryService {
             return getAllInventory();
         }
         List<Product> products =productRepository
-            .findByFamily_IdAndProduct_Family_IdAndProduct_IsDeletedFalseOrderByIdAsc(
-                keyword,FAMILY_ID);
+            .findByFamily_IdAndNameContainingAndIsDeletedFalseOrderByIdAsc(FAMILY_ID, keyword);
             return products;
     }
 
