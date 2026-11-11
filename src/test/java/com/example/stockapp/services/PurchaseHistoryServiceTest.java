@@ -32,22 +32,16 @@ class PurchaseHistoryServiceTest {
 
     @Autowired
     private PurchaseHistoryService purchaseHistoryService;
-
     @Autowired
     private PurchaseHistoryRepository purchaseHistoryRepository;
-
     @Autowired
     private ProductRepository productRepository;
-
     @Autowired
     private FamilyRepository familyRepository;
-
     @Autowired
     private CategoryRepository categoryRepository;
-
     @Autowired
     private UnitRepository unitRepository;
-
     @Autowired
     private IconRepository iconRepository;
 
@@ -101,7 +95,7 @@ class PurchaseHistoryServiceTest {
         // ② 検証 (Then): 履歴が1件保存されており、スナップショット名や数量が一致していること
         List<PurchaseHistory> histories = purchaseHistoryService.getPurchaseHistoryList(testFamily.getId());
         assertThat(histories).hasSize(1);
-        
+
         PurchaseHistory savedHistory = histories.get(0);
         assertThat(savedHistory.getName()).isEqualTo("豆腐");
         assertThat(savedHistory.getQuantity()).isEqualTo(2);
@@ -155,6 +149,38 @@ class PurchaseHistoryServiceTest {
 
         // 実行 & 検証 (Then): 数量が 0 以下の場合
         assertThatThrownBy(() -> purchaseHistoryService.recordPurchase(testProduct, 0))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    // =========================================================================
+    // UT-HIS-005: 購入日が未設定の場合の自動補完検証
+    // =========================================================================
+    @Test
+    @DisplayName("UT-HIS-005: 保存時に購入日（recordDate）が未設定の場合、当日の日付が自動でセットされること")
+    void utHis005_savePurchaseHistory_ShouldAutoSetRecordDateIfNull() {
+        // ① 準備 (Given): あえて recordDate を null にした履歴エンティティを作成
+        PurchaseHistory history = new PurchaseHistory();
+        history.setFamily(testFamily);
+        history.setProduct(testProduct);
+        history.setName(testProduct.getName());
+        history.setQuantity(1);
+        history.setRecordDate(null); // 未設定
+
+        // ② 実行 (When)
+        PurchaseHistory saved = purchaseHistoryService.savePurchaseHistory(history);
+
+        // ③ 検証 (Then): 本日の日付が自動設定されていること
+        assertThat(saved.getRecordDate()).isEqualTo(LocalDate.now());
+    }
+
+    // =========================================================================
+    // UT-HIS-006: 家族IDが null の場合の一覧取得例外検証（異常系）
+    // =========================================================================
+    @Test
+    @DisplayName("UT-HIS-006: 家族IDに null を指定して履歴一覧を取得しようとした場合、例外がスローされること")
+    void utHis006_getPurchaseHistoryList_NullFamilyId_ShouldThrowException() {
+        // 実行 & 検証 (Then)
+        assertThatThrownBy(() -> purchaseHistoryService.getPurchaseHistoryList(null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }
