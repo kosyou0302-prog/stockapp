@@ -84,8 +84,13 @@
         th:errors="*{name}">
     </div>
     </div>
-        <!-- アイコン一覧 -->
+
+    <!-- アイコン選択 -->
+      <div class="mb-3">
       <div class="row row-cols-4 g-2">
+        <label class="form-label fw-bold">アイコン選択</label>
+
+    <!-- アイコン一覧 -->
         <div class="col" th:each="i : ${#numbers.sequence(1,20)}">
 
         <img th:src="@{'/images/icons/' + ${i} + '.png'}"
@@ -156,7 +161,6 @@
                 <option value="3">パック</option>
                 <option value="4">箱</option>
               </select>
-              <div class="form-text">在庫数と同じ単位で入力してください。</div>
             </div>
           </div>
           <div class="text-danger small" th:if="${#fields.hasErrors('threshold')}" th:errors="*{threshold}"></div>
@@ -177,6 +181,7 @@
             <label for="alertDays" class="form-label fw-bold">期限お知らせ</label>
           <div class="d-flex align-items-center gap-3">
           <select class="form-select w-auto" th:field="*{alertDays}">
+            <option value=""></option>
             <option value="3">3日前</option>
             <option value="7">7日前</option>
           </select>

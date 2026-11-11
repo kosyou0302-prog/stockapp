@@ -72,6 +72,7 @@
 
         <!-- アイコン選択 -->
         <div class="mb-3">
+        <div class="row row-cols-4 g-2">
           <label class="form-label fw-bold">アイコン選択</label>
 
           <!-- iconPath ではなく IconマスタのID（icon.id）を送信するように修正 -->
@@ -137,7 +138,6 @@
                 <option value="3">パック</option>
                 <option value="4">箱</option>
               </select>
-              <div class="form-text">在庫数と同じ単位で入力してください。</div>
 
             </div>
           </div>
@@ -159,6 +159,7 @@
             <label for="alertDays" class="form-label fw-bold">期限お知らせ</label>
           <div class="d-flex align-items-center gap-3">
           <select class="form-select w-auto" th:field="*{alertDays}">
+            <option value=""></option>
             <option value="3">3日前</option>
             <option value="7">7日前</option>
           </select>
