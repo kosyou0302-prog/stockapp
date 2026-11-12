@@ -39,7 +39,6 @@ public class ProductService {
     private final FamilyRepository familyRepository;
 
     // 【処理内容】新規登録 : 受け取った商品情報を初期化（削除フラグ=false）して保存する
-    @Transactional
     public void registerProduct(Product product) {
         // ログイン機能ができるまでの暫定対応：ID=1のダミー家族をセット
         Family dummyFamily = familyRepository.findById(1L).orElseThrow();
@@ -83,7 +82,6 @@ public class ProductService {
     }
 
     // 【処理内容】更新 : 指定IDの既存データを取得し、新しい値で上書きして保存する
-    @Transactional
     public void updateProduct(Product product) {
         // 画面から隠されている裏側のデータisDeleted等を守るため、いきなり保存せず、まずはDBから「変更前の古いデータ」を取得する
         Long targetId = product.getId();
@@ -128,7 +126,6 @@ public class ProductService {
     }
 
     // 【処理内容】論理削除 : 指定IDの削除フラグを有効にし、関連する買い物リスト等のデータと連動させる
-    @Transactional
     public void deleteProduct(Long id) {
         Product deleted = productRepository.findById(id).orElseThrow();
         deleted.setIsDeleted(true);
@@ -195,5 +192,45 @@ public class ProductService {
         if(product.getStock() == null){return false;}
         Integer stock = product.getStock();
         return stock == 0;
+    }
+
+    // 【処理内容】ホーム画面用集計 : 指定家族の未削除商品から4種類のアラート件数を集計し、Mapで返す
+    @Transactional(readOnly = true)
+    public Map<String, Long> getHomeSummary(Long familyId) {
+        // 指定家族の論理削除されていない商品を全件取得
+        List<Product> products = productRepository.findByFamily_IdAndIsDeletedFalseOrderByNameAsc(familyId);
+
+        // ホーム画面に表示する4種類のアラート件数カウンタを初期化
+        long outOfStockCount = 0;
+        long expiredCount = 0;
+        long lowStockCount = 0;
+        long expiringSoonCount = 0;
+
+        // 各商品の状態を既存判定メソッドでチェックし、該当する件数を加算（複数条件に当てはまる場合は両方カウント）
+        for(Product product : products) {
+            // 在庫切れ
+            if(isOutOfStock(product)) {
+                outOfStockCount++;
+            }
+            // 期限切れ
+            if(isPastExpiry(product)) {
+                expiredCount++;
+            }
+            // 残りわずか
+            if(isLowStock(product)) {
+                lowStockCount++;
+            }
+            // 期限間近
+            if(isNearExpiry(product)) {
+                expiringSoonCount++;
+            }
+        }
+        // 集計結果をホーム画面（HomeController）へ渡すためのMapに格納して返却
+        Map<String, Long> homeSummary = new HashMap<>();
+        homeSummary.put("outOfStockCount", outOfStockCount);
+        homeSummary.put("expiredCount", expiredCount);
+        homeSummary.put("lowStockCount", lowStockCount);
+        homeSummary.put("expiringSoonCount", expiringSoonCount);
+        return homeSummary;
     }
 }
