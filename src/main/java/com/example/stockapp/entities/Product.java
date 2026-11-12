@@ -89,23 +89,32 @@ public class Product {
 
     // 一覧表示の優先度判定
     public String getPrimaryAlert(LocalDate today) {
-        // 優先度１：期限切れ
-        if (expiryDate != null && today.isAfter(expiryDate)) {
-            return "EXPIRED";
-        }
-        // 優先度２：在庫切れ
-        else if (stock != null && stock == 0) {
+        // 優先度１：在庫切れ
+        // 商品がないため、使用期限が過ぎていても在庫切れだけを表示する
+        if (stock != null && stock == 0) {
             return "OUT_OF_STOCK";
         }
+
+        // 在庫がない・未設定の商品は期限アラートの対象外
+        boolean hasStock = stock != null && stock > 0;
+
+        // 優先度２：期限切れ
+        if (hasStock && expiryDate != null && today.isAfter(expiryDate)) {
+            return "EXPIRED";
+        }
+
         // 優先度３：期限間近
-        else if (expiryDate != null && alertDays != null
-                && !today.isBefore(expiryDate.minusDays(alertDays)) && !today.isAfter(expiryDate)) {
+        if (hasStock && expiryDate != null && alertDays != null
+                && !today.isBefore(expiryDate.minusDays(alertDays))
+                && !today.isAfter(expiryDate)) {
             return "EXPIRING_SOON";
         }
+
         // 優先度４：残り僅か
-        else if (stock != null && threshold != null && 0 < stock && stock <= threshold) {
+        if (stock != null && threshold != null && 0 < stock && stock <= threshold) {
             return "LOW_STOCK";
         }
+
         return "NONE";
     }
 }

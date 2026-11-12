@@ -38,6 +38,7 @@ public class InventoryService {
     }
 
     // 【処理内容】商品名によるあいまい検索：商品名の部分一致検索を行う
+    // 既存の呼び出し用として残す（検索結果はID昇順）
     public List<Product> searchInventory(String keyword) {
         // キーワード未入力の場合は全件取得
         if (keyword == null || keyword.trim().isEmpty()) {
@@ -83,7 +84,7 @@ public class InventoryService {
                         categoryId,FAMILY_ID);
     }
 
-   // 【処理内容】アラート対象抽出：
+    // 【処理内容】アラート対象抽出：
     // 「在庫切れ・残りわずか」または「期限切れ・期限間近」の商品を取得する
     public List<Product> getAlertInventory() {
         List<Product> allProducts = getAllInventory();
@@ -95,6 +96,44 @@ public class InventoryService {
                         || productService.isNearExpiry(product))
                     .toList();
         return alertProducts;
+    }
+
+    // 【処理内容】アラート対象商品を、商品名とアラート種別で絞り込む
+    // アラート画面のControllerから呼び出す（結果は商品名昇順）
+    public List<Product> searchAlertInventory(String keyword, String type) {
+        // 現在の家族の未削除商品を、商品名で部分一致検索する
+        // カテゴリーは指定しない。キーワード未入力の場合は全件取得する。
+        List<Product> products = searchInventory(keyword, null);
+        String alertType = type == null ? "" : type;
+
+        return products.stream()
+                // 通知ONの商品だけをアラートの表示対象にする
+                // 通知OFF・未設定（null）の商品は除外する
+                .filter(product -> Boolean.TRUE.equals(product.getIsNotify()))
+
+                // 選択したアラート種別に該当する商品を抽出する
+                .filter(product -> switch (alertType) {
+                    // 在庫切れ・残りわずか
+                    case "stock" -> productService.isOutOfStock(product)
+                            || productService.isLowStock(product);
+
+                    // 期限切れ・期限間近
+                    case "expiry" -> productService.isPastExpiry(product)
+                            || productService.isNearExpiry(product);
+
+                    // ホーム画面から個別のアラートを選んだ場合
+                    case "out" -> productService.isOutOfStock(product);
+                    case "low" -> productService.isLowStock(product);
+                    case "expired" -> productService.isPastExpiry(product);
+                    case "soon" -> productService.isNearExpiry(product);
+
+                    // 「すべて」：4種類のいずれかに該当する商品
+                    default -> productService.isOutOfStock(product)
+                            || productService.isLowStock(product)
+                            || productService.isPastExpiry(product)
+                            || productService.isNearExpiry(product);
+                })
+                .toList();
     }
 
     // 【処理内容】ホーム画面用集計：

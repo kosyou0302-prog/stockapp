@@ -151,8 +151,13 @@ public class ProductService {
         return map;
     }
 
-    // 【処理内容】期限間近を判定
+    // 【処理内容】期限まぢかを判定
     public boolean isNearExpiry(Product product) {
+        // 在庫がない商品は期限アラートの対象外
+        if (product == null || product.getStock() == null || product.getStock() <= 0) {
+            return false;
+        }
+
         // nullを弾く
         if(product.getExpiryDate() == null || product.getAlertDays() == null){return false;}
         LocalDate startDate = product.getExpiryDate();
@@ -163,6 +168,11 @@ public class ProductService {
 
     // 【処理内容】期限切れ判定
     public boolean isPastExpiry(Product product) {
+        // 在庫がない商品は期限アラートの対象外
+        if (product == null || product.getStock() == null || product.getStock() <= 0) {
+            return false;
+        }
+
         // nullを弾く
         if(product.getExpiryDate() == null){return false;}
         LocalDate startDate = product.getExpiryDate();
