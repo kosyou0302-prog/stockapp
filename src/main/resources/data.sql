@@ -32,7 +32,29 @@ INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_
 VALUES ('卵', 10, 3, '2026-11-15', 5, 1, 3, 1, 1, false, 1);
 
 INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_id, unit_id,threshold_unit_id, icon_id, is_deleted, family_id) 
-VALUES ('しょうゆ', 0, 1, '2027-05-01', 7, 2, 2, 2, 2, false, 1);
+VALUES ('しょうゆ', 0, 1, '2027-05-01', 7, 1, 2, 2, 2, false, 1);
 
 INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_id, unit_id,threshold_unit_id, icon_id, is_deleted, family_id) 
-VALUES ('トイレットペーパー', 4, 2, NULL, 0, 3, 1, 3, 1, false, 1);
+VALUES ('トイレットペーパー', 4, 2, NULL, 0, 2, 1, 3, 1, false, 1);
+
+INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_id, unit_id,threshold_unit_id, icon_id, is_deleted, family_id) 
+VALUES ('防災グッズ', 4, 2, NULL, 1, 3, 1, 3, 1, false, 1);
+
+INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_id, unit_id, threshold_unit_id, icon_id, is_deleted, family_id) 
+VALUES ('洗濯洗剤', 1, 2, NULL, 0, 2, 1, 1, 1, false, 1);
+
+-- ⑦ その他（カテゴリ3）の「在庫 ＝ 閾値（境界値）」確認用
+INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_id, unit_id, threshold_unit_id, icon_id, is_deleted, family_id) 
+VALUES ('乾電池', 2, 2, NULL, 0, 3, 1, 1, 1, false, 1);
+
+-- ⑧ 「在庫0 かつ 期限切れ」のガード確認用（在庫切れのみカウントされ、期限切れには入らない）
+INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_id, unit_id, threshold_unit_id, icon_id, is_deleted, family_id) 
+VALUES ('納豆', 0, 1, '2026-11-01', 3, 1, 3, 3, 1, false, 1);
+
+-- ⑨ 「期限日が今日ちょうど（境界値）」確認用（期限切れではなく期限間近に入る）
+INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_id, unit_id, threshold_unit_id, icon_id, is_deleted, family_id) 
+VALUES ('食パン', 2, 1, '2026-11-12', 3, 1, 1, 1, 1, false, 1);
+
+-- ⑩ 「論理削除済み（is_deleted = true）」の除外確認用（すべてカウント対象外）
+INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_id, unit_id, threshold_unit_id, icon_id, is_deleted, family_id) 
+VALUES ('削除済みテスト商品', 0, 1, '2026-11-01', 3, 1, 1, 1, 1, true, 1);
