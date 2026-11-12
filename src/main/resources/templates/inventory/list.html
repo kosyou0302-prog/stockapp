@@ -155,13 +155,13 @@
             <span class="d-flex align-items-center ms-auto">
               <!--
                 在庫切れ：赤文字 ／ 期限切れ：黄色系の文字 ／ 通常：通常の文字色
-                両方に該当する場合は在庫切れ（赤文字）を優先する。
-                期限切れは、使用期限が今日より前の日付の場合。
+                在庫0は在庫切れだけを表示し、期限切れの色分けは在庫1以上の商品に適用する。
               -->
               <span class="fw-bold text-nowrap"
                     th:classappend="${product.stock == 0 ? 'text-danger' :
-                      (product.expiryDate != null and product.expiryDate.isBefore(today) ? 'text-warning' : '')}">
-                <!-- 在庫数と単位を表示 -->
+                      (product.stock != null and product.stock > 0
+                      and product.expiryDate != null and product.expiryDate.isBefore(today)
+                      ? 'text-warning' : '')}">
                 残り<span th:text="${product.stock}">2</span><span th:text="${product.unit.name}">本</span>
               </span>
             </span>

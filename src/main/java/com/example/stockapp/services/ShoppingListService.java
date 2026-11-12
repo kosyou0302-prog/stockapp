@@ -294,10 +294,12 @@ public class ShoppingListService {
             && product.getStock() <= 0;
     }
 
-    // 商品が使用期限切れかどうかを判定します（今日より前なら期限切れ）。
-    // ※今日当日は期限切れに含めません。
+    // 商品が使用期限切れかどうかを判定します。
+    // 在庫がない商品は期限切れの対象外。※今日当日は期限切れに含めません。
     private boolean isPastExpiry(Product product, LocalDate today) {
-        if (product == null || product.getExpiryDate() == null || today == null) {
+        if (product == null || today == null
+                || product.getStock() == null || product.getStock() <= 0
+                || product.getExpiryDate() == null) {
             return false;
         }
         return product.getExpiryDate().isBefore(today);

@@ -62,12 +62,32 @@ public class InventoryController {
 
     // 期限、在庫不足一覧------------------------------------------------------------------------------
     @GetMapping("/alerts")
-    public ModelAndView alerts(ModelAndView mav) {
+    public ModelAndView alerts(
+            @RequestParam(name = "keyword", defaultValue = "") String keyword,
+            @RequestParam(name = "type", defaultValue = "") String type,
+            ModelAndView mav) {
 
+        // 検索文字の前後にある余分な空白を取り除く
+        String searchKeyword = keyword.trim();
+
+        // 対応しているアラート種別か確認する
+        // 未指定または未対応の値の場合は、空文字にして「すべて」として扱う
+        String selectedAlertType = switch (type) {
+            case "stock", "expiry", "out", "low", "expired", "soon" -> type;
+            default -> "";
+        };
+
+        // 商品名と選択中のアラート種別を組み合わせて商品を取得する
         List<Product> alertProducts =
-            inventoryService.getAlertInventory();
+                inventoryService.searchAlertInventory(searchKeyword, selectedAlertType);
 
-        mav.addObject("alertProducts", alertProducts);
+        // HTMLの ${products} に合わせた名前で、検索結果を渡す
+        mav.addObject("products", alertProducts);
+
+        // 検索欄の文字と、アラート種別の選択状態を維持する
+        mav.addObject("keyword", searchKeyword);
+        mav.addObject("selectedAlertType", selectedAlertType);
+
         mav.setViewName("inventory/alerts");
         return mav;
     }
