@@ -175,18 +175,31 @@
       </p>
     </section>
 
+    <!-- ⑥ フローティング商品登録ボタン -->
+<a th:href="@{/product/add}"
+  class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center p-0 position-fixed"
+  style="width:60px;
+          height:60px;
+          right:20px;
+          bottom:80px;
+          z-index:1030;
+          box-shadow:0 3px 8px rgba(0,0,0,0.25);"
+  aria-label="商品を登録する">
+  <span class="fs-2" aria-hidden="true">＋</span>
+</a>
+    
     <!--
       ⑥ 商品登録ボタン
       商品登録画面へ移動する。
       d-flex：横並び ／ justify-content-end：右寄せ ／ rounded-circle：正円にする
       align-items-center・justify-content-center：＋を上下左右中央に配置する
-    -->
+
     <section class="d-flex justify-content-end mb-4">
       <a th:href="@{/product/add}"
         class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center p-0"
         style="width:56px; height:56px;" aria-label="商品を登録する">
         <span class="fs-3" aria-hidden="true">＋</span>
-      </a>
+      </a> -->
     </section>
   </main>
 
