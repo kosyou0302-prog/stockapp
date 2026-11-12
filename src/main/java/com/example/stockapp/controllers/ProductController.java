@@ -9,55 +9,118 @@
  */
 package com.example.stockapp.controllers;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.stockapp.entities.Product;
-import com.example.stockapp.repositories.ProductRepository;
+import com.example.stockapp.services.ProductService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+/*
+ * 【役割】商品の新規登録、編集、論理削除など、データの「変更」を伴うリクエストを受け取ります。
+ * バリデーションによる入力チェックを行い、Service層へ処理を委譲します。
+ */
 @Controller
-@RequiredArgsConstructor // finalがついたフィールドを引数に持つコンストラクタをLombokで自動生成
 @RequestMapping("/product")
+@RequiredArgsConstructor
 public class ProductController {
-    private final ProductRepository productRepository;
-    // 新規登録---------------------------------------------------------------------------
+
+    private final ProductService productService;
+
+    /**
+     *  商品登録画面を表示する (GET /product/add)
+     */
     @GetMapping("/add")
-    public ModelAndView addItem(ModelAndView mav) {
-        mav.addObject("item", new Product());
-        mav.setViewName("product/add");
-        return mav;
-    }
-    @PostMapping("/add")
-    @Transactional
-    public ModelAndView add() {
-        return new ModelAndView("redirect:/home");
+    public String showAddForm(Model model) {
+        model.addAttribute("item", new Product());
+        // プルダウン等のマスタデータを取得して渡す
+        model.addAllAttributes(productService.getMasterData());
+        return "product/add";
     }
 
-    // 商品編集,削除---------------------------------------------------------------------------
-    @GetMapping("/edit/{id}")
-    public ModelAndView editItem(@PathVariable Long id, ModelAndView mav) {
-        mav.setViewName("product/edit");
-        Product data = productRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "データが見つかりません"));
-        mav.addObject("item",data);
-        return mav;
+    /**
+     *  商品登録処理を実行する (POST /product/add)
+     */
+    @PostMapping("/add")
+    public String addProduct(@Valid @ModelAttribute("item") Product product,
+                            BindingResult bindingResult,
+                            Model model) {
+        // 入力エラーがある場合は登録画面に戻る
+        if (bindingResult.hasErrors()) {
+            model.addAllAttributes(productService.getMasterData());
+            return "product/add";
+        }
+
+        // 登録処理の実行
+        productService.registerProduct(product);
+
+        // 在庫一覧画面へリダイレクト
+        return "redirect:/inventory/list";
     }
-    @PostMapping("/edit/{id}")
-    @Transactional
-    public ModelAndView edit(@ModelAttribute("item") @Validated Product product,BindingResult result) {
-        productRepository.saveAndFlush(product);
-        return new ModelAndView("redirect:/home");
+
+    /**
+     * 商品編集画面を表示する (GET /product/edit/{id})
+     */
+    @GetMapping("/edit/{id}")
+    public String showEditForm(@PathVariable("id") Long id, 
+                            Model model, 
+                            RedirectAttributes redirectAttributes) {
+        try {
+            // 編集対象のデータを検索
+            Product product = productService.searchProduct(id);
+            model.addAttribute("item", product);
+            model.addAllAttributes(productService.getMasterData());
+            return "product/edit";
+        } catch (Exception e) {
+            // データが見つからない場合はメッセージを持たせて一覧へリダイレクト
+            redirectAttributes.addFlashAttribute("errorMessage", "データが見つかりません");
+            return "redirect:/inventory/list";
+        }
+    }
+
+    /**
+     * 商品更新処理を実行する (POST /product/edit)
+     */
+    @PostMapping("/edit")
+    public String updateProduct(@Valid @ModelAttribute("item") Product product,
+                            BindingResult bindingResult,
+                            Model model) {
+        // 入力エラーがある場合は編集画面に戻る
+        if (bindingResult.hasErrors()) {
+            model.addAllAttributes(productService.getMasterData());
+            return "product/edit";
+        }
+
+        // 更新処理の実行
+        productService.updateProduct(product);
+
+        // 在庫一覧画面へリダイレクト
+        return "redirect:/inventory/list";
+    }
+
+    /**
+     * 商品削除処理を実行する (POST /product/delete/{id})
+     */
+    @PostMapping("/delete/{id}")
+    public String deleteProduct(@PathVariable("id") Long id, 
+                            RedirectAttributes redirectAttributes) {
+        try {
+            //削除の実行（関連する買い物リストの削除もService内で連動）
+            productService.deleteProduct(id);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "データが見つかりません");
+        }
+
+        // 在庫一覧画面へリダイレクト
+        return "redirect:/inventory/list";
     }
 }
