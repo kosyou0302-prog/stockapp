@@ -14,11 +14,10 @@ INSERT INTO units(name) VALUES('パック');
 INSERT INTO units(name) VALUES('箱');
 
 -- アイコンマスタ
-INSERT INTO icons (name) VALUES ('1-icon');
-INSERT INTO icons (name) VALUES ('2-icon');
-INSERT INTO icons (name) VALUES ('3-icon');
-INSERT INTO icons (name) VALUES ('4-icon');
-INSERT INTO icons (name) VALUES ('5-icon');
+INSERT INTO icons (name) VALUES
+('1-icon'), ('2-icon'), ('3-icon'), ('4-icon'), ('5-icon'), ('6-icon'),
+('7-icon'), ('8-icon'), ('9-icon'), ('10-icon'), ('11-icon'), ('12-icon'),
+('13-icon'), ('14-icon'), ('15-icon'), ('16-icon'), ('17-icon'), ('18-icon');
 
 
 -- =====================================
@@ -58,3 +57,37 @@ VALUES ('食パン', 2, 1, '2026-11-12', 3, 1, 1, 1, 1, false, 1);
 -- ⑩ 「論理削除済み（is_deleted = true）」の除外確認用（すべてカウント対象外）
 INSERT INTO products (name, stock, threshold, expiry_date, alert_days, category_id, unit_id, threshold_unit_id, icon_id, is_deleted, family_id) 
 VALUES ('削除済みテスト商品', 0, 1, '2026-11-01', 3, 1, 1, 1, 1, true, 1);
+
+-- ==========================================
+-- 購入履歴テストデータ（purchase_history）
+-- ※ products テーブルに ID 1〜10 が登録されている前提
+-- ==========================================
+
+-- ① 先月の購入履歴（日付順の並び替え・月またぎ確認用）
+INSERT INTO purchase_history (name, quantity, record_date, family_id, product_id) 
+VALUES ('牛乳', 2, '2026-10-25', 1, 1);
+
+INSERT INTO purchase_history (name, quantity, record_date, family_id, product_id) 
+VALUES ('トイレットペーパー', 1, '2026-10-28', 1, 4);
+
+-- ② 今月初旬の購入履歴（同日に複数商品を購入したパターンの確認用）
+INSERT INTO purchase_history (name, quantity, record_date, family_id, product_id) 
+VALUES ('卵', 1, '2026-11-02', 1, 2);
+
+INSERT INTO purchase_history (name, quantity, record_date, family_id, product_id) 
+VALUES ('しょうゆ', 1, '2026-11-02', 1, 3);
+
+-- ③ 同じ商品のリピート購入履歴（牛乳の2回目購入・日付重複確認用）
+INSERT INTO purchase_history (name, quantity, record_date, family_id, product_id) 
+VALUES ('牛乳', 1, '2026-11-02', 1, 1);
+
+-- ④ 論理削除済み商品の購入履歴（商品が削除されても履歴名が残るかの確認用）
+INSERT INTO purchase_history (name, quantity, record_date, family_id, product_id) 
+VALUES ('削除済みテスト商品', 3, '2026-11-05', 1, 10);
+
+-- ⑤ 直近（昨日・今日）の購入履歴（最新順表示の確認用）
+INSERT INTO purchase_history (name, quantity, record_date, family_id, product_id) 
+VALUES ('洗濯洗剤', 1, '2026-11-11', 1, 6);
+
+INSERT INTO purchase_history (name, quantity, record_date, family_id, product_id) 
+VALUES ('食パン', 2, '2026-11-12', 1, 9);
