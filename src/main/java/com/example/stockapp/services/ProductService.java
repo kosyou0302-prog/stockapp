@@ -37,6 +37,7 @@ public class ProductService {
     private final UnitRepository unitRepository;
     private final ShoppingListItemRepository shoppingListItemRepository;
     private final FamilyRepository familyRepository;
+    private final ShoppingListService shoppingListService; // 追加
 
     // 【処理内容】新規登録 : 受け取った商品情報を初期化（削除フラグ=false）して保存する
     public void registerProduct(Product product) {
@@ -73,6 +74,9 @@ public class ProductService {
         // 新規登録なので論理削除判定をfalseに設定
         product.setIsDeleted(false);
         productRepository.save(product);
+
+        // 自動追加判定の実行  ←追加
+        shoppingListService.addAutoItem(product);
     }
 
     // 【処理内容】Product1件データ取得
@@ -123,6 +127,8 @@ public class ProductService {
             oldProduct.setUnit(null);
         }
         productRepository.save(oldProduct);
+        // 自動追加判定の実行  ←追加
+        shoppingListService.addAutoItem(oldProduct);
     }
 
     // 【処理内容】論理削除 : 指定IDの削除フラグを有効にし、関連する買い物リスト等のデータと連動させる

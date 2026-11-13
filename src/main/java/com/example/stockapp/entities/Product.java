@@ -51,7 +51,7 @@ public class Product {
 
     // 通知判定
     @Column
-    private Boolean isNotify;
+    private Boolean isNotify = true;
 
     // 期限選択３or７
     @Column
