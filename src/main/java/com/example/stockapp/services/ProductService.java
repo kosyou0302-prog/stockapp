@@ -71,6 +71,15 @@ public class ProductService {
             // ユーザーが「未選択」にした場合
             product.setUnit(null);
         }
+        // 購入目安単位
+        if(product.getThresholdUnit() != null && product.getThresholdUnit().getId() != null) {
+            Long targetUnit = product.getThresholdUnit().getId();
+            Unit realUnit = unitRepository.findById(targetUnit).orElseThrow();
+            product.setThresholdUnit(realUnit);
+        } else {
+            // ユーザーが「未選択」にした場合
+            product.setThresholdUnit(null);
+        }
         // 新規登録なので論理削除判定をfalseに設定
         product.setIsDeleted(false);
         productRepository.save(product);
@@ -80,6 +89,7 @@ public class ProductService {
     }
 
     // 【処理内容】Product1件データ取得
+    @Transactional(readOnly = true)
     public Product searchProduct(Long id) {
         Product data = productRepository.findById(id).orElseThrow();
         return data;
@@ -126,6 +136,15 @@ public class ProductService {
             // ユーザーが「未選択」にした場合
             oldProduct.setUnit(null);
         }
+        // 購入目安単位
+        if(product.getThresholdUnit() != null && product.getThresholdUnit().getId() != null) {
+            Long targetUnit = product.getThresholdUnit().getId();
+            Unit realUnit = unitRepository.findById(targetUnit).orElseThrow();
+            oldProduct.setThresholdUnit(realUnit);
+        } else {
+            // ユーザーが「未選択」にした場合
+            oldProduct.setThresholdUnit(null);
+        }
         productRepository.save(oldProduct);
         // 自動追加判定の実行  ←追加
         shoppingListService.addAutoItem(oldProduct);
@@ -142,6 +161,7 @@ public class ProductService {
     }
 
     // 【処理内容】マスタ取得 : カテゴリや単位の全件リストを登録・編集画面のプルダウン用に提供する
+    @Transactional(readOnly = true)
     public Map<String, Object> getMasterData() {
         List<Category> categories = categoryRepository.findAll();
         List<Icon> icons = iconRepository.findAll();

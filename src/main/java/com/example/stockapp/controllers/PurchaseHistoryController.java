@@ -53,7 +53,7 @@ public class PurchaseHistoryController {
         mav.addObject("historiesByDate", historiesByDate);
 
         // 5. 表示するHTMLファイル名を指定
-        mav.setViewName("purchase/history"); 
+        mav.setViewName("purchase/history");
 
         return mav;
     }

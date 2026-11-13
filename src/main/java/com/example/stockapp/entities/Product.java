@@ -63,7 +63,7 @@ public class Product {
     private Family family;
 
     // カテゴリ
-    @ManyToOne(optional= false, fetch= FetchType.LAZY)
+    @ManyToOne(optional= true, fetch= FetchType.LAZY)
     @JoinColumn(name="category_id")
     private Category category;
 
@@ -78,7 +78,7 @@ public class Product {
     private Unit thresholdUnit;
 
     // アイコン
-    @ManyToOne(optional= false, fetch= FetchType.LAZY)
+    @ManyToOne(optional= true, fetch= FetchType.LAZY)
     @JoinColumn(name="icon_id")
     private Icon icon;
 

@@ -59,6 +59,30 @@ public class InventoryController {
         return mav;
     }
 
+    // 在庫一覧絞り込み（JS）---------------------------------------------------------------------------------------
+    @GetMapping("/list/fragment")
+    public ModelAndView listfragment(
+            @RequestParam(name = "keyword", defaultValue = "") String keyword,
+            @RequestParam(name = "categoryId", required = false) Long categoryId,
+            ModelAndView mav) {
+
+        // 検索文字の前後にある余分な空白を取り除く
+        String searchKeyword = keyword.trim();
+
+        // 商品名と選択中のカテゴリーを組み合わせて商品を取得する
+        List<Product> products =
+                inventoryService.searchInventory(searchKeyword, categoryId);
+
+        // 検索結果の商品一覧をHTMLに渡す
+        mav.addObject("products", products);
+
+        // 検索欄の文字と、カテゴリーの選択状態を維持する
+        mav.addObject("keyword", searchKeyword);
+        mav.addObject("selectedCategoryId", categoryId);
+
+        mav.setViewName("inventory/list :: productList");
+        return mav;
+    }
 
     // 期限、在庫不足一覧------------------------------------------------------------------------------
     @GetMapping("/alerts")
@@ -89,6 +113,37 @@ public class InventoryController {
         mav.addObject("selectedAlertType", selectedAlertType);
 
         mav.setViewName("inventory/alerts");
+        return mav;
+    }
+
+    @GetMapping("/alerts/fragment")
+    public ModelAndView alertsfragment(
+            @RequestParam(name = "keyword", defaultValue = "") String keyword,
+            @RequestParam(name = "type", defaultValue = "") String type,
+            ModelAndView mav) {
+
+        // 検索文字の前後にある余分な空白を取り除く
+        String searchKeyword = keyword.trim();
+
+        // 対応しているアラート種別か確認する
+        // 未指定または未対応の値の場合は、空文字にして「すべて」として扱う
+        String selectedAlertType = switch (type) {
+            case "stock", "expiry", "out", "low", "expired", "soon" -> type;
+            default -> "";
+        };
+
+        // 商品名と選択中のアラート種別を組み合わせて商品を取得する
+        List<Product> alertProducts =
+                inventoryService.searchAlertInventory(searchKeyword, selectedAlertType);
+
+        // HTMLの ${products} に合わせた名前で、検索結果を渡す
+        mav.addObject("products", alertProducts);
+
+        // 検索欄の文字と、アラート種別の選択状態を維持する
+        mav.addObject("keyword", searchKeyword);
+        mav.addObject("selectedAlertType", selectedAlertType);
+
+        mav.setViewName("inventory/alerts :: alertList");
         return mav;
     }
 }
