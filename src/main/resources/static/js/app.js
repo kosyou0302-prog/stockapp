@@ -85,21 +85,54 @@ mainTab.forEach((main) => {
       tab.classList.remove('active');
     });
     main.classList.add('active');
+    const form = document.querySelector('form');
+    form.action = `/inventory/${tab}`;
+
+    const hiddenInput = form.querySelector('input[type="hidden"]')
+    if(hiddenInput) {
+      hiddenInput.remove();
+    }
   });
 })
 
-mainContainer.addEventListener('click', async (event) => {
-      const cTab = event.target.closest('.category-tab')
-      const aTab = event.target.closest('.alert-tab')
+// メインタブ切り替え時に下位のタブ切り替えで再度読み込みを無くす
+if (mainContainer) {
+  mainContainer.addEventListener('click', async (event) => {
+  const cTab = event.target.closest('.category-tab')
+  const aTab = event.target.closest('.alert-tab')
 
-      if(cTab) {
-        event.preventDefault()
-        document.querySelector('#product-list-container').innerHTML = html;
-        document.querySelectorAll('.category-tab')
-      }else if(aTab) {
-        event.preventDefault()
-        document.querySelector('#product-list-container').innerHTML = html;
-        document.querySelectorAll('.alert-tab')
-      }
-    })
-
+  if(cTab) {
+    event.preventDefault()
+    const keyword = document.querySelector('input[name="keyword"]').value
+    const categoryId = cTab.dataset.categoryId;
+    const params = new URLSearchParams({
+      keyword: keyword,
+      categoryId: categoryId
+    });
+    const url = `/inventory/list/fragment?${params}`;
+    const response = await fetch(url);
+    const html = await response.text();
+    document.querySelector('#product-list-container').innerHTML = html;
+    document.querySelectorAll('.category-tab').forEach((tab) => {
+      tab.classList.remove('active');
+    });
+    cTab.classList.add('active');
+    }else if(aTab) {
+    event.preventDefault()
+    const keyword = document.querySelector('input[name="keyword"]').value
+    const alertType = aTab.dataset.type;
+    const params = new URLSearchParams({
+      keyword: keyword,
+      type: alertType
+    });
+    const url = `/inventory/alerts/fragment?${params}`;
+    const response = await fetch(url);
+    const html = await response.text();
+    document.querySelector('#product-list-container').innerHTML = html;
+    document.querySelectorAll('.alert-tab').forEach((tab) => {
+      tab.classList.remove('active');
+    });
+    aTab.classList.add('active');
+    }
+  })
+}
