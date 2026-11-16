@@ -1,22 +1,31 @@
 <!--
-【役割】４商品の登録情報を入力（新規登録）するためのフォーム画面です。
+  【役割】商品の登録情報を入力（新規登録）するためのフォーム画面です。
 
   TODO: formタグの送信先（th:action）とメソッド（POST）を正しく設定する
   TODO: ProductForm（DTO）と入力欄を紐づけるため、th:object と th:field を設定する
   TODO: バリデーションエラーが起きた場合にエラーメッセージ（th:errors）を表示する箇所を作る
+
+  ※現在のControllerでは、itemとしてProduct Entityを渡している。
+  ※アイコン・在庫単位・購入目安単位の初期値はControllerで設定する。
 -->
 <!DOCTYPE html>
+
 <!-- Thymeleafを使う宣言と、言語を日本語(ja)に設定 -->
 <html xmlns:th="http://www.thymeleaf.org" lang="ja">
+
 <head>
   <!-- 文字化けを防ぐUTF-8設定 -->
   <meta charset="UTF-8">
+
   <!-- スマホやタブレットでも綺麗に表示するためのViewport設定 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- 画面のタブに表示されるタイトル（各画面で書き換えてOK） -->
-  <title>４商品登録画面</title>
+
+  <!-- 画面のタブに表示されるタイトル -->
+  <title>商品登録画面</title>
+
   <!-- Bootstrap 5 CSS (CDN経由で読み込み：インストール不要) -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
   <!-- チームオリジナルの共通CSS（Thymeleafの @{} を使うと自動で正しいパスになります） -->
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
@@ -24,9 +33,9 @@
 <body>
   <!--
     ※ ヘッダー（色は未だ仮設定）
-    bg-primary：背景を青色にする  text-white：文字を白色にする
-  -->
-  <!-- ヘッダー（戻るボタンのデザインを綺麗に統一）
+    bg-primary：背景を青色にする ／ text-white：文字を白色にする
+
+    ヘッダー（戻るボタンのデザインを綺麗に統一）
     position-relative：戻るリンクを配置する基準にする
     position-absolute：戻るリンクをヘッダーの左側に配置する
     top-50・translate-middle-y：上下中央に配置する
@@ -35,11 +44,12 @@
   <div class="card-header bg-primary text-white position-relative">
     <!-- 戻るリンク：在庫一覧へ移動する -->
     <a th:href="@{/inventory/list}"
-      class="btn btn-outline-light fw-bold position-absolute start-0 top-50 translate-middle-y ms-2">
-    ← 戻る
+        class="btn btn-outline-light fw-bold position-absolute start-0 top-50 translate-middle-y ms-2">
+      ← 戻る
     </a>
+
     <header class="bg-primary text-white text-center py-3">
-      <h1 class="h4 fw-bold mb-0  px-5">商品登録</h1>
+      <h1 class="h4 fw-bold mb-0 px-5">商品登録</h1>
     </header>
   </div>
 
@@ -57,43 +67,48 @@
 
         <!-- 商品名 -->
         <div class="mb-3">
-          <label class="form-label fw-bold">商品名</label>
+          <label for="name" class="form-label fw-bold">商品名</label>
           <div class="d-flex align-items-center gap-2">
-
             <!-- 商品名入力（20文字以内） -->
-            <input type="text" class="form-control me-2" th:field="*{name}"
-              placeholder="例）牛乳" maxlength="20">
+            <input type="text" id="name" class="form-control me-2" th:field="*{name}"
+                    placeholder="例）牛乳" maxlength="20">
           </div>
 
           <!-- エラーメッセージ -->
-          <div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+          <div class="text-danger small"
+                th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
         </div>
 
         <!-- アイコン選択 -->
         <div class="mb-3">
-          <div class="row row-cols-4 g-2">
-            <label class="form-label fw-bold">アイコン選択</label>
+          <p class="form-label fw-bold">アイコン選択</p>
 
-            <!-- iconPath ではなく IconマスタのID（icon.id）を送信するように修正 -->
-            <input type="hidden" id="iconId" th:field="*{icon.id}">
+          <!--
+            iconPathではなく、IconマスタのID（icon.id）を送信する。
+            Controllerで初期値を1に設定するため、選び直さなくてもリンゴのIDを送信できる。
+          -->
+          <input type="hidden" id="iconId" th:field="*{icon.id}">
 
-            <!-- アイコン一覧 -->
-            <img id="preview" class="border rounded" alt="アイコンプレビュー"
-              th:src="${item.icon != null && item.icon.id != null ? '/images/icons/' + item.icon.id + '.png' : '/images/icons/1.png'}"
-              style="width:50px;height:50px; cursor: pointer;"
-              data-bs-toggle="modal" data-bs-target="#iconModal">
-          </div>
+          <!-- アイコン一覧を開くプレビュー。未設定の場合は1.pngを表示する -->
+          <img id="preview" class="border rounded" alt="アイコンプレビュー"
+                th:src="@{/images/icons/{id}.png(id=${item.icon != null and item.icon.id != null ? item.icon.id : 1})}"
+                style="width:50px; height:50px; cursor:pointer;"
+                data-bs-toggle="modal" data-bs-target="#iconModal">
         </div>
 
         <!-- 分類（カテゴリ） -->
         <div class="mb-3">
-          <label class="form-label fw-bold">分類</label>
-          <!-- 文字列ではなく CategoryマスタのID（category.id）を送信するように修正 -->
-          <select class="form-select" th:field="*{category.id}">
-              <option value="">選択してください</option>
-              <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}">食品</option>
+          <label for="categoryId" class="form-label fw-bold">分類</label>
+
+          <!-- 文字列ではなくCategoryマスタのID（category.id）を送信する -->
+          <select id="categoryId" class="form-select" th:field="*{category.id}">
+            <option value="">選択してください</option>
+            <option th:each="category : ${categories}"
+                    th:value="${category.id}" th:text="${category.name}">食品</option>
           </select>
-          <div class="text-danger small" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>
+
+          <div class="text-danger small"
+                th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>
         </div>
 
         <!-- 在庫数 -->
@@ -101,99 +116,105 @@
           <div class="row g-2">
             <!-- 左側：在庫数の入力 -->
             <div class="col-6">
-              <label class="form-label fw-bold">在庫数</label>
+              <label for="stock" class="form-label fw-bold">在庫数</label>
               <input type="number" id="stock" class="form-control" th:field="*{stock}"
-                          min="0" max="50" step="1">
+                      min="0" max="50" step="1">
             </div>
 
-            <!-- 右側：単位の選択 -->
+            <!-- 右側：単位の選択。初期値はControllerで「個」に設定する -->
             <div class="col-6">
               <label for="unitId" class="form-label fw-bold">単位</label>
               <select id="unitId" class="form-select" th:field="*{unit.id}">
-                  <option value="">選択してください</option>
-                  <option th:each="unit : ${units}" th:value="${unit.id}" th:text="${unit.name}">個</option>
+                <option th:each="unit : ${units}"
+                        th:value="${unit.id}" th:text="${unit.name}">個</option>
               </select>
             </div>
           </div>
+
           <!-- エラー表示 -->
-          <div class="text-danger small" th:if="${#fields.hasErrors('stock')}" th:errors="*{stock}"></div>
+          <div class="text-danger small"
+                th:if="${#fields.hasErrors('stock')}" th:errors="*{stock}"></div>
         </div>
 
-        <!-- 購入目安 -->
+        <!-- 購入目安。単位の初期値はControllerで「個」に設定する -->
         <div class="mb-3">
           <div class="row g-2">
             <div class="col-6">
-              <label class="form-label fw-bold">購入目安</label>
+              <label for="threshold" class="form-label fw-bold">購入目安</label>
               <input type="number" id="threshold" class="form-control" th:field="*{threshold}"
-                        min="0" max="50" step="1">
+                      min="0" max="50" step="1">
             </div>
 
             <div class="col-6">
               <label for="thresholdUnitId" class="form-label fw-bold">単位</label>
               <select id="thresholdUnitId" class="form-select" th:field="*{thresholdUnit.id}">
-                  <option value="">選択してください</option>
-                  <option th:each="unit : ${units}" th:value="${unit.id}" th:text="${unit.name}">個</option>
+                <option th:each="unit : ${units}"
+                        th:value="${unit.id}" th:text="${unit.name}">個</option>
               </select>
-
             </div>
           </div>
-          <div class="text-danger small" th:if="${#fields.hasErrors('threshold')}" th:errors="*{threshold}"></div>
+
+          <div class="text-danger small"
+                th:if="${#fields.hasErrors('threshold')}" th:errors="*{threshold}"></div>
         </div>
 
         <!-- 使用期限・期限お知らせ -->
         <div class="mb-3">
           <div class="row g-2">
-          <!-- 左側：使用期限の入力 -->
+            <!-- 左側：使用期限の入力 -->
             <div class="col-6">
-            <label class="form-label fw-bold">使用期限</label>
-            <input type="date" class="form-control" th:field="*{expiryDate}">
-            <div class="text-danger small" th:if="${#fields.hasErrors('expiryDate')}" th:errors="*{expiryDate}"></div>
+              <label for="expiryDate" class="form-label fw-bold">使用期限</label>
+              <input type="date" id="expiryDate" class="form-control" th:field="*{expiryDate}">
+
+              <div class="text-danger small"
+                    th:if="${#fields.hasErrors('expiryDate')}" th:errors="*{expiryDate}"></div>
             </div>
 
-          <!-- 右側：期限お知らせの選択 -->
-          <div class="col-6">
-            <label for="alertDays" class="form-label fw-bold">期限お知らせ</label>
-          <div class="d-flex align-items-center gap-3">
-          <select class="form-select w-auto" th:field="*{alertDays}">
-            <option value=""></option>
-            <option value="3">3日前</option>
-            <option value="7">7日前</option>
-          </select>
-        </div><br>
-      </div>
-
-      <!-- 通知設定 -->
-      <div class="mb-4">
-        <div class="d-flex align-items-center gap-4">
-          <label for="isNotify" class="form-label fw-bold mb-0">通知ON/OFF</label>
-          <div class="form-check form-switch">
-            <input id="isNotify" class="form-check-input" type="checkbox" th:field="*{isNotify}">
+            <!-- 右側：期限お知らせの選択 -->
+            <div class="col-6">
+              <label for="alertDays" class="form-label fw-bold">期限お知らせ</label>
+              <div class="d-flex align-items-center gap-3">
+                <select id="alertDays" class="form-select w-auto" th:field="*{alertDays}">
+                  <option value=""></option>
+                  <option value="3">3日前</option>
+                  <option value="7">7日前</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- 登録ボタン：フォームの横幅いっぱいに表示する -->
-      <div class="d-grid">
-        <button type="submit" class="btn btn-primary fw-bold">
-          登録する
-        </button>
-      </div>
-    </form>
+        <!-- 通知設定：Productの初期値により、新規登録時はON -->
+        <div class="mb-4">
+          <div class="d-flex align-items-center gap-4">
+            <label for="isNotify" class="form-label fw-bold mb-0">通知ON/OFF</label>
+            <div class="form-check form-switch">
+              <input id="isNotify" class="form-check-input" type="checkbox" th:field="*{isNotify}">
+            </div>
+          </div>
+        </div>
+
+        <!-- 登録ボタン：フォームの横幅いっぱいに表示する -->
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary fw-bold">登録する</button>
+        </div>
+      </form>
+    </section>
   </main>
 
-  <!-- ポップアップ -->
+  <!-- ポップアップ：アイコンの候補一覧 -->
   <div class="modal fade" id="iconModal" tabindex="-1" aria-labelledby="iconModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body">
-          <div class="row row-cols-4 g-3 text-center">
+          <h2 id="iconModalLabel" class="visually-hidden">アイコン選択</h2>
 
+          <div class="row row-cols-4 g-3 text-center">
             <div class="col" th:each="i : ${#numbers.sequence(1, 18)}">
               <img th:src="@{'/images/icons/' + ${i} + '.png'}"
                     class="icon-option img-thumbnail"
-                    style="width: 60px; height: 60px; object-fit: cover; cursor: pointer;"
-                    th:data-id="${i}"
-                    th:data-path="@{'/images/icons/' + ${i} + '.png'}"
+                    style="width:60px; height:60px; object-fit:cover; cursor:pointer;"
+                    th:data-id="${i}" th:data-path="@{'/images/icons/' + ${i} + '.png'}"
                     alt="アイコン">
             </div>
           </div>
@@ -204,32 +225,14 @@
 
   <!-- Bootstrap 5 JS (CDN経由：ドロップダウンやモーダルなどを動かすために必要) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!--
+    アイコンプレビュー：js/app.jsで実装。
+    ・選択した画像をプレビューに表示する
+    ・選択したアイコンIDをhiddenへ保存する
+    ・選択後にモーダルを閉じる
+  -->
   <script th:src="@{/js/app.js}"></script>
-
-    <!-- アイコンプレビュー：後ほど js/app.js にて実装予定
-<script>
-    document.querySelectorAll('.icon-select')
-        .forEach(icon => {
-        icon.addEventListener('click', function() {
-            const path = this.dataset.path;
-
-            // HTMLの th:data-id="${i}" から、数字のIDを取得する
-            const selectedId = this.dataset.id;
-            // プレビュー変更
-            document.getElementById('preview').src = path;
-
-            // hiddenへ保存
-            document.getElementById('iconId').value = selectedId;
-
-            // 選択枠リセット
-            document.querySelectorAll('.icon-select')
-                .forEach(img => img.classList.remove('border-primary','border-3'));
-
-            // 選択中を強調
-            this.classList.add('border-primary','border-3');
-
-        });
-    });
-    </script> -->
 </body>
+
 </html>

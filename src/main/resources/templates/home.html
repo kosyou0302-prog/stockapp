@@ -1,3 +1,4 @@
+
 <!--
   【役割】アプリ起動時に最初に表示されるダッシュボード画面です。
   現在の在庫状況のサマリーや、アラートの件数などを一目でわかるように表示します。
@@ -45,13 +46,16 @@
       alert：Bootstrapのお知らせ表示
       alert-danger：赤色のお知らせ
       alert-warning：黄色のお知らせ
-      d-flex：横並びにする
-      justify-content-between：左右に分けて配置する
+
+      【修正】
+      在庫切れのお知らせ → 在庫系アラート一覧（type=stock）
+      期限切れのお知らせ → 期限系アラート一覧（type=expiry）
     -->
     <section class="mb-4">
       <!-- 在庫切れのお知らせ（1件以上ある場合に表示） -->
+      <!-- 【修正】type='out' → type='stock' -->
       <a th:if="${homeSummary != null and homeSummary.outOfStockCount > 0}"
-        th:href="@{/inventory/alerts(type='out')}"
+        th:href="@{/inventory/alerts(type='stock')}"
         class="alert alert-danger d-flex justify-content-between align-items-center text-decoration-none">
         <span>⚠ 在庫切れの商品があります。</span>
         <span class="fw-bold"
@@ -62,8 +66,9 @@
 
 
       <!-- 期限切れのお知らせ（1件以上ある場合に表示） -->
+      <!-- 【修正】type='expired' → type='expiry' -->
       <a th:if="${homeSummary != null and homeSummary.expiredCount > 0}"
-        th:href="@{/inventory/alerts(type='expired')}"
+        th:href="@{/inventory/alerts(type='expiry')}"
         class="alert alert-warning d-flex justify-content-between align-items-center text-decoration-none">
         <span>⚠ 期限切れの商品があります。</span>
         <span class="fw-bold"
@@ -82,15 +87,18 @@
       g-3：カード同士の間隔
       col-6：横幅を半分にする（2列表示）
 
-      外側のdivで配置を決め、内側のaでカード全体をリンクにする。
-      aの中ではdivを使わず、spanで内容をまとめる。
+      【修正】
+      在庫切れ・残りわずか → type=stock
+      期限切れ・期限まぢか → type=expiry
+
     -->
     <section class="mb-4">
       <h2 class="h5 fw-bold mb-3">在庫状況</h2>
       <div class="row g-3">
         <!-- 在庫切れカード -->
+        <!-- 【修正】type='out' → type='stock' -->
         <div class="col-6">
-          <a th:href="@{/inventory/alerts(type='out')}"
+          <a th:href="@{/inventory/alerts(type='stock')}"
             class="card bg-danger-subtle text-danger text-center text-decoration-none h-100">
             <span class="card-body d-block">
               <span class="d-block fs-2 mb-2">🛒</span>
@@ -103,9 +111,10 @@
         </div>
 
         <!-- 期限切れカード -->
+        <!-- 【修正】type='expired' → type='expiry' -->
         <div class="col-6">
-          <a th:href="@{/inventory/alerts(type='expired')}"
-            class="card bg-warning-subtle text-warning-emphasis text-center text-decoration-none h-100">
+          <a th:href="@{/inventory/alerts(type='expiry')}"
+            class="card bg-warning-subtle text-warning text-center text-decoration-none h-100">
             <span class="card-body d-block">
               <span class="d-block fs-2 mb-2">⏰</span>
               <span class="d-block h6 fw-bold">期限切れ</span>
@@ -117,8 +126,9 @@
         </div>
 
         <!-- 残りわずかカード -->
+        <!-- 【修正】type='low' → type='stock' -->
         <div class="col-6">
-          <a th:href="@{/inventory/alerts(type='low')}"
+          <a th:href="@{/inventory/alerts(type='stock')}"
             class="card bg-primary-subtle text-primary text-center text-decoration-none h-100">
             <span class="card-body d-block">
               <span class="d-block fs-2 mb-2">📦</span>
@@ -131,8 +141,9 @@
         </div>
 
         <!-- 期限まぢかカード -->
+        <!-- 【修正】type='soon' → type='expiry' -->
         <div class="col-6">
-          <a th:href="@{/inventory/alerts(type='soon')}"
+          <a th:href="@{/inventory/alerts(type='expiry')}"
             class="card bg-secondary-subtle text-secondary text-center text-decoration-none h-100">
             <span class="card-body d-block">
               <span class="d-block fs-2 mb-2">📅</span>
