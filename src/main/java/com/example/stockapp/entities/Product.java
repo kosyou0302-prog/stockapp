@@ -1,13 +1,11 @@
 /*
  * 【役割】生活必需品（商品）の在庫状況や基本設定を管理するメインテーブルの設計図
- *
- * TODO: @Entity, @Id, @GeneratedValue などのJPAアノテーションを付与する
- * TODO: カラム（商品名、在庫数、アラート閾値、論理削除フラグ isDeleted など）を定義する
- * TODO: Category, Unit, Iconエンティティとのリレーション（@ManyToOne）を設定する
  */
 package com.example.stockapp.entities;
 
 import java.time.LocalDate;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,6 +40,7 @@ public class Product {
     private Integer stock;
 
     // 使用期限
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column
     private LocalDate expiryDate;
 
@@ -116,5 +115,44 @@ public class Product {
         }
 
         return "NONE";
+    }
+
+    // 在庫切れ、残り僅か優先度判定
+    public String stockAlert() {
+        // 優先度１：在庫切れ
+        // 商品がないため、使用期限が過ぎていても在庫切れだけを表示する
+        if (stock != null && stock == 0) {
+            return "OUT_OF_STOCK";
+        }
+        // 優先度２：残り僅か
+        if (stock != null && threshold != null && 0 < stock && stock <= threshold) {
+            return "LOW_STOCK";
+        }
+        return "NONE";
+    }
+
+    // 期限切れ、期限間近優先度判定
+    public String expiryAlert(LocalDate today) {
+        // 在庫がない・未設定の商品は期限アラートの対象外
+        boolean hasStock = stock != null && stock > 0;
+        // 優先度１：期限切れ
+        if (hasStock && expiryDate != null && today.isAfter(expiryDate)) {
+            return "EXPIRED";
+        }
+        // 優先度２：期限間近
+        if (hasStock && expiryDate != null && alertDays != null
+                && !today.isBefore(expiryDate.minusDays(alertDays))
+                && !today.isAfter(expiryDate)) {
+            return "EXPIRING_SOON";
+        }
+        return "NONE";
+    }
+
+    public String getPrimaryAlert(LocalDate today, String type) {
+        return switch (type) {
+            case "stock" -> stockAlert();
+            case "expiry" -> expiryAlert(today);
+            default -> getPrimaryAlert(today);
+        };
     }
 }
