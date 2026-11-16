@@ -69,10 +69,10 @@ alertsTab.forEach((alert) => {
 
 
 // 一覧、期限の上位タブ切り替え
-mainTab.forEach((main) => {
-  main.addEventListener('click', async (event) => {
+mainTab.forEach((mainTabEl) => {
+  mainTabEl.addEventListener('click', async (event) => {
     event.preventDefault()
-    const tab = main.dataset.tab;
+    const tab = mainTabEl.dataset.tab;
     const keyword = document.querySelector('input[name="keyword"]').value
     const params = new URLSearchParams({keyword: keyword,});
 
@@ -84,7 +84,7 @@ mainTab.forEach((main) => {
     mainTab.forEach((tab) => {
       tab.classList.remove('active');
     });
-    main.classList.add('active');
+    mainTabEl.classList.add('active');
     const form = document.querySelector('form');
     form.action = `/inventory/${tab}`;
 
@@ -98,13 +98,13 @@ mainTab.forEach((main) => {
 // メインタブ切り替え時に下位のタブ切り替えで再度読み込みを無くす
 if (mainContainer) {
   mainContainer.addEventListener('click', async (event) => {
-  const cTab = event.target.closest('.category-tab')
-  const aTab = event.target.closest('.alert-tab')
+  const categoryTabEl = event.target.closest('.category-tab')
+  const alertTabEl = event.target.closest('.alert-tab')
 
-  if(cTab) {
+  if(categoryTabEl) {
     event.preventDefault()
     const keyword = document.querySelector('input[name="keyword"]').value
-    const categoryId = cTab.dataset.categoryId;
+    const categoryId = categoryTabEl.dataset.categoryId;
     const params = new URLSearchParams({
       keyword: keyword,
       categoryId: categoryId
@@ -116,11 +116,11 @@ if (mainContainer) {
     document.querySelectorAll('.category-tab').forEach((tab) => {
       tab.classList.remove('active');
     });
-    cTab.classList.add('active');
-    }else if(aTab) {
+    categoryTabEl.classList.add('active');
+    }else if(alertTabEl) {
     event.preventDefault()
     const keyword = document.querySelector('input[name="keyword"]').value
-    const alertType = aTab.dataset.type;
+    const alertType = alertTabEl.dataset.type;
     const params = new URLSearchParams({
       keyword: keyword,
       type: alertType
@@ -132,7 +132,7 @@ if (mainContainer) {
     document.querySelectorAll('.alert-tab').forEach((tab) => {
       tab.classList.remove('active');
     });
-    aTab.classList.add('active');
+    alertTabEl.classList.add('active');
     }
   })
 }
