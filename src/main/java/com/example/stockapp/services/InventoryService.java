@@ -1,3 +1,4 @@
+
 /*
  * 【役割】在庫一覧画面、アラート画面、ホーム画面の表示に必要なデータを取得・集計する「参照専用」のロジックを担当します。
 　　　　　 商品情報の参照処理を担当するサービスクラス
@@ -147,6 +148,14 @@ public class InventoryService {
         long nearExpiryCount = 0L;
 
         for(Product product : products) {
+
+            // 【修正】通知ONの商品だけをホームのアラート件数に含める
+            // 通知OFF（false）・未設定（null）の商品は集計対象から除外する
+            // アラート一覧のsearchAlertInventory()と通知条件を統一する
+            if (!Boolean.TRUE.equals(product.getIsNotify())) {
+                continue;
+            }
+
             if (productService.isOutOfStock(product)) {
                 outOfStockCount++;
             }else if(productService.isLowStock(product)) {
@@ -182,7 +191,7 @@ public class InventoryService {
         summaryMap.put("outOfStockCount", outOfStockCount);
         summaryMap.put("lowStockCount", lowStockCount);
         summaryMap.put("expiredCount", expiredCount);
-        summaryMap.put("nearExpiryCount", nearExpiryCount);
+        summaryMap.put("expiringSoonCount", nearExpiryCount);
         return summaryMap;
     }
 }

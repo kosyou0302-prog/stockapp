@@ -19,11 +19,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.stockapp.entities.Icon;
 import com.example.stockapp.entities.Product;
+import com.example.stockapp.entities.Unit;
 import com.example.stockapp.services.ProductService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+
 
 /*
  * 【役割】商品の新規登録、編集、論理削除など、データの「変更」を伴うリクエストを受け取ります。
@@ -37,11 +41,32 @@ public class ProductController {
     private final ProductService productService;
 
     /**
-     *  商品登録画面を表示する (GET /product/add)
+     * 商品登録画面を表示する (GET /product/add)
      */
     @GetMapping("/add")
     public String showAddForm(Model model) {
-        model.addAttribute("item", new Product());
+        Product product = new Product();
+
+        // アイコンの初期値：リンゴ（1.pngに対応するアイコンID）
+        // プレビュー表示だけでなく、送信するicon.idにも初期値を設定する
+        Icon icon = new Icon();
+        icon.setId(1L);
+        product.setIcon(icon);
+
+        // 在庫数の単位の初期値：「個」（単位ID＝1）
+        Unit unit = new Unit();
+        unit.setId(1L);
+        product.setUnit(unit);
+
+        // 購入目安単位の初期値：「個」（単位ID＝1）
+        Unit thresholdUnit = new Unit();
+        thresholdUnit.setId(1L);
+        product.setThresholdUnit(thresholdUnit);
+
+        // 初期値を設定した商品を登録画面へ渡す
+        // 通知はProductのisNotify = trueにより、初期状態でONになる
+        model.addAttribute("item", product);
+
         // プルダウン等のマスタデータを取得して渡す
         model.addAllAttributes(productService.getMasterData());
         return "product/add";

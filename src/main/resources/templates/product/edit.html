@@ -1,3 +1,4 @@
+
 <!--
   【役割】５商品の登録情報を変更（編集登録）するためのフォーム画面です。
 
@@ -15,8 +16,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- 画面のタブに表示されるタイトル（各画面で書き換えてOK） -->
   <title>５商品編集画面</title>
-<!-- Bootstrap 5 CSS (CDN経由で読み込み：インストール不要) -->
+
+  <!-- Bootstrap 5 CSS (CDN経由で読み込み：インストール不要) -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
   <!-- チームオリジナルの共通CSS（Thymeleafの @{} を使うと自動で正しいパスになります） -->
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
@@ -31,20 +34,25 @@
   <!-- ヘッダー（戻るボタンのデザインを綺麗に統一） -->
   <div class="card-header bg-primary text-white position-relative">
     <a th:href="@{/inventory/list}"
-      class="btn btn-outline-light fw-bold position-absolute start-0 top-50 translate-middle-y ms-2">
-    ← 戻る
+       class="btn btn-outline-light fw-bold position-absolute start-0 top-50 translate-middle-y ms-2">
+      ← 戻る
     </a>
 
-  <header class="bg-primary text-white text-center py-3">
-    <h1 class="h4 fw-bold mb-0">商品編集</h1>
-  </header>
+    <header class="bg-primary text-white text-center py-3">
+      <h1 class="h4 fw-bold mb-0">商品編集</h1>
+    </header>
   </div>
 
   <!-- メインコンテンツ -->
   <main class="container mt-4 mb-5 pb-5">
     <section class="mb-3">
-      <form id="editForm" th:action="@{/product/edit}" th:object="${item}"
-            method="post" enctype="multipart/form-data">
+
+      <!-- 商品編集フォーム -->
+      <form id="editForm"
+            th:action="@{/product/edit}"
+            th:object="${item}"
+            method="post"
+            enctype="multipart/form-data">
 
         <!-- ID保持 -->
         <input type="hidden" name="id" th:field="*{id}">
@@ -52,7 +60,8 @@
         <!-- エラー一覧 -->
         <div class="alert alert-danger" th:if="${#fields.hasAnyErrors()}">
           <ul class="mb-0">
-            <li th:each="err : ${#fields.errors('*')}" th:text="${err}">
+            <li th:each="err : ${#fields.errors('*')}"
+                th:text="${err}">
             </li>
           </ul>
         </div>
@@ -60,162 +69,242 @@
         <!-- 商品名 -->
         <div class="mb-3">
           <label class="form-label fw-bold">商品名</label>
-          <div class="row align-items-center ">
+          <div class="row align-items-center">
 
-          <!-- 商品名入力 （20文字以内） -->
-          <div class="col-9">
-            <input type="text"
-                  class="form-control"
-                  th:field="*{name}" maxlength="20">
+            <!-- 商品名入力 （20文字以内） -->
+            <div class="col-9">
+              <input type="text"
+                     class="form-control"
+                     th:field="*{name}"
+                     maxlength="20">
+            </div>
+
+          </div>
+
+          <!-- エラー表示 -->
+          <div class="text-danger small"
+               th:if="${#fields.hasErrors('name')}"
+               th:errors="*{name}">
+          </div>
         </div>
 
+        <!-- アイコン選択 -->
+        <div class="mb-3">
+          <div class="row row-cols-4 g-2">
+            <label class="form-label fw-bold">アイコン選択</label>
+
+            <!-- iconPath ではなく IconマスタのID（icon.id）を送信するように修正 -->
+            <input type="hidden" id="iconId" th:field="*{icon.id}">
+
+            <!-- アイコン一覧 -->
+            <img id="preview"
+                 class="border rounded"
+                 alt="アイコンプレビュー"
+                 th:src="${item != null && item.icon != null && item.icon.id != null ? '/images/icons/' + item.icon.id + '.png' : '/images/icons/1.png'}"
+                 style="width:50px;height:50px; cursor: pointer;"
+                 data-bs-toggle="modal"
+                 data-bs-target="#iconModal">
+          </div>
         </div>
 
-    <!-- エラー表示 -->
-    <div class="text-danger small"
-        th:if="${#fields.hasErrors('name')}"
-        th:errors="*{name}">
-    </div>
-    </div>
-
-    <!-- アイコン選択 -->
-      <div class="mb-3">
-        <div class="row row-cols-4 g-2">
-          <label class="form-label fw-bold">アイコン選択</label>
-
-          <!-- iconPath ではなく IconマスタのID（icon.id）を送信するように修正 -->
-          <input type="hidden" id="iconId" th:field="*{icon.id}">
-
-          <!-- アイコン一覧 -->
-          <img id="preview" class="border rounded" alt="アイコンプレビュー"
-            th:src="${item != null && item.icon != null && item.icon.id != null ? '/images/icons/' + item.icon.id + '.png' : '/images/icons/1.png'}"
-            style="width:50px;height:50px; cursor: pointer;"
-            data-bs-toggle="modal" data-bs-target="#iconModal">
-        </div>
-      </div>
-
-      <!-- 分類 -->
-      <div class="mb-3">
+        <!-- 分類 -->
+        <div class="mb-3">
           <label class="form-label fw-bold">分類</label>
-        <!-- 文字列ではなく CategoryマスタのID（category.id）を送信するように修正 -->
+
+          <!-- 文字列ではなく CategoryマスタのID（category.id）を送信するように修正 -->
           <select class="form-select" th:field="*{category.id}">
-              <option value="">選択してください</option>
-              <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}">食品</option>
+            <option value="">選択してください</option>
+            <option th:each="category : ${categories}"
+                    th:value="${category.id}"
+                    th:text="${category.name}">
+              食品
+            </option>
           </select>
 
-          <div class="text-danger small" th:if="${#fields.hasErrors('category')}"
-            th:errors="*{category}">
+          <div class="text-danger small"
+               th:if="${#fields.hasErrors('category')}"
+               th:errors="*{category}">
           </div>
         </div>
 
         <!-- 在庫数 -->
         <div class="mb-3">
           <div class="row g-2">
+
             <!-- 左側：在庫数の入力 -->
             <div class="col-6">
               <label class="form-label fw-bold">在庫数</label>
-              <input type="number" id="stock" class="form-control" th:field="*{stock}"
-                          min="0" max="50" step="1">
+              <input type="number"
+                     id="stock"
+                     class="form-control"
+                     th:field="*{stock}"
+                     min="0"
+                     max="50"
+                     step="1">
             </div>
 
             <!-- 右側：単位の選択 -->
             <div class="col-6">
               <label for="unitId" class="form-label fw-bold">単位</label>
-              <select id="unitId" class="form-select" th:field="*{unit.id}">
-                  <option value="">選択してください</option>
-                  <option th:each="unit : ${units}" th:value="${unit.id}" th:text="${unit.name}">個</option>
+              <select id="unitId"
+                      class="form-select"
+                      th:field="*{unit.id}">
+                <option value="">選択してください</option>
+                <option th:each="unit : ${units}"
+                        th:value="${unit.id}"
+                        th:text="${unit.name}">
+                  個
+                </option>
               </select>
             </div>
+
           </div>
 
           <!-- エラー表示 -->
           <div class="text-danger small"
-                        th:if="${#fields.hasErrors('stock')}" th:errors="*{stock}">
+               th:if="${#fields.hasErrors('stock')}"
+               th:errors="*{stock}">
           </div>
         </div>
 
         <!-- 購入目安 -->
         <div class="mb-3">
           <div class="row g-2">
+
             <div class="col-6">
               <label class="form-label fw-bold">購入目安</label>
-              <input type="number" id="threshold" class="form-control" th:field="*{threshold}"
-                        min="0" max="50" step="1">
+              <input type="number"
+                     id="threshold"
+                     class="form-control"
+                     th:field="*{threshold}"
+                     min="0"
+                     max="50"
+                     step="1">
             </div>
 
             <div class="col-6">
               <label for="thresholdUnitId" class="form-label fw-bold">単位</label>
-              <select id="thresholdUnitId" class="form-select" th:field="*{thresholdUnit.id}">
-                  <option value="">選択してください</option>
-                  <option th:each="unit : ${units}" th:value="${unit.id}" th:text="${unit.name}">個</option>
+              <select id="thresholdUnitId"
+                      class="form-select"
+                      th:field="*{thresholdUnit.id}">
+                <option value="">選択してください</option>
+                <option th:each="unit : ${units}"
+                        th:value="${unit.id}"
+                        th:text="${unit.name}">
+                  個
+                </option>
               </select>
             </div>
+
           </div>
-          <div class="text-danger small" th:if="${#fields.hasErrors('threshold')}" th:errors="*{threshold}"></div>
+
+          <div class="text-danger small"
+               th:if="${#fields.hasErrors('threshold')}"
+               th:errors="*{threshold}">
+          </div>
         </div>
 
         <!-- 使用期限・期限お知らせ -->
         <div class="mb-3">
           <div class="row g-2">
-          <!-- 左側：使用期限の入力 -->
+
+            <!-- 左側：使用期限の入力 -->
             <div class="col-6">
-            <label class="form-label fw-bold">使用期限</label>
-            <input type="date" class="form-control" th:field="*{expiryDate}">
-            <div class="text-danger small" th:if="${#fields.hasErrors('expiryDate')}" th:errors="*{expiryDate}"></div>
+              <label class="form-label fw-bold">使用期限</label>
+              <input type="date"
+                     class="form-control"
+                     th:field="*{expiryDate}">
+
+              <div class="text-danger small"
+                   th:if="${#fields.hasErrors('expiryDate')}"
+                   th:errors="*{expiryDate}">
+              </div>
             </div>
 
-          <!-- 右側：期限お知らせの選択 -->
-          <div class="col-6">
-            <label for="alertDays" class="form-label fw-bold">期限お知らせ</label>
-          <div class="d-flex align-items-center gap-3">
-          <select class="form-select w-auto" th:field="*{alertDays}">
-            <option value=""></option>
-            <option value="3">3日前</option>
-            <option value="7">7日前</option>
-          </select>
-          </div><br>
+            <!-- 右側：期限お知らせの選択 -->
+            <div class="col-6">
+              <label for="alertDays" class="form-label fw-bold">期限お知らせ</label>
+              <div class="d-flex align-items-center gap-3">
+                <select id="alertDays"
+                        class="form-select w-auto"
+                        th:field="*{alertDays}">
+                  <option value=""></option>
+                  <option value="3">3日前</option>
+                  <option value="7">7日前</option>
+                </select>
+              </div>
+              <br>
+            </div>
+
+          </div>
         </div>
+        <!-- 【修正】使用期限・期限お知らせのdivを正しく閉じる -->
 
         <!-- 通知設定 -->
         <div class="mb-4">
           <div class="d-flex align-items-center gap-4">
-          <label for="isNotify" class="form-label fw-bold mb-0">通知ON/OFF</label>
-          <div class="form-check form-switch">
-            <input id="isNotify" class="form-check-input" type="checkbox" th:field="*{isNotify}">
+            <label for="isNotify"
+                   class="form-label fw-bold mb-0">
+              通知ON/OFF
+            </label>
+
+            <div class="form-check form-switch">
+              <input id="isNotify"
+                     class="form-check-input"
+                     type="checkbox"
+                     th:field="*{isNotify}">
+            </div>
           </div>
         </div>
-      </div>
+
+      </form>
+      <!-- 【修正】編集フォームをここで閉じる -->
+      <!-- 削除フォームと編集フォームが入れ子にならないようにする -->
 
       <!-- 削除・保存ボタン -->
-        <!--削除フォームは編集フォームの外に配置する。
+      <!--
+        削除フォームは編集フォームの外に配置する。
         formタグの中に別のformタグを入れない。
+      -->
+      <div class="row g-2">
+
+        <!-- 削除：POSTで商品IDを送信する -->
+        <div class="col-6">
+          <form th:action="@{/product/delete/{id}(id=${item.id})}"
+                method="post">
+            <button type="submit"
+                    class="btn btn-outline-danger w-100 fw-bold">
+              この商品を削除する
+            </button>
+          </form>
+        </div>
+
+        <!--
+          保存  form="editForm"：上の商品編集フォームを送信する。
+          ボタンがフォームの外にあっても、対象のフォームを指定できる。
         -->
-    <div class="row g-2">
-      <!-- 削除：POSTで商品IDを送信する -->
-      <div class="col-6">
-        <form th:action="@{/product/delete/{id}(id=${item.id})}"
-              method="post">
+        <div class="col-6">
           <button type="submit"
-                  class="btn btn-outline-danger w-100 fw-bold">
-            この商品を削除する
+                  form="editForm"
+                  class="btn btn-primary w-100 fw-bold">
+            保存する
           </button>
-        </form>
+        </div>
+
       </div>
 
-      <!-- 保存  form="editForm"：上の商品編集フォームを送信する。
-          ボタンがフォームの外にあっても、対象のフォームを指定できる。
-      -->
-      <div class="col-6">
-        <button type="submit" form="editForm"
-                class="btn btn-primary w-100 fw-bold">
-          保存する
-        </button>
-      </div>
-    </div>
+    </section>
+    <!-- 【修正】不足していたsectionの閉じタグを追加 -->
+
   </main>
 
   <!-- ポップアップ -->
-  <div class="modal fade" id="iconModal" tabindex="-1" aria-labelledby="iconModalLabel" aria-hidden="true">
+  <div class="modal fade"
+       id="iconModal"
+       tabindex="-1"
+       aria-labelledby="iconModalLabel"
+       aria-hidden="true">
+
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body">
@@ -223,12 +312,13 @@
 
             <div class="col" th:each="i : ${#numbers.sequence(1, 18)}">
               <img th:src="@{'/images/icons/' + ${i} + '.png'}"
-                    class="icon-option img-thumbnail"
-                    style="width: 60px; height: 60px; object-fit: cover; cursor: pointer;"
-                    th:data-id="${i}"
-                    th:data-path="@{'/images/icons/' + ${i} + '.png'}"
-                    alt="アイコン">
+                   class="icon-option img-thumbnail"
+                   style="width: 60px; height: 60px; object-fit: cover; cursor: pointer;"
+                   th:data-id="${i}"
+                   th:data-path="@{'/images/icons/' + ${i} + '.png'}"
+                   alt="アイコン">
             </div>
+
           </div>
         </div>
       </div>
@@ -238,25 +328,26 @@
   <!-- Bootstrap 5 JS (CDN経由：ドロップダウンやモーダルなどを動かすために必要) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script th:src="@{/js/app.js}"></script>
+
   <!-- アイコンプレビュー -->
-    <!--js/app.jsにて別途まとめて設定予定
+  <!--
+    js/app.jsにて別途まとめて設定予定
 
-<script>
-  document.getElementById('iconFile')
-  .addEventListener('change', function(event){
-      const file = event.target.files[0];
-      if(file){
-          const reader = new FileReader();
-          reader.onload = function(e){
-              document.getElementById('preview').src =
-                  e.target.result;
-          };
-          reader.readAsDataURL(file);
-      }
-  });
+    <script>
+      document.getElementById('iconFile')
+      .addEventListener('change', function(event){
+          const file = event.target.files[0];
+          if(file){
+              const reader = new FileReader();
+              reader.onload = function(e){
+                  document.getElementById('preview').src =
+                      e.target.result;
+              };
+              reader.readAsDataURL(file);
+          }
+      });
+    </script>
   -->
-
-  </script>
 
 </body>
 </html>

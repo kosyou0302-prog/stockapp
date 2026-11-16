@@ -1,3 +1,4 @@
+
 <!--
   【役割】登録されている生活必需品の一覧を表示するメイン画面です。
 -->
@@ -143,14 +144,26 @@
                   -->
                   <span class="d-flex align-items-center ms-auto">
                     <!--
-                      在庫切れ：赤文字 ／ 期限切れ：黄色系の文字 ／ 通常：通常の文字色
-                      在庫0は在庫切れだけを表示し、期限切れの色分けは在庫1以上の商品に適用する。
+                      【修正】在庫数の文字色をアラート状態に合わせて統一する。
+
+                      優先度１：在庫切れ → 赤色（text-danger）
+                      優先度２：期限切れ → 黄土色系（text-warning-emphasis）
+                      優先度３：期限まぢか → グレー（text-secondary）
+                      優先度４：残りわずか → 青色（text-primary）
+                      通常在庫：通常の文字色
+
+                      在庫0は在庫切れを優先し、期限切れの色分けは在庫1以上の商品に適用する。
+                      複数の条件に該当する場合は、優先順位が最も高い状態の色を表示する。
+
+                      Product.javaのgetPrimaryAlert(today)で判定する。
+                      Bootstrap 5.3の標準クラスのみを使用し、背景色は変更しない。
                     -->
                     <span class="fw-bold text-nowrap"
-                          th:classappend="${product.stock == 0 ? 'text-danger' :
-                            (product.stock != null and product.stock > 0
-                            and product.expiryDate != null and product.expiryDate.isBefore(today)
-                            ? 'text-warning' : '')}">
+                          th:with="alertType=${product.getPrimaryAlert(today)}"
+                          th:classappend="${alertType == 'OUT_OF_STOCK' ? 'text-danger' :
+                                          alertType == 'EXPIRED' ? 'text-warning' :
+                                          alertType == 'EXPIRING_SOON' ? 'text-secondary' :
+                                          alertType == 'LOW_STOCK' ? 'text-primary' : ''}">
                       残り<span th:text="${product.stock}">2</span><span th:text="${product.unit.name}">本</span>
                     </span>
                   </span>

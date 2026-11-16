@@ -1,3 +1,4 @@
+
 <!--
   【役割】「在庫が少ない」「消費期限が切れている」など、
   要注意の商品だけを絞り込んで表示する画面です。
@@ -109,7 +110,7 @@
         <a th:href="@{/inventory/alerts(type='expiry', keyword=${keyword})}"
           class="btn btn-outline-primary btn-sm flex-fill alert-tab" data-type="expiry"
           th:classappend="${selectedAlertType == 'expiry' or selectedAlertType == 'expired' or selectedAlertType == 'soon'} ? ' active' : ''">
-          期限切れ・期限間近
+          期限切れ・期限まぢか
         </a>
       </div>
     </section>
@@ -152,8 +153,14 @@
                 ※Controller側でproductsを条件に合わせて取得する必要がある。
                 「すべて」を含め、getPrimaryAlert(today)の判定結果に従って警告を1つ表示する。
 
-                優先度１：期限切れ・オレンジ色 ／ 優先度２：在庫切れ・赤色
-                優先度３：期限まぢか・青色 ／ 優先度４：残りわずか・紫色
+                【アラートの優先順位と表示色】
+                優先度１：在庫切れ・赤色
+                優先度２：期限切れ・黄土色系
+                優先度３：期限まぢか・グレー
+                優先度４：残りわずか・青色
+
+                判定条件と優先順位はProduct.javaのgetPrimaryAlert(today)に従う。
+                色はBootstrap 5.3の標準クラスのみを使用する。
               -->
               <span class="d-flex flex-wrap align-items-center justify-content-end gap-2 ms-auto">
                 <!--
@@ -163,8 +170,8 @@
                 -->
                 <th:block th:switch="${product.getPrimaryAlert(today)}">
 
-                  <!-- 期限切れの場合：今日より前の日付・オレンジ -->
-                  <span th:case="'EXPIRED'" class="d-inline-block rounded px-3 py-2 bg-warning-subtle text-warning-emphasis">
+                  <!-- 期限切れの場合：今日より前の日付・黄土色系 -->
+                  <span th:case="'EXPIRED'" class="d-inline-block rounded px-3 py-2 bg-warning-subtle text-warning">
                     期限切れ（<span th:text="${#temporals.format(product.expiryDate, 'M/d')}">10/20</span>）
                   </span>
 
@@ -173,16 +180,17 @@
                     在庫切れ
                   </span>
 
-                  <!-- 期限まぢかの場合：今日からalertDays日後まで・青色 -->
-                  <span th:case="'EXPIRING_SOON'" class="d-inline-block rounded px-3 py-2 bg-primary-subtle text-primary">
+                  <!-- 期限まぢかの場合：今日からalertDays日後まで・グレー -->
+                  <span th:case="'EXPIRING_SOON'" class="d-inline-block rounded px-3 py-2 bg-secondary-subtle text-secondary">
                     期限まぢか（残り<span th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(today, product.expiryDate)}">3</span>日）
                   </span>
 
                   <!--
-                    残りわずかの場合：紫色。在庫数が1以上で、購入目安以下の場合。
-                    判定はgetPrimaryAlert(today)で行う。text-purpleは共通CSSで定義する。
+                    残りわずかの場合：青色。在庫数が1以上で、購入目安以下の場合。
+                    判定はgetPrimaryAlert(today)で行う。
+                    Bootstrap 5.3標準のbg-primary-subtleとtext-primaryを使用する。
                   -->
-                  <span th:case="'LOW_STOCK'" class="d-inline-block rounded px-3 py-2 bg-light text-purple">
+                  <span th:case="'LOW_STOCK'" class="d-inline-block rounded px-3 py-2 bg-primary-subtle text-primary">
                     残りわずか（残り<span th:text="${product.stock}">1</span><span th:text="${product.unit.name}">袋</span>）
                   </span>
                 </th:block>
