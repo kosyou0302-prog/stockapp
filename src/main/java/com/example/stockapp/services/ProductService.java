@@ -1,10 +1,5 @@
-/*
- * 【役割】商品の登録、更新、論理削除など、商品データに対する主要な変更ロジック（書き込み）を担当します。
- * Controllerから受け取ったフォームのデータをEntityに変換してRepositoryに保存を依頼します。
- */
 package com.example.stockapp.services;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +7,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.stockapp.dto.ProductForm;
 import com.example.stockapp.entities.Category;
 import com.example.stockapp.entities.Family;
 import com.example.stockapp.entities.Icon;
@@ -31,128 +27,31 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProductService {
 
+    private static final Long DUMMY_FAMILY_ID = 1L;
+
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final IconRepository iconRepository;
     private final UnitRepository unitRepository;
     private final ShoppingListItemRepository shoppingListItemRepository;
     private final FamilyRepository familyRepository;
-    private final ShoppingListService shoppingListService; // 追加
+    private final ShoppingListService shoppingListService;
 
-    // 【処理内容】新規登録 : 受け取った商品情報を初期化（削除フラグ=false）して保存する
-    public void registerProduct(Product product) {
-        // ログイン機能ができるまでの暫定対応：ID=1のダミー家族をセット
-        Family dummyFamily = familyRepository.findById(1L).orElseThrow();
-        product.setFamily(dummyFamily);
-        // カテゴリー
-        if(product.getCategory() != null && product.getCategory().getId() != null) {
-            Long targetCategory = product.getCategory().getId();
-            Category realCategory = categoryRepository.findById(targetCategory).orElseThrow();
-            product.setCategory(realCategory);
-        } else {
-            // ユーザーが「未選択」にした場合
-            product.setCategory(null);
-        }
-        // アイコン
-        if(product.getIcon() != null && product.getIcon().getId() != null) {
-            Long targetIconId = product.getIcon().getId();
-            Icon realIcon = iconRepository.findById(targetIconId).orElseThrow();
-            product.setIcon(realIcon);
-        } else {
-            // ユーザーが「未選択」にした場合
-            product.setIcon(null);
-        }
-        // 単位
-        if(product.getUnit() != null && product.getUnit().getId() != null) {
-            Long targetUnit = product.getUnit().getId();
-            Unit realUnit = unitRepository.findById(targetUnit).orElseThrow();
-            product.setUnit(realUnit);
-        } else {
-            // ユーザーが「未選択」にした場合
-            product.setUnit(null);
-        }
-        // 購入目安単位
-        if(product.getThresholdUnit() != null && product.getThresholdUnit().getId() != null) {
-            Long targetUnit = product.getThresholdUnit().getId();
-            Unit realUnit = unitRepository.findById(targetUnit).orElseThrow();
-            product.setThresholdUnit(realUnit);
-        } else {
-            // ユーザーが「未選択」にした場合
-            product.setThresholdUnit(null);
-        }
-        // 新規登録なので論理削除判定をfalseに設定
-        product.setIsDeleted(false);
-        productRepository.save(product);
-
-        // 自動追加判定の実行  ←追加
-        shoppingListService.addAutoItem(product);
-    }
-
-    // 【処理内容】Product1件データ取得
+    /**
+     * 【処理内容】Product1件データ取得（自家族・未削除のみ）
+     */
     @Transactional(readOnly = true)
     public Product searchProduct(Long id) {
-        Product data = productRepository.findById(id).orElseThrow();
-        return data;
+        return productRepository.findByIdAndFamily_IdAndIsDeletedFalse(id, DUMMY_FAMILY_ID)
+                .orElseThrow(() -> new IllegalArgumentException("対象の商品が見つかりません"));
     }
 
-    // 【処理内容】更新 : 指定IDの既存データを取得し、新しい値で上書きして保存する
-    public void updateProduct(Product product) {
-        // 画面から隠されている裏側のデータisDeleted等を守るため、いきなり保存せず、まずはDBから「変更前の古いデータ」を取得する
-        Long targetId = product.getId();
-        Product oldProduct = productRepository.findById(targetId).orElseThrow();
-        // 画面からの変更を許可している項目だけを、古いデータに上書きする
-        oldProduct.setName(product.getName());
-        oldProduct.setStock(product.getStock());
-        oldProduct.setExpiryDate(product.getExpiryDate());
-        oldProduct.setThreshold(product.getThreshold());
-        oldProduct.setIsNotify(product.getIsNotify());
-        oldProduct.setAlertDays(product.getAlertDays());
-
-        // マスタデータの紐づけ（不正なIDの保存を防ぐため、DBから本物を探してセットする）
-        // カテゴリー
-        if(product.getCategory() != null && product.getCategory().getId() != null) {
-            Long targetCategory = product.getCategory().getId();
-            Category realCategory = categoryRepository.findById(targetCategory).orElseThrow();
-            oldProduct.setCategory(realCategory);
-        } else {
-            // ユーザーが「未選択」にした場合
-            oldProduct.setCategory(null);
-        }
-        // アイコン
-        if(product.getIcon() != null && product.getIcon().getId() != null) {
-            Long targetIconId = product.getIcon().getId();
-            Icon realIcon = iconRepository.findById(targetIconId).orElseThrow();
-            oldProduct.setIcon(realIcon);
-        } else {
-            // ユーザーが「未選択」にした場合
-            oldProduct.setIcon(null);
-        }
-        // 単位
-        if(product.getUnit() != null && product.getUnit().getId() != null) {
-            Long targetUnit = product.getUnit().getId();
-            Unit realUnit = unitRepository.findById(targetUnit).orElseThrow();
-            oldProduct.setUnit(realUnit);
-        } else {
-            // ユーザーが「未選択」にした場合
-            oldProduct.setUnit(null);
-        }
-        // 購入目安単位
-        if(product.getThresholdUnit() != null && product.getThresholdUnit().getId() != null) {
-            Long targetUnit = product.getThresholdUnit().getId();
-            Unit realUnit = unitRepository.findById(targetUnit).orElseThrow();
-            oldProduct.setThresholdUnit(realUnit);
-        } else {
-            // ユーザーが「未選択」にした場合
-            oldProduct.setThresholdUnit(null);
-        }
-        productRepository.save(oldProduct);
-        // 自動追加判定の実行  ←追加
-        shoppingListService.addAutoItem(oldProduct);
-    }
-
-    // 【処理内容】論理削除 : 指定IDの削除フラグを有効にし、関連する買い物リスト等のデータと連動させる
+    /**
+     * 【処理内容】論理削除 : 指定IDの削除フラグを有効にし、関連する買い物リスト等のデータと連動させる
+     */
     public void deleteProduct(Long id) {
-        Product deleted = productRepository.findById(id).orElseThrow();
+        Product deleted = productRepository.findByIdAndFamily_IdAndIsDeletedFalse(id, DUMMY_FAMILY_ID)
+                .orElseThrow(() -> new IllegalArgumentException("対象の商品が見つかりません"));
         deleted.setIsDeleted(true);
         productRepository.save(deleted);
 
@@ -160,7 +59,9 @@ public class ProductService {
         shoppingListItemRepository.deleteByProductId(id);
     }
 
-    // 【処理内容】マスタ取得 : カテゴリや単位の全件リストを登録・編集画面のプルダウン用に提供する
+    /**
+     * 【処理内容】マスタ取得 : カテゴリや単位の全件リストを登録・編集画面のプルダウン用に提供する
+     */
     @Transactional(readOnly = true)
     public Map<String, Object> getMasterData() {
         List<Category> categories = categoryRepository.findAll();
@@ -174,89 +75,72 @@ public class ProductService {
         return map;
     }
 
-    // 【処理内容】期限まぢかを判定
-    public boolean isNearExpiry(Product product) {
-        // 在庫がない商品は期限アラートの対象外
-        if (product == null || product.getStock() == null || product.getStock() <= 0) {
-            return false;
+    /**
+     * 【処理内容】DTOから受け取ったデータを元に新規登録または更新を行う
+     */
+    public void saveFromForm(ProductForm form) {
+        Product product;
+        boolean isNew = (form.getId() == null);
+
+        if (!isNew) {
+            // 【更新の場合】家族ID=1 かつ 未削除 のデータのみ更新対象にする
+            product = productRepository.findByIdAndFamily_IdAndIsDeletedFalse(form.getId(), DUMMY_FAMILY_ID)
+                    .orElseThrow(() -> new IllegalArgumentException("対象の商品が見つかりません"));
+        } else {
+            // 【新規の場合】新しいインスタンスを作成し、初期値を設定
+            product = new Product();
+            product.setIsDeleted(false);
+
+            // ログイン機能ができるまでの暫定対応：ID=1のダミー家族をセット
+            Family dummyFamily = familyRepository.findById(DUMMY_FAMILY_ID)
+                    .orElseThrow(() -> new IllegalStateException("ダミー家族が見つかりません"));
+            product.setFamily(dummyFamily);
         }
 
-        // nullを弾く
-        if(product.getExpiryDate() == null || product.getAlertDays() == null){return false;}
-        LocalDate startDate = product.getExpiryDate();
-        LocalDate endDate = startDate.minusDays(product.getAlertDays());
-        LocalDate today = LocalDate.now();
-        return !today.isBefore(endDate) && !today.isAfter(startDate);
-    }
+        // フォームからの入力値をセット
+        product.setName(form.getName());
+        product.setStock(form.getStock());
+        product.setThreshold(form.getThreshold());
+        product.setIsNotify(Boolean.TRUE.equals(form.getIsNotify()));
+        product.setExpiryDate(form.getExpiryDate());
+        product.setAlertDays(form.getAlertDays());
 
-    // 【処理内容】期限切れ判定
-    public boolean isPastExpiry(Product product) {
-        // 在庫がない商品は期限アラートの対象外
-        if (product == null || product.getStock() == null || product.getStock() <= 0) {
-            return false;
+        // カテゴリーの紐付け
+        if (form.getCategory() != null) {
+            Category realCategory = categoryRepository.findById(form.getCategory()).orElse(null);
+            product.setCategory(realCategory);
+        } else {
+            product.setCategory(null);
         }
 
-        // nullを弾く
-        if(product.getExpiryDate() == null){return false;}
-        LocalDate startDate = product.getExpiryDate();
-        LocalDate today = LocalDate.now();
-        return today.isAfter(startDate);
-    }
-
-    // 【処理内容】残りわずかの判定
-    public boolean isLowStock(Product product) {
-        // nullを弾く
-        if(product.getStock() == null || product.getThreshold() == null){return false;}
-        Integer stock = product.getStock();
-        Integer threshold = product.getThreshold();
-        return 0 < stock && stock <= threshold;
-    }
-
-    // 【処理内容】在庫切れ判定
-    public boolean isOutOfStock(Product product) {
-        // nullを弾く
-        if(product.getStock() == null){return false;}
-        Integer stock = product.getStock();
-        return stock == 0;
-    }
-
-    // 【処理内容】ホーム画面用集計 : 指定家族の未削除商品から4種類のアラート件数を集計し、Mapで返す
-    @Transactional(readOnly = true)
-    public Map<String, Long> getHomeSummary(Long familyId) {
-        // 指定家族の論理削除されていない商品を全件取得
-        List<Product> products = productRepository.findByFamily_IdAndIsDeletedFalseOrderByNameAsc(familyId);
-
-        // ホーム画面に表示する4種類のアラート件数カウンタを初期化
-        long outOfStockCount = 0;
-        long expiredCount = 0;
-        long lowStockCount = 0;
-        long expiringSoonCount = 0;
-
-        // 各商品の状態を既存判定メソッドでチェックし、該当する件数を加算（複数条件に当てはまる場合は両方カウント）
-        for(Product product : products) {
-            // 在庫切れ
-            if(isOutOfStock(product)) {
-                outOfStockCount++;
-            }
-            // 期限切れ
-            if(isPastExpiry(product)) {
-                expiredCount++;
-            }
-            // 残りわずか
-            if(isLowStock(product)) {
-                lowStockCount++;
-            }
-            // 期限間近
-            if(isNearExpiry(product)) {
-                expiringSoonCount++;
-            }
+        // アイコンの紐付け
+        if (form.getIcon() != null) {
+            Icon realIcon = iconRepository.findById(form.getIcon()).orElse(null);
+            product.setIcon(realIcon);
+        } else {
+            product.setIcon(null);
         }
-        // 集計結果をホーム画面（HomeController）へ渡すためのMapに格納して返却
-        Map<String, Long> homeSummary = new HashMap<>();
-        homeSummary.put("outOfStockCount", outOfStockCount);
-        homeSummary.put("expiredCount", expiredCount);
-        homeSummary.put("lowStockCount", lowStockCount);
-        homeSummary.put("expiringSoonCount", expiringSoonCount);
-        return homeSummary;
+
+        // 単位の紐付け
+        if (form.getUnit() != null) {
+            Unit realUnit = unitRepository.findById(form.getUnit()).orElse(null);
+            product.setUnit(realUnit);
+        } else {
+            product.setUnit(null);
+        }
+
+        // 購入目安単位の紐付け
+        if (form.getThresholdUnit() != null) {
+            Unit realUnit = unitRepository.findById(form.getThresholdUnit()).orElse(null);
+            product.setThresholdUnit(realUnit);
+        } else {
+            product.setThresholdUnit(null);
+        }
+
+        // データベースへ保存
+        productRepository.save(product);
+
+        // 買い物リストへの自動追加判定を実行
+        shoppingListService.addAutoItem(product);
     }
 }

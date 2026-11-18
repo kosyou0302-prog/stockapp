@@ -154,10 +154,8 @@ public class ShoppingListService {
 
         // 6. 購入予定数量の算出（購入目安 + 1）
         Integer threshold = targetProduct.getThreshold();
-        if (threshold == null || threshold < 0) {
-            throw new IllegalArgumentException("商品の購入目安を0以上で設定してください");
-        }
-        int quantity = Math.addExact(threshold, 1);
+        int baseThreshold = (threshold != null && threshold >= 0) ? threshold : 0;
+        int quantity = Math.addExact(baseThreshold, 1);
 
         // 7. 買い物リストへ新規保存
         saveNewItem(family, targetProduct, quantity);

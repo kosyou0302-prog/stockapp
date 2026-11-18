@@ -69,16 +69,16 @@ public class ShoppingListController {
      * 自動追加はService側、チェックした商品の削除は下の別メソッドで行う。
      */
     @PostMapping("/list")
-    @Transactional
     public ModelAndView add(
-            @RequestParam("productId") Long productId,
-            @RequestParam("quantity") Integer quantity) {
-
-        // Serviceへ商品IDと追加数量を渡し、買い物リストに追加する
+        @RequestParam(name = "productId", required = false) Long productId,
+        @RequestParam(name = "quantity", defaultValue = "1") Integer quantity,
+        RedirectAttributes redirectAttributes) {
+    try {
         shoppingListService.addManualItem(productId, quantity);
-
-        // 追加後は買い物リスト画面へ戻り、更新された一覧を表示する
-        return new ModelAndView("redirect:/shopping/list");
+    } catch (IllegalArgumentException e) {
+        redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+    }
+    return new ModelAndView("redirect:/shopping/list");
     }
 
     // チェック状態の非同期更新（JS）------------------------------------
@@ -135,7 +135,6 @@ public class ShoppingListController {
 
     // チェック済み商品の一括購入完了----------------------------------------------
     @PostMapping("/complete")
-    @Transactional
     public ModelAndView completePurchase(RedirectAttributes redirectAttributes) {
         int completedCount = shoppingListService.completePurchase();
         redirectAttributes.addFlashAttribute(

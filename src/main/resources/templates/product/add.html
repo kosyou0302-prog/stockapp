@@ -87,11 +87,9 @@
             iconPathではなく、IconマスタのID（icon.id）を送信する。
             Controllerで初期値を1に設定するため、選び直さなくてもリンゴのIDを送信できる。
           -->
-          <input type="hidden" id="iconId" th:field="*{icon.id}">
-
-          <!-- アイコン一覧を開くプレビュー。未設定の場合は1.pngを表示する -->
+          <input type="hidden" id="iconId" th:field="*{icon}">
           <img id="preview" class="border rounded" alt="アイコンプレビュー"
-                th:src="@{/images/icons/{id}.png(id=${item.icon != null and item.icon.id != null ? item.icon.id : 1})}"
+                th:src="@{/images/icons/{id}.png(id=${item.icon != null ? item.icon : 1})}"
                 style="width:50px; height:50px; cursor:pointer;"
                 data-bs-toggle="modal" data-bs-target="#iconModal">
         </div>
@@ -101,7 +99,7 @@
           <label for="categoryId" class="form-label fw-bold">分類</label>
 
           <!-- 文字列ではなくCategoryマスタのID（category.id）を送信する -->
-          <select id="categoryId" class="form-select" th:field="*{category.id}">
+          <select id="categoryId" class="form-select" th:field="*{category}">
             <option value="">選択してください</option>
             <option th:each="category : ${categories}"
                     th:value="${category.id}" th:text="${category.name}">食品</option>
@@ -124,7 +122,7 @@
             <!-- 右側：単位の選択。初期値はControllerで「個」に設定する -->
             <div class="col-6">
               <label for="unitId" class="form-label fw-bold">単位</label>
-              <select id="unitId" class="form-select" th:field="*{unit.id}">
+              <select id="unitId" class="form-select" th:field="*{unit}">
                 <option th:each="unit : ${units}"
                         th:value="${unit.id}" th:text="${unit.name}">個</option>
               </select>
@@ -147,7 +145,7 @@
 
             <div class="col-6">
               <label for="thresholdUnitId" class="form-label fw-bold">単位</label>
-              <select id="thresholdUnitId" class="form-select" th:field="*{thresholdUnit.id}">
+              <select id="thresholdUnitId" class="form-select" th:field="*{thresholdUnit}">
                 <option th:each="unit : ${units}"
                         th:value="${unit.id}" th:text="${unit.name}">個</option>
               </select>

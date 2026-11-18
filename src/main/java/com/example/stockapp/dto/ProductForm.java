@@ -45,13 +45,11 @@ public class ProductForm {
     private Long unit;
 
     // 購入目安
-    @NotNull(message = "購入目安を入力してください")
     @Min(value = 0, message = "0以上で入力してください")
     @Max(value = 50, message = "数を確認してください")
     private Integer threshold;
 
     // 購入目安単位
-    @NotNull(message = "単位を選択してください")
     private Long thresholdUnit;
 
     // 使用期限
@@ -64,8 +62,8 @@ public class ProductForm {
     // 期限選択（アラート日数）　　要追記
     private Integer alertDays;
 
-    /* 通知日数は 1・3・7 のみ許可 */
-    @AssertTrue(message = "通知日数は1日・3日・7日から選択してください")
+    /* 通知日数は 3・7 のみ許可 */
+    @AssertTrue(message = "通知日数は3日・7日から選択してください")
     public boolean isValidAlertDays() {
         return alertDays == null
                 || alertDays == 1

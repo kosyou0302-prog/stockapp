@@ -10,18 +10,17 @@
 package com.example.stockapp.controllers;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.stockapp.entities.Icon;
+import com.example.stockapp.dto.ProductForm;
 import com.example.stockapp.entities.Product;
-import com.example.stockapp.entities.Unit;
 import com.example.stockapp.services.ProductService;
 
 import jakarta.validation.Valid;
@@ -44,71 +43,66 @@ public class ProductController {
      * 商品登録画面を表示する (GET /product/add)
      */
     @GetMapping("/add")
-    public String showAddForm(Model model) {
-        Product product = new Product();
+    public ModelAndView showAddForm(ModelAndView mav) {
+        ProductForm form = new ProductForm();
+        form.setIcon(1L);
+        form.setUnit(1L);
+        form.setThresholdUnit(1L);
+        form.setIsNotify(true);
 
-        // アイコンの初期値：リンゴ（1.pngに対応するアイコンID）
-        // プレビュー表示だけでなく、送信するicon.idにも初期値を設定する
-        Icon icon = new Icon();
-        icon.setId(1L);
-        product.setIcon(icon);
-
-        // 在庫数の単位の初期値：「個」（単位ID＝1）
-        Unit unit = new Unit();
-        unit.setId(1L);
-        product.setUnit(unit);
-
-        // 購入目安単位の初期値：「個」（単位ID＝1）
-        Unit thresholdUnit = new Unit();
-        thresholdUnit.setId(1L);
-        product.setThresholdUnit(thresholdUnit);
-
-        // 初期値を設定した商品を登録画面へ渡す
-        // 通知はProductのisNotify = trueにより、初期状態でONになる
-        model.addAttribute("item", product);
-
-        // プルダウン等のマスタデータを取得して渡す
-        model.addAllAttributes(productService.getMasterData());
-        return "product/add";
+        // "item" という名前でビューに渡す
+        mav.addObject("item", form);
+        mav.addAllObjects(productService.getMasterData());
+        mav.setViewName("product/add");
+        return mav;
     }
 
     /**
      *  商品登録処理を実行する (POST /product/add)
      */
     @PostMapping("/add")
-    public String addProduct(@Valid @ModelAttribute("item") Product product,
-                            BindingResult bindingResult,
-                            Model model) {
-        // 入力エラーがある場合は登録画面に戻る
-        if (bindingResult.hasErrors()) {
-            model.addAllAttributes(productService.getMasterData());
-            return "product/add";
+    public ModelAndView addProduct(@Valid @ModelAttribute("item") ProductForm form,BindingResult result,ModelAndView mav) {
+        if (result.hasErrors()) {
+            mav.addObject("item", form);
+            mav.addAllObjects(productService.getMasterData());
+            mav.setViewName("product/add");
+            return mav;
         }
-
-        // 登録処理の実行
-        productService.registerProduct(product);
-
-        // 在庫一覧画面へリダイレクト
-        return "redirect:/inventory/list";
+        productService.saveFromForm(form);
+        mav.setViewName("redirect:/inventory/list");
+        return mav;
     }
 
     /**
      * 商品編集画面を表示する (GET /product/edit/{id})
      */
     @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable("id") Long id, 
-                            Model model, 
-                            RedirectAttributes redirectAttributes) {
+    public ModelAndView showEditForm(@PathVariable("id") Long id,ModelAndView mav,RedirectAttributes redirectAttributes) {
         try {
-            // 編集対象のデータを検索
+            // 編集対象のデータを検索してProductFormに詰め替える
             Product product = productService.searchProduct(id);
-            model.addAttribute("item", product);
-            model.addAllAttributes(productService.getMasterData());
-            return "product/edit";
+            ProductForm form = new ProductForm();
+            form.setId(product.getId());
+            form.setName(product.getName());
+            form.setStock(product.getStock());
+            form.setThreshold(product.getThreshold());
+            form.setIsNotify(product.getIsNotify());
+            form.setExpiryDate(product.getExpiryDate());
+            form.setAlertDays(product.getAlertDays());
+
+            if (product.getCategory() != null) form.setCategory(product.getCategory().getId());
+            if (product.getIcon() != null) form.setIcon(product.getIcon().getId());
+            if (product.getUnit() != null) form.setUnit(product.getUnit().getId());
+            if (product.getThresholdUnit() != null) form.setThresholdUnit(product.getThresholdUnit().getId());
+
+            mav.addObject("item", form);
+            mav.addAllObjects(productService.getMasterData());
+            mav.setViewName("product/edit");
+            return mav;
         } catch (Exception e) {
-            // データが見つからない場合はメッセージを持たせて一覧へリダイレクト
             redirectAttributes.addFlashAttribute("errorMessage", "データが見つかりません");
-            return "redirect:/inventory/list";
+            mav.setViewName("redirect:/inventory/list");
+            return mav;
         }
     }
 
@@ -116,36 +110,29 @@ public class ProductController {
      * 商品更新処理を実行する (POST /product/edit)
      */
     @PostMapping("/edit")
-    public String updateProduct(@Valid @ModelAttribute("item") Product product,
-                            BindingResult bindingResult,
-                            Model model) {
-        // 入力エラーがある場合は編集画面に戻る
-        if (bindingResult.hasErrors()) {
-            model.addAllAttributes(productService.getMasterData());
-            return "product/edit";
+    public ModelAndView editProduct(@Valid @ModelAttribute("item") ProductForm form,BindingResult result,ModelAndView mav) {
+        if (result.hasErrors()) {
+            mav.addObject("item", form);
+            mav.addAllObjects(productService.getMasterData());
+            mav.setViewName("product/edit");
+            return mav;
         }
-
-        // 更新処理の実行
-        productService.updateProduct(product);
-
-        // 在庫一覧画面へリダイレクト
-        return "redirect:/inventory/list";
+        productService.saveFromForm(form);
+        mav.setViewName("redirect:/inventory/list");
+        return mav;
     }
 
     /**
      * 商品削除処理を実行する (POST /product/delete/{id})
      */
     @PostMapping("/delete/{id}")
-    public String deleteProduct(@PathVariable("id") Long id, 
+    public String deleteProduct(@PathVariable("id") Long id,
                             RedirectAttributes redirectAttributes) {
         try {
-            //削除の実行（関連する買い物リストの削除もService内で連動）
             productService.deleteProduct(id);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "データが見つかりません");
         }
-
-        // 在庫一覧画面へリダイレクト
         return "redirect:/inventory/list";
     }
 }

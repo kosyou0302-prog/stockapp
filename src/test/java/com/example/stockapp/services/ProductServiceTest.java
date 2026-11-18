@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.stockapp.dto.ProductForm;
 import com.example.stockapp.entities.Category;
 import com.example.stockapp.entities.Family;
 import com.example.stockapp.entities.Icon;
@@ -67,24 +68,24 @@ class ProductServiceTest {
     }
 
     // =========================================================================
-    // UT-PRD-001: 商品の新規登録
+    // UT-PRD-001: 商品の新規登録 (saveFromForm を利用)
     // =========================================================================
     @Test
     @DisplayName("UT-PRD-001: 商品の新規登録が正常に行われ、初期状態で論理削除フラグがfalseになること")
     void utPrd001_registerProduct_ShouldSaveWithDefaultValues() {
-        // ① 準備 (Given)
-        Product product = new Product();
-        product.setName("りんご");
-        product.setStock(5);
-        product.setThreshold(2);
-        product.setCategory(testCategory);
-        product.setUnit(testUnit);
-        product.setThresholdUnit(testUnit);
-        product.setIcon(testIcon);
-        product.setIsNotify(true);
+        // ① 準備 (Given): ProductForm を用いて入力データを準備
+        ProductForm form = new ProductForm();
+        form.setName("りんご");
+        form.setStock(5);
+        form.setThreshold(2);
+        form.setCategory(testCategory.getId());
+        form.setUnit(testUnit.getId());
+        form.setThresholdUnit(testUnit.getId());
+        form.setIcon(testIcon.getId());
+        form.setIsNotify(true);
 
         // ② 実行 (When)
-        productService.registerProduct(product);
+        productService.saveFromForm(form);
 
         // ③ 検証 (Then)
         List<Product> products = productRepository.findAll();
@@ -95,31 +96,37 @@ class ProductServiceTest {
     }
 
     // =========================================================================
-    // UT-PRD-002: 商品の更新
+    // UT-PRD-002: 商品の更新 (saveFromForm を利用)
     // =========================================================================
     @Test
     @DisplayName("UT-PRD-002: 既存商品の情報が指定した新しい値で正しく上書き更新されること")
     void utPrd002_updateProduct_ShouldOverwriteAllowedFields() {
         // ① 準備 (Given): 初期データを登録
-        Product product = new Product();
-        product.setName("みかん");
-        product.setStock(3);
-        product.setThreshold(1);
-        product.setCategory(testCategory);
-        product.setUnit(testUnit);
-        product.setThresholdUnit(testUnit);
-        product.setIcon(testIcon);
-        product.setIsNotify(true);
-        productService.registerProduct(product);
+        ProductForm form = new ProductForm();
+        form.setName("みかん");
+        form.setStock(3);
+        form.setThreshold(1);
+        form.setCategory(testCategory.getId());
+        form.setUnit(testUnit.getId());
+        form.setThresholdUnit(testUnit.getId());
+        form.setIcon(testIcon.getId());
+        form.setIsNotify(true);
+        productService.saveFromForm(form);
 
         Product savedProduct = productRepository.findAll().get(0);
 
-        // 変更用のデータをセット
-        savedProduct.setName("美味しいみかん");
-        savedProduct.setStock(10);
+        // 変更用のFormを作成（IDを指定して更新モードにする）
+        ProductForm updateForm = new ProductForm();
+        updateForm.setId(savedProduct.getId());
+        updateForm.setName("美味しいみかん");
+        updateForm.setStock(10);
+        updateForm.setThreshold(1);
+        updateForm.setCategory(testCategory.getId());
+        updateForm.setUnit(testUnit.getId());
+        updateForm.setIsNotify(true);
 
         // ② 実行 (When)
-        productService.updateProduct(savedProduct);
+        productService.saveFromForm(updateForm);
 
         // ③ 検証 (Then)
         Product updated = productRepository.findById(savedProduct.getId()).orElseThrow();
@@ -134,16 +141,16 @@ class ProductServiceTest {
     @DisplayName("UT-PRD-003: 商品の削除を実行すると論理削除フラグがtrueになり、買い物リスト等の連動削除が行われること")
     void utPrd003_deleteProduct_ShouldLogicalDeleteAndRemoveShoppingList() {
         // ① 準備 (Given)
-        Product product = new Product();
-        product.setName("バナナ");
-        product.setStock(4);
-        product.setThreshold(1);
-        product.setCategory(testCategory);
-        product.setUnit(testUnit);
-        product.setThresholdUnit(testUnit);
-        product.setIcon(testIcon);
-        product.setIsNotify(true);
-        productService.registerProduct(product);
+        ProductForm form = new ProductForm();
+        form.setName("バナナ");
+        form.setStock(4);
+        form.setThreshold(1);
+        form.setCategory(testCategory.getId());
+        form.setUnit(testUnit.getId());
+        form.setThresholdUnit(testUnit.getId());
+        form.setIcon(testIcon.getId());
+        form.setIsNotify(true);
+        productService.saveFromForm(form);
 
         Product savedProduct = productRepository.findAll().get(0);
 
@@ -156,82 +163,80 @@ class ProductServiceTest {
     }
 
     // =========================================================================
-    // UT-PRD-004: 在庫切れ判定の検証
+    // UT-PRD-004 〜 007: エンティティ（Product）の判定メソッドの検証
     // =========================================================================
     @Test
-    @DisplayName("UT-PRD-004: 在庫数が 0 の場合に isOutOfStock が true を返すこと")
+    @DisplayName("UT-PRD-004: 在庫数が 0 の場合に stockAlert が OUT_OF_STOCK を返すこと")
     void utPrd004_isOutOfStock_ShouldReturnTrueWhenStockIsZero() {
         Product outOfStockProduct = new Product();
         outOfStockProduct.setStock(0);
+        outOfStockProduct.setIsNotify(true);
 
         Product inStockProduct = new Product();
         inStockProduct.setStock(3);
+        inStockProduct.setIsNotify(true);
 
         // 検証 (Then)
-        assertThat(productService.isOutOfStock(outOfStockProduct)).isTrue();
-        assertThat(productService.isOutOfStock(inStockProduct)).isFalse();
+        assertThat(outOfStockProduct.stockAlert()).isEqualTo("OUT_OF_STOCK");
+        assertThat(inStockProduct.stockAlert()).isEqualTo("NONE");
     }
 
-    // =========================================================================
-    // UT-PRD-005: 期限切れ判定の検証
-    // =========================================================================
     @Test
-    @DisplayName("UT-PRD-005: 賞味期限が今日より過去の日付である場合に isPastExpiry が true を返すこと")
+    @DisplayName("UT-PRD-005: 賞味期限が今日より過去の日付である場合に expiryAlert が EXPIRED を返すこと")
     void utPrd005_isPastExpiry_ShouldReturnTrueWhenPastDate() {
         Product expiredProduct = new Product();
+        expiredProduct.setStock(5); // 在庫あり
         expiredProduct.setExpiryDate(LocalDate.now().minusDays(1)); // 昨日の日付
+        expiredProduct.setIsNotify(true);
 
         Product validProduct = new Product();
+        validProduct.setStock(5);
         validProduct.setExpiryDate(LocalDate.now().plusDays(5)); // 未来の日付
+        validProduct.setIsNotify(true);
 
         // 検証 (Then)
-        assertThat(productService.isPastExpiry(expiredProduct)).isTrue();
-        assertThat(productService.isPastExpiry(validProduct)).isFalse();
+        assertThat(expiredProduct.expiryAlert(LocalDate.now())).isEqualTo("EXPIRED");
+        assertThat(validProduct.expiryAlert(LocalDate.now())).isEqualTo("NONE");
     }
 
-    // =========================================================================
-    // UT-PRD-006: 期限間近判定の検証
-    // =========================================================================
     @Test
-    @DisplayName("UT-PRD-006: 賞味期限がアラート日数（alertDays）の範囲内である場合に isNearExpiry が true を返すこと")
+    @DisplayName("UT-PRD-006: 賞味期限がアラート日数（alertDays）の範囲内である場合に expiryAlert が EXPIRING_SOON を返すこと")
     void utPrd006_isNearExpiry_ShouldReturnTrueWithinAlertDays() {
         LocalDate today = LocalDate.now();
 
         Product nearExpiryProduct = new Product();
+        nearExpiryProduct.setStock(5);
         nearExpiryProduct.setExpiryDate(today.plusDays(2)); // 2日後が期限
         nearExpiryProduct.setAlertDays(3); // アラート期間は3日前から
+        nearExpiryProduct.setIsNotify(true);
 
         Product safeProduct = new Product();
-        safeProduct.setExpiryDate(today.plusDays(10)); // 10日後（まだ余裕がある）
+        safeProduct.setStock(5);
+        safeProduct.setExpiryDate(today.plusDays(10)); // 10日後
         safeProduct.setAlertDays(3);
+        safeProduct.setIsNotify(true);
 
         // 検証 (Then)
-        assertThat(productService.isNearExpiry(nearExpiryProduct)).isTrue();
-        assertThat(productService.isNearExpiry(safeProduct)).isFalse();
+        assertThat(nearExpiryProduct.expiryAlert(today)).isEqualTo("EXPIRING_SOON");
+        assertThat(safeProduct.expiryAlert(today)).isEqualTo("NONE");
     }
 
-    // =========================================================================
-    // UT-PRD-007: 残りわずか判定の検証
-    // =========================================================================
     @Test
-    @DisplayName("UT-PRD-007: 在庫数が 0より大きく閾値以下である場合に isLowStock が true を返すこと")
+    @DisplayName("UT-PRD-007: 在庫数が 0より大きく閾値以下である場合に stockAlert が LOW_STOCK を返すこと")
     void utPrd007_isLowStock_ShouldReturnTrueWhenStockIsLow() {
         Product lowStockProduct = new Product();
         lowStockProduct.setStock(1);
-        lowStockProduct.setThreshold(2); // 閾値2以下なので「残りわずか」
+        lowStockProduct.setThreshold(2);
+        lowStockProduct.setIsNotify(true);
 
         Product normalStockProduct = new Product();
         normalStockProduct.setStock(5);
-        normalStockProduct.setThreshold(2); // 十分にある
-
-        Product zeroStockProduct = new Product();
-        zeroStockProduct.setStock(0);
-        zeroStockProduct.setThreshold(2); // 0は在庫切れなので「残りわずか」ではない
+        normalStockProduct.setThreshold(2);
+        normalStockProduct.setIsNotify(true);
 
         // 検証 (Then)
-        assertThat(productService.isLowStock(lowStockProduct)).isTrue();
-        assertThat(productService.isLowStock(normalStockProduct)).isFalse();
-        assertThat(productService.isLowStock(zeroStockProduct)).isFalse();
+        assertThat(lowStockProduct.stockAlert()).isEqualTo("LOW_STOCK");
+        assertThat(normalStockProduct.stockAlert()).isEqualTo("NONE");
     }
 
     // =========================================================================
@@ -241,16 +246,16 @@ class ProductServiceTest {
     @DisplayName("UT-PRD-008: 指定したIDに一致する商品データを正しく1件取得できること")
     void utPrd008_searchProduct_ShouldReturnProductById() {
         // ① 準備 (Given)
-        Product product = new Product();
-        product.setName("牛乳");
-        product.setStock(2);
-        product.setThreshold(1);
-        product.setCategory(testCategory);
-        product.setUnit(testUnit);
-        product.setThresholdUnit(testUnit);
-        product.setIcon(testIcon);
-        product.setIsNotify(true);
-        productService.registerProduct(product);
+        ProductForm form = new ProductForm();
+        form.setName("牛乳");
+        form.setStock(2);
+        form.setThreshold(1);
+        form.setCategory(testCategory.getId());
+        form.setUnit(testUnit.getId());
+        form.setThresholdUnit(testUnit.getId());
+        form.setIcon(testIcon.getId());
+        form.setIsNotify(true);
+        productService.saveFromForm(form);
 
         Product savedProduct = productRepository.findAll().get(0);
 
@@ -271,7 +276,7 @@ class ProductServiceTest {
         // ① 実行 (When)
         Map<String, Object> masterData = productService.getMasterData();
 
-        // ② 検証 (Then): 各マスターデータのリストが含まれており、事前登録したデータが取得できていること
+        // ② 検証 (Then)
         assertThat(masterData).containsKey("categories");
         assertThat(masterData).containsKey("units");
         assertThat(masterData).containsKey("icons");
