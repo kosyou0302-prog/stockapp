@@ -30,39 +30,39 @@ INSERT INTO icons (name) VALUES
 
 -- ① 牛乳：残りわずか(1<=2) ＆ 期限切れ(11/05) → 優先判定で「期限切れ」表示
 INSERT INTO products (name, stock, threshold, expiry_date, is_notify, alert_days, category_id, unit_id, threshold_unit_id, icon_id, is_deleted, family_id) 
-VALUES ('牛乳', 1, 2, '2026-11-05', true, 3, 1, 2, 1, 12, false, 1);
+VALUES ('牛乳', 1, 2, '2026-11-05', true, 3, 1, 2, 1, 14, false, 1);
 
 -- ② 卵：在庫十分(10>3) ＆ 期限まぢか(3日後: 11/21、通知7日前設定) → 「期限まぢか」表示
 INSERT INTO products (name, stock, threshold, expiry_date, is_notify, alert_days, category_id, unit_id, threshold_unit_id, icon_id, is_deleted, family_id) 
-VALUES ('卵', 10, 3, '2026-11-21', true, 7, 1, 3, 1, 10, false, 1);
+VALUES ('卵', 10, 3, '2026-11-21', true, 7, 1, 3, 1, 15, false, 1);
 
 -- ③ しょうゆ：在庫切れ(0) → 「在庫切れ」表示
 INSERT INTO products (name, stock, threshold, expiry_date, is_notify, alert_days, category_id, unit_id, threshold_unit_id, icon_id, is_deleted, family_id) 
-VALUES ('しょうゆ', 0, 1, '2027-05-01', true, 7, 1, 2, 2, 18, false, 1);
+VALUES ('しょうゆ', 0, 1, '2027-05-01', true, 7, 1, 2, 2, 23, false, 1);
 
 -- ④ トイレットペーパー：通常在庫（アラートなし）
 INSERT INTO products (name, stock, threshold, expiry_date, is_notify, alert_days, category_id, unit_id, threshold_unit_id, icon_id, is_deleted, family_id) 
-VALUES ('トイレットペーパー', 4, 2, NULL, true, NULL, 2, 1, 3, 16, false, 1);
+VALUES ('トイレットペーパー', 4, 2, NULL, true, NULL, 2, 1, 3, 33, false, 1);
 
 -- ⑤ 防災グッズ：通常在庫（アラートなし）
 INSERT INTO products (name, stock, threshold, expiry_date, is_notify, alert_days, category_id, unit_id, threshold_unit_id, icon_id, is_deleted, family_id) 
-VALUES ('防災グッズ', 4, 2, NULL, true, 1, 3, 1, 3, 9, false, 1);
+VALUES ('防災グッズ', 4, 2, NULL, true, 1, 3, 1, 3, 41, false, 1);
 
 -- ⑥ 洗濯洗剤：残りわずか(1<=2) → 「残りわずか」表示
 INSERT INTO products (name, stock, threshold, expiry_date, is_notify, alert_days, category_id, unit_id, threshold_unit_id, icon_id, is_deleted, family_id) 
-VALUES ('洗濯洗剤', 1, 2, NULL, true, NULL, 2, 1, 1, 6, false, 1);
+VALUES ('洗濯洗剤', 1, 2, NULL, true, NULL, 2, 1, 1, 35, false, 1);
 
 -- ⑦ 乾電池：その他（カテゴリ3）の「在庫 ＝ 閾値（境界値：2<=2）」確認用 → 「残りわずか」表示
 INSERT INTO products (name, stock, threshold, expiry_date, is_notify, alert_days, category_id, unit_id, threshold_unit_id, icon_id, is_deleted, family_id) 
-VALUES ('乾電池', 2, 2, NULL, true, NULL, 3, 1, 1, 17, false, 1);
+VALUES ('乾電池', 2, 2, NULL, true, NULL, 3, 1, 1, 42, false, 1);
 
 -- ⑧ 納豆：「在庫0 かつ 期限切れ」のガード確認用（在庫切れのみカウントされ、期限切れには入らない）
 INSERT INTO products (name, stock, threshold, expiry_date, is_notify, alert_days, category_id, unit_id, threshold_unit_id, icon_id, is_deleted, family_id) 
-VALUES ('納豆', 0, 1, '2026-11-01', true, 3, 1, 3, 3, 13, false, 1);
+VALUES ('納豆', 0, 1, '2026-11-01', true, 3, 1, 3, 3, 17, false, 1);
 
 -- ⑨ 食パン：「期限日が今日ちょうど（2026-11-18：境界値）」確認用（期限切れではなく期限まぢか・残り0日に入る）
 INSERT INTO products (name, stock, threshold, expiry_date, is_notify, alert_days, category_id, unit_id, threshold_unit_id, icon_id, is_deleted, family_id) 
-VALUES ('食パン', 2, 1, '2026-11-18', true, 3, 1, 1, 1, 3, false, 1);
+VALUES ('食パン', 2, 1, '2026-11-18', true, 3, 1, 1, 1, 13, false, 1);
 
 -- ⑩ 削除済みテスト商品：「論理削除済み（is_deleted = true）」の除外確認用（すべてカウント対象外）
 INSERT INTO products (name, stock, threshold, expiry_date, is_notify, alert_days, category_id, unit_id, threshold_unit_id, icon_id, is_deleted, family_id) 
