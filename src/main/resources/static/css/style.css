@@ -1,0 +1,101 @@
+
+/* 通知ON/OFFスイッチの外枠を丸くする */
+.form-switch .form-check-input {
+  border-radius: 2rem;
+}
+
+
+/* ホーム：お知らせ・在庫状況・カテゴリー別在庫の角を丸くする */
+.home-page main a.alert,
+.home-page main a.card {
+  border-radius: 0.75rem;
+  transition: filter 0.15s ease;
+}
+
+
+/* ホーム：マウスを重ねたとき、元の背景色を少し暗くする */
+.home-page main a.alert:hover,
+.home-page main a.card:hover {
+  filter: brightness(97%);
+}
+
+
+/* ホーム：クリックしている間、もう少し暗くする */
+.home-page main a.alert:active,
+.home-page main a.card:active {
+  filter: brightness(92%);
+}
+
+
+/* ホーム：キーボードで選択したリンクを分かりやすくする */
+.home-page main a.alert:focus-visible,
+.home-page main a.card:focus-visible {
+  outline: 0.15rem solid var(--bs-primary);
+  outline-offset: 0.2rem;
+}
+
+/* 在庫一覧・アラート：検索欄の左側を丸くする */
+.inventory-page main .input-group > .form-control {
+  border-radius: 0.5rem 0 0 0.5rem;
+}
+
+/* 在庫一覧・アラート：検索ボタンの右側を丸くする */
+.inventory-page main .input-group > .btn {
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+
+/* 在庫一覧・アラート：画面切り替えタブの間に余白を設ける */
+.inventory-page main .nav-pills {
+  gap: 0.5rem;
+}
+
+/* 在庫一覧・アラート：画面切り替えタブを丸くする */
+.inventory-page main .main-tab {
+  border-radius: 0.5rem;
+}
+
+
+/* 在庫一覧・アラート：各絞り込みボタンを丸くする */
+.inventory-page main .category-tab,
+.inventory-page main .alert-tab {
+  border-radius: 0.5rem;
+}
+
+
+/* 在庫一覧・アラート：商品一覧全体の外枠を丸くする */
+.inventory-page #product-list-container .list-group {
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+
+/* 購入履歴：日付見出しの背景を淡いピンクにする */
+.history-page .date-header {
+  background-color: #fce4ec;
+}
+
+/* 買い物リスト：手動追加フォームの外枠を丸くする */
+.shopping-page main .card {
+  border-radius: 0.75rem;
+}
+
+
+/* 買い物リスト：カテゴリー・商品選択欄と数量入力欄を丸くする */
+.shopping-page main .form-select,
+.shopping-page main .form-control {
+  border-radius: 0.5rem;
+}
+
+
+/* 買い物リスト：購入予定商品一覧の外枠を丸くする */
+.shopping-page main .list-group {
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+
+/* 買い物リスト：追加・数量変更・削除・購入完了ボタンを丸くする */
+.shopping-page main .btn {
+  border-radius: 0.5rem;
+}
