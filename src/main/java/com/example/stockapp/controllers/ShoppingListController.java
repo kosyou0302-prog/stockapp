@@ -22,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.stockapp.entities.ShoppingListItem;
 import com.example.stockapp.repositories.ShoppingListItemRepository;
 import com.example.stockapp.services.InventoryService;
+import com.example.stockapp.services.ProductService;
 import com.example.stockapp.services.ShoppingListService;
 
 import lombok.RequiredArgsConstructor;
@@ -31,47 +32,52 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/shopping")
 public class ShoppingListController {
 
-  // 買い物リスト一覧を取得するService
+    // 買い物リスト一覧を取得するService
     private final ShoppingListService shoppingListService;
 
-  // 手動追加フォームの商品選択肢を取得するService
+    // 手動追加フォームの商品選択肢を取得するService
     private final InventoryService inventoryService;
 
-  //在庫情報や商品情報の参照・検索
-    private final ShoppingListItemRepository shoppingListItemRepository;
+    // カテゴリー選択欄に表示するマスタデータを取得するService
+    private final ProductService productService;
 
+    // 買い物リスト項目の取得・更新・削除
+    private final ShoppingListItemRepository shoppingListItemRepository;
 
     // 買い物リスト表示-------------------------------------------------------------
     @GetMapping("/list")
     public ModelAndView shop(ModelAndView mav) {
         // 現在の家族の買い物リストを取得、HTMLに渡す
         mav.addObject("shoppingItems", shoppingListService.getShoppingList());
+
         // 手動追加用の商品一覧を取得、HTMLに渡す
         mav.addObject("products", inventoryService.getAllInventory());
-        // カテゴリー一覧を取得（list_2.htmlのカテゴリー絞り込み用）
-        mav.addObject("categories", productServiceGetCategories()); // ※InventoryService経由等で取得
 
+        // カテゴリー一覧を取得（shopping/list.htmlのカテゴリー絞り込み用）
+        // 商品一覧ではなく、DBのカテゴリーマスタ一覧を渡す
+        mav.addObject("categories", productService.getMasterData().get("categories"));
         mav.setViewName("shopping/list");
         return mav;
     }
 
     // 買い物リストに手動追加＆自動追加、削除------------------------------------
     /*
-    * 【処理内容】買い物リストへの手動追加
-    *   productId：画面で選択した商品のID
-    *   quantity ：画面で入力した追加数量
-    *
-    * 削除処理は、今後別のメソッドで実装する。
-    */
+     * 【処理内容】買い物リストへの手動追加
+     * productId：画面で選択した商品のID
+     * quantity ：画面で入力した追加数量
+     *
+     * 自動追加はService側、チェックした商品の削除は下の別メソッドで行う。
+     */
     @PostMapping("/list")
     @Transactional
     public ModelAndView add(
-                @RequestParam("productId") Long productId,
-                @RequestParam("quantity") Integer quantity) {
+            @RequestParam("productId") Long productId,
+            @RequestParam("quantity") Integer quantity) {
 
-    // Serviceへ商品IDと追加数量を渡し、買い物リストに追加する
+        // Serviceへ商品IDと追加数量を渡し、買い物リストに追加する
         shoppingListService.addManualItem(productId, quantity);
-    // 追加後は買い物リスト画面へ戻り、更新された一覧を表示する
+
+        // 追加後は買い物リスト画面へ戻り、更新された一覧を表示する
         return new ModelAndView("redirect:/shopping/list");
     }
 
@@ -81,6 +87,7 @@ public class ShoppingListController {
     @Transactional
     public String updateCheckStatus(@PathVariable("id") Long id) {
         ShoppingListItem item = shoppingListItemRepository.findById(id).orElse(null);
+
         if (item != null) {
             // 現在の状態を反転させて保存
             boolean nextState = !Boolean.TRUE.equals(item.getIsChecked());
@@ -88,15 +95,17 @@ public class ShoppingListController {
             shoppingListItemRepository.save(item);
             return "success";
         }
+
         return "error";
     }
 
-    // 数量の増減処理 -------------------------------------------------------------
+    // 数量の増減処理-------------------------------------------------------------
     @PostMapping("/quantity/{id}")
     @Transactional
     public ModelAndView updateQuantity(
             @PathVariable("id") Long id,
             @RequestParam("change") int change) {
+
         ShoppingListItem item = shoppingListItemRepository.findById(id).orElse(null);
         if (item != null) {
             int currentQty = item.getThreshold() != null ? item.getThreshold() : 1;
@@ -111,29 +120,26 @@ public class ShoppingListController {
         return new ModelAndView("redirect:/shopping/list");
     }
 
-    //  チェックした商品の削除-------------------------------------------------------------
+    // チェックした商品の削除-------------------------------------------------------------
     @PostMapping("/delete")
     @Transactional
     public ModelAndView deleteCheckedItems() {
         // チェックされている（isChecked = true）項目をすべて取得して削除
-        var checkedItems = shoppingListItemRepository.findByFamily_IdAndIsCheckedTrue(1L); // ダミー家族ID 1L
+        // ログイン機能ができるまでは、ダミー家族ID＝1を使用する
+        var checkedItems = shoppingListItemRepository.findByFamily_IdAndIsCheckedTrue(1L);
         if (!checkedItems.isEmpty()) {
             shoppingListItemRepository.deleteAll(checkedItems);
         }
         return new ModelAndView("redirect:/shopping/list");
     }
 
-    //  チェック済み商品の一括購入完了----------------------------------------------
+    // チェック済み商品の一括購入完了----------------------------------------------
     @PostMapping("/complete")
     @Transactional
     public ModelAndView completePurchase(RedirectAttributes redirectAttributes) {
         int completedCount = shoppingListService.completePurchase();
-        redirectAttributes.addFlashAttribute("message", completedCount + "件の商品を購入完了しました。");
+        redirectAttributes.addFlashAttribute(
+                "message", completedCount + "件の商品を購入完了しました。");
         return new ModelAndView("redirect:/shopping/list");
-    }
-
-    // ※カテゴリ一覧取得のヘルパー（InventoryService等から取得する前提のプレースホルダー）
-    private Object productServiceGetCategories() {
-        return inventoryService.getAllInventory(); // またはマスタ取得メソッドへ置き換え
     }
 }
