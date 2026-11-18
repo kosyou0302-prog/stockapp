@@ -209,14 +209,14 @@
   <!-- ポップアップ：アイコンの候補一覧 -->
   <div class="modal fade" id="iconModal" tabindex="-1" aria-labelledby="iconModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
+      <div class="modal-content rounded-4">
         <div class="modal-body">
           <h2 id="iconModalLabel" class="visually-hidden">アイコン選択</h2>
 
-          <div class="row row-cols-4 g-3 text-center">
-            <div class="col" th:each="i : ${#numbers.sequence(1, 18)}">
+          <div class="row row-cols-6 g-3 text-center">
+            <div class="col" th:each="i : ${#numbers.sequence(1, 42)}">
               <img th:src="@{'/images/icons/' + ${i} + '.png'}"
-                    class="icon-option img-thumbnail"
+                    class="icon-option img-thumbnail rounded-circle"
                     style="width:60px; height:60px; object-fit:cover; cursor:pointer;"
                     th:data-id="${i}" th:data-path="@{'/images/icons/' + ${i} + '.png'}"
                     alt="アイコン">
