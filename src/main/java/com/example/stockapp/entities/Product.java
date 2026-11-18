@@ -88,6 +88,10 @@ public class Product {
 
     // 一覧表示の優先度判定
     public String getPrimaryAlert(LocalDate today) {
+        // 通知OFF（false または null）の商品はアラート対象外
+        if (!Boolean.TRUE.equals(isNotify)) {
+            return "NONE";
+        }
         String sAlert = stockAlert();
         String eAlert = expiryAlert(today);
 
@@ -109,6 +113,10 @@ public class Product {
 
     // 在庫切れ、残り僅か優先度判定
     public String stockAlert() {
+        // 通知OFF（false または null）の商品はアラート対象外
+        if (!Boolean.TRUE.equals(isNotify)) {
+            return "NONE";
+        }
         // 優先度１：在庫切れ
         // 商品がないため、使用期限が過ぎていても在庫切れだけを表示する
         if (stock != null && stock == 0) {
@@ -123,6 +131,10 @@ public class Product {
 
     // 期限切れ、期限間近優先度判定
     public String expiryAlert(LocalDate today) {
+        // 通知OFF（false または null）の商品はアラート対象外
+        if (!Boolean.TRUE.equals(isNotify)) {
+            return "NONE";
+        }
         // 在庫がない・未設定の商品は期限アラートの対象外
         boolean hasStock = stock != null && stock > 0;
         // 優先度１：期限切れ

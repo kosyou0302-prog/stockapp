@@ -6,6 +6,7 @@
  */
 package com.example.stockapp.services;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,51 +89,34 @@ public class InventoryService {
     // 【処理内容】アラート対象抽出：
     // 「在庫切れ・残りわずか」または「期限切れ・期限間近」の商品を取得する
     public List<Product> getAlertInventory() {
-        List<Product> allProducts = getAllInventory();
-        List<Product> alertProducts =allProducts.stream()
-                    .filter(product ->
-                        productService.isOutOfStock(product)
-                        || productService.isLowStock(product)
-                        || productService.isPastExpiry(product)
-                        || productService.isNearExpiry(product))
-                    .toList();
-        return alertProducts;
+        LocalDate today = LocalDate.now();
+        return getAllInventory().stream()
+                .filter(product -> !"NONE".equals(product.getPrimaryAlert(today)))
+                .toList();
     }
 
     // 【処理内容】アラート対象商品を、商品名とアラート種別で絞り込む
     // アラート画面のControllerから呼び出す（結果は商品名昇順）
     public List<Product> searchAlertInventory(String keyword, String type) {
-        // 現在の家族の未削除商品を、商品名で部分一致検索する
-        // カテゴリーは指定しない。キーワード未入力の場合は全件取得する。
         List<Product> products = searchInventory(keyword, null);
         String alertType = type == null ? "" : type;
+        LocalDate today = LocalDate.now();
 
         return products.stream()
-                // 通知ONの商品だけをアラートの表示対象にする
-                // 通知OFF・未設定（null）の商品は除外する
-                .filter(product -> Boolean.TRUE.equals(product.getIsNotify()))
+                .filter(product -> {
+                    // alerts.html と全く同じメソッド・同じ引数で判定結果を取得する
+                    String status = product.getPrimaryAlert(today, alertType);
 
-                // 選択したアラート種別に該当する商品を抽出する
-                .filter(product -> switch (alertType) {
-                    // 在庫切れ・残りわずか
-                    case "stock" -> productService.isOutOfStock(product)
-                            || productService.isLowStock(product);
-
-                    // 期限切れ・期限間近
-                    case "expiry" -> productService.isPastExpiry(product)
-                            || productService.isNearExpiry(product);
-
-                    // ホーム画面から個別のアラートを選んだ場合
-                    case "out" -> productService.isOutOfStock(product);
-                    case "low" -> productService.isLowStock(product);
-                    case "expired" -> productService.isPastExpiry(product);
-                    case "soon" -> productService.isNearExpiry(product);
-
-                    // 「すべて」：4種類のいずれかに該当する商品
-                    default -> productService.isOutOfStock(product)
-                            || productService.isLowStock(product)
-                            || productService.isPastExpiry(product)
-                            || productService.isNearExpiry(product);
+                    // switch 式の結果を return する
+                    return switch (alertType) {
+                        case "stock"   -> "OUT_OF_STOCK".equals(status) || "LOW_STOCK".equals(status);
+                        case "expiry"  -> "EXPIRED".equals(status) || "EXPIRING_SOON".equals(status);
+                        case "out"     -> "OUT_OF_STOCK".equals(status);
+                        case "low"     -> "LOW_STOCK".equals(status);
+                        case "expired" -> "EXPIRED".equals(status);
+                        case "soon"    -> "EXPIRING_SOON".equals(status);
+                        default        -> !"NONE".equals(status);
+                    };
                 })
                 .toList();
     }
@@ -147,23 +131,25 @@ public class InventoryService {
         long expiredCount = 0L;
         long nearExpiryCount = 0L;
 
-        for(Product product : products) {
+        LocalDate today = LocalDate.now(); // ループの外で今日の日付を1回取得
 
-            // 【修正】通知ONの商品だけをホームのアラート件数に含める
-            // 通知OFF（false）・未設定（null）の商品は集計対象から除外する
-            // アラート一覧のsearchAlertInventory()と通知条件を統一する
-            if (!Boolean.TRUE.equals(product.getIsNotify())) {
-                continue;
-            }
+        for (Product product : products) {
+            // Product.java の判定メソッドを直接呼ぶ
+            // （通知OFFの除外や「在庫0は期限アラート対象外」のルールが自動で適用される）
+            String sAlert = product.stockAlert();
+            String eAlert = product.expiryAlert(today);
 
-            if (productService.isOutOfStock(product)) {
+            // 在庫系カウント（OUT_OF_STOCK か LOW_STOCK のどちらか、または NONE）
+            if ("OUT_OF_STOCK".equals(sAlert)) {
                 outOfStockCount++;
-            }else if(productService.isLowStock(product)) {
+            } else if ("LOW_STOCK".equals(sAlert)) {
                 lowStockCount++;
             }
-            if (productService.isPastExpiry(product)) {
+
+            // 期限系カウント（EXPIRED か EXPIRING_SOON のどちらか、または NONE）
+            if ("EXPIRED".equals(eAlert)) {
                 expiredCount++;
-            }else if(productService.isNearExpiry(product)) {
+            } else if ("EXPIRING_SOON".equals(eAlert)) {
                 nearExpiryCount++;
             }
         }

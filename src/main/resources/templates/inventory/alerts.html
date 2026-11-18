@@ -191,7 +191,7 @@
                     Bootstrap 5.3標準のbg-primary-subtleとtext-primaryを使用する。
                   -->
                   <span th:case="'LOW_STOCK'" class="d-inline-block rounded px-3 py-2 bg-primary-subtle text-primary">
-                    残りわずか（残り<span th:text="${product.stock}">1</span><span th:text="${product.unit.name}">袋</span>）
+                    残りわずか（残り<span th:text="${product.stock}">1</span><span th:text="${product.unit?.name ?: '個'}">袋</span>）
                   </span>
                 </th:block>
               </span>
