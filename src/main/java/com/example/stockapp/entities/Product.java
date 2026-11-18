@@ -17,7 +17,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+<<<<<<< Updated upstream
 import jakarta.validation.constraints.NotNull;
+=======
+>>>>>>> Stashed changes
 import lombok.Getter;
 import lombok.Setter;
 
