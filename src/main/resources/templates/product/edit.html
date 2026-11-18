@@ -94,16 +94,14 @@
             <label class="form-label fw-bold">アイコン選択</label>
 
             <!-- iconPath ではなく IconマスタのID（icon.id）を送信するように修正 -->
-            <input type="hidden" id="iconId" th:field="*{icon.id}">
-
-            <!-- アイコン一覧 -->
+            <input type="hidden" id="iconId" th:field="*{icon}">
             <img id="preview"
-                 class="border rounded"
-                 alt="アイコンプレビュー"
-                 th:src="${item != null && item.icon != null && item.icon.id != null ? '/images/icons/' + item.icon.id + '.png' : '/images/icons/1.png'}"
-                 style="width:50px;height:50px; cursor: pointer;"
-                 data-bs-toggle="modal"
-                 data-bs-target="#iconModal">
+                class="border rounded"
+                alt="アイコンプレビュー"
+                th:src="${item != null && item.icon != null ? '/images/icons/' + item.icon + '.png' : '/images/icons/1.png'}"
+                style="width:50px;height:50px; cursor: pointer;"
+                data-bs-toggle="modal"
+                data-bs-target="#iconModal">
           </div>
         </div>
 
@@ -112,7 +110,7 @@
           <label class="form-label fw-bold">分類</label>
 
           <!-- 文字列ではなく CategoryマスタのID（category.id）を送信するように修正 -->
-          <select class="form-select" th:field="*{category.id}">
+          <select class="form-select" th:field="*{category}">
             <option value="">選択してください</option>
             <option th:each="category : ${categories}"
                     th:value="${category.id}"
@@ -148,7 +146,7 @@
               <label for="unitId" class="form-label fw-bold">単位</label>
               <select id="unitId"
                       class="form-select"
-                      th:field="*{unit.id}">
+                      th:field="*{unit}">
                 <option value="">選択してください</option>
                 <option th:each="unit : ${units}"
                         th:value="${unit.id}"
@@ -186,7 +184,7 @@
               <label for="thresholdUnitId" class="form-label fw-bold">単位</label>
               <select id="thresholdUnitId"
                       class="form-select"
-                      th:field="*{thresholdUnit.id}">
+                      th:field="*{thresholdUnit}">
                 <option value="">選択してください</option>
                 <option th:each="unit : ${units}"
                         th:value="${unit.id}"
