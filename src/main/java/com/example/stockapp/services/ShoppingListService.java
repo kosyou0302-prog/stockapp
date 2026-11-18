@@ -126,9 +126,12 @@ public class ShoppingListService {
 
         // 4. アラート判定（在庫切れ、または期限切れ）
         LocalDate today = LocalDate.now();
-        boolean outOfStock = isOutOfStock(targetProduct);
-        boolean expired = isPastExpiry(targetProduct, today);
 
+        String sAlert = targetProduct.stockAlert();
+        String eAlert = targetProduct.expiryAlert(today);
+
+        boolean outOfStock = "OUT_OF_STOCK".equals(sAlert);
+        boolean expired = "EXPIRED".equals(eAlert);
         /*
          * 【将来拡張用：要確認フラグ連携】
          * boolean needsReview = Boolean.TRUE.equals(targetProduct.getNeedsReview());
