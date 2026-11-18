@@ -11,7 +11,6 @@ package com.example.stockapp.dto;
 import java.time.LocalDate;
 
 import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -53,7 +52,6 @@ public class ProductForm {
     private Long thresholdUnit;
 
     // 使用期限
-    @FutureOrPresent(message = "使用期限は本日以降の日付を入力してください")
     private LocalDate expiryDate;
 
     // 通知判定　通知ON時をデフォルト設定
