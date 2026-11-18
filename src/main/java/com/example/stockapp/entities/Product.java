@@ -16,6 +16,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+<<<<<<< Updated upstream
+import jakarta.validation.constraints.NotNull;
+=======
+>>>>>>> Stashed changes
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,10 +37,12 @@ public class Product {
     private Long id;
 
     // 商品名
+    @NotBlank(message = "商品名を入力してください")
     @Column(length=20)
     private String name;
 
     // 在庫数
+    @NotNull(message = "在庫数を入力してください")
     @Column
     private Integer stock;
 
@@ -62,6 +69,7 @@ public class Product {
     private Family family;
 
     // カテゴリ
+    @NotNull(message = "分類を選択してください")
     @ManyToOne(optional= true, fetch= FetchType.LAZY)
     @JoinColumn(name="category_id")
     private Category category;
