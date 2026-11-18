@@ -88,29 +88,19 @@ public class Product {
 
     // 一覧表示の優先度判定
     public String getPrimaryAlert(LocalDate today) {
+        String sAlert = stockAlert();
+        String eAlert = expiryAlert(today);
+
         // 優先度１：在庫切れ
-        // 商品がないため、使用期限が過ぎていても在庫切れだけを表示する
-        if (stock != null && stock == 0) {
+        if ("OUT_OF_STOCK".equals(sAlert)) {
             return "OUT_OF_STOCK";
         }
-
-        // 在庫がない・未設定の商品は期限アラートの対象外
-        boolean hasStock = stock != null && stock > 0;
-
-        // 優先度２：期限切れ
-        if (hasStock && expiryDate != null && today.isAfter(expiryDate)) {
-            return "EXPIRED";
+        // 優先度２・３：期限切れ・期限間近
+        if (!"NONE".equals(eAlert)) {
+            return eAlert;
         }
-
-        // 優先度３：期限間近
-        if (hasStock && expiryDate != null && alertDays != null
-                && !today.isBefore(expiryDate.minusDays(alertDays))
-                && !today.isAfter(expiryDate)) {
-            return "EXPIRING_SOON";
-        }
-
         // 優先度４：残り僅か
-        if (stock != null && threshold != null && 0 < stock && stock <= threshold) {
+        if ("LOW_STOCK".equals(sAlert)) {
             return "LOW_STOCK";
         }
 
@@ -149,9 +139,12 @@ public class Product {
     }
 
     public String getPrimaryAlert(LocalDate today, String type) {
+        if (type == null) {
+            return getPrimaryAlert(today);
+        }
         return switch (type) {
-            case "stock" -> stockAlert();
-            case "expiry" -> expiryAlert(today);
+            case "stock", "out", "low" -> stockAlert();
+            case "expiry", "expired", "soon" -> expiryAlert(today);
             default -> getPrimaryAlert(today);
         };
     }

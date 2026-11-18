@@ -131,20 +131,20 @@
             data-alert-type：getPrimaryAlert(today)の判定結果を属性として保持する。
           -->
           <div th:each="product : ${products}" class="list-group-item p-0"
-              th:data-alert-type="${product.getPrimaryAlert(today)}">
+              th:data-alert-type="${product.getPrimaryAlert(today, selectedAlertType)}">
             <a th:href="@{/product/edit/{id}(id=${product.id})}"
               class="list-group-item-action d-flex flex-wrap align-items-center justify-content-between gap-2 w-100 px-3 py-3 text-decoration-none text-body">
 
               <!-- 左側：商品アイコン・商品名・カテゴリー -->
               <span class="d-flex align-items-center gap-3">
                 <!-- 商品アイコン -->
-                <img th:src="@{'/images/icons/' + ${product.icon.id} + '.png'}"
+                <img th:src="@{'/images/icons/' + ${product.icon != null ? product.icon.id : 1} + '.png'}"
                     style="width:40px; height:40px; object-fit:cover;" class="rounded" alt="アイコン">
 
                 <!-- 商品名・カテゴリー。d-blockで1行ずつ表示する。 -->
                 <span>
                   <span class="d-block fw-bold" th:text="${product.name}">牛乳</span>
-                  <span class="d-block text-secondary small" th:text="${product.category.name}">食品</span>
+                  <span class="d-block text-secondary small" th:text="${product.category?.name ?: '未分類'}">食品</span>
                 </span>
               </span>
 
@@ -168,7 +168,7 @@
                   ホームからout・low・expired・soonで移動した場合も、この判定結果に従う。
                   NONEの場合は、該当する警告がないため表示しない。
                 -->
-                <th:block th:switch="${product.getPrimaryAlert(today)}">
+                <th:block th:switch="${product.getPrimaryAlert(today, selectedAlertType)}">
 
                   <!-- 期限切れの場合：今日より前の日付・黄土色系 -->
                   <span th:case="'EXPIRED'" class="d-inline-block rounded px-3 py-2 bg-warning-subtle text-warning">
